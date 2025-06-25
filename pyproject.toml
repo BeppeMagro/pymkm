@@ -30,9 +30,9 @@ text = "MIT"
 dev = [ "pytest", "pytest-cov", "black", "mypy",]
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/pymkm"
-Repository = "https://github.com/YOUR_USERNAME/pymkm"
-Issues = "https://github.com/YOUR_USERNAME/pymkm/issues"
+Homepage = "https://github.com/BeppeMagro/pymkm"
+Repository = "https://github.com/BeppeMagro/pymkm"
+Issues = "https://github.com/BeppeMagro/pymkm/issues"
 
 [tool.setuptools]
 include-package-data = true
@@ -45,4 +45,4 @@ local_scheme = "node-and-date"
 "pymkm.data" = [ "**/*.txt", "elements.json",]
 
 [tool.setuptools.packages.find]
-where = [ "pymkm",]
+where = [ "." ]

@@ -8,11 +8,16 @@ recursive-include pymkm/data *.txt
 recursive-include pymkm/data *.json
 
 # Include only in the source distribution (not in the wheel or pip install)
-recursive-include examples *
-recursive-include validation_results *
-recursive-include tests *
+#recursive-include examples *
+#recursive-include validation_results *
+#recursive-include tests *
 
 # Exclude development cache folders
 exclude .coverage
 exclude .pytest_cache/*
 exclude .spyproject/*
+
+# Exclude examples, validation and tests folders from installation
+prune examples
+prune validation_results
+prune tests
