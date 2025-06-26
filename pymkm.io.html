@@ -1,0 +1,997 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="pymkm.io.data_registry" href="pymkm.io.data_registry.html" /><link rel="prev" title="pymkm.data.defaults.mstar_3_12" href="pymkm.data.defaults.mstar_3_12.html" />
+
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
+        <title>pymkm.io - pyMKM documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">pyMKM  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">pyMKM  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="pymkm.html">pymkm</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of pymkm</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymkm.biology.html">pymkm.biology</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of pymkm.biology</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.biology.oxygen_effect.html">pymkm.biology.oxygen_effect</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymkm.data.html">pymkm.data</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of pymkm.data</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="pymkm.data.defaults.html">pymkm.data.defaults</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of pymkm.data.defaults</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.data.defaults.fluka_2020_0.html">pymkm.data.defaults.fluka_2020_0</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.data.defaults.geant4_11_3_0.html">pymkm.data.defaults.geant4_11_3_0</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.data.defaults.mstar_3_12.html">pymkm.data.defaults.mstar_3_12</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">pymkm.io</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of pymkm.io</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.data_registry.html">pymkm.io.data_registry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html">pymkm.io.stopping_power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html">pymkm.io.table_set</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymkm.mktable.html">pymkm.mktable</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of pymkm.mktable</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.compute.html">pymkm.mktable.compute</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.core.html">pymkm.mktable.core</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.plot.html">pymkm.mktable.plot</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymkm.physics.html">pymkm.physics</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of pymkm.physics</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.physics.particle_track.html">pymkm.physics.particle_track</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.physics.specific_energy.html">pymkm.physics.specific_energy</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymkm.sftable.html">pymkm.sftable</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of pymkm.sftable</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.sftable.compute.html">pymkm.sftable.compute</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.sftable.core.html">pymkm.sftable.core</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.sftable.plot.html">pymkm.sftable.plot</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymkm.utils.html">pymkm.utils</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of pymkm.utils</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.utils.geometry_tools.html">pymkm.utils.geometry_tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.utils.interpolation.html">pymkm.utils.interpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.utils.parallel.html">pymkm.utils.parallel</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/pymkm.io.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-pymkm.io">
+<span id="pymkm-io"></span><h1>pymkm.io<a class="headerlink" href="#module-pymkm.io" title="Link to this heading">¶</a></h1>
+<p>I/O submodule for pyMKM.</p>
+<p>This package provides functionality to load, manage, and serialize stopping power (LET) data
+used by the Microdosimetric Kinetic Model. It handles both individual ion tables and structured
+collections of precomputed datasets.</p>
+<section id="modules">
+<h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">data_registry</span></code>:
+Functions for discovering and loading default <cite>.txt</cite> stopping power tables and the
+periodic table lookup (<cite>elements.json</cite>). See functions like
+<a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.get_default_txt_path" title="pymkm.io.data_registry.get_default_txt_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_default_txt_path()</span></code></a> and
+<a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.load_lookup_table" title="pymkm.io.data_registry.load_lookup_table"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_lookup_table()</span></code></a>.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">stopping_power</span></code>:
+Defines the <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> for parsing,
+validating, interpolating and plotting LET curves for a single ion.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">table_set</span></code>:
+Provides <a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a>, a high-level container
+for multiple ion tables with utilities for batch resampling, filtering, and plotting.</p></li>
+</ul>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.io.</span></span><span class="sig-name descname"><span class="pre">StoppingPowerTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">let</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_program</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ionization_potential</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for representing and handling stopping power (LET) data for ions in liquid water.</p>
+<p>Provides utilities for data validation, plotting, serialization, and interpolation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.DEFAULT_TARGET">
+<span class="sig-name descname"><span class="pre">DEFAULT_TARGET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'WATER_LIQUID'</span></em><a class="headerlink" href="#pymkm.io.StoppingPowerTable.DEFAULT_TARGET" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.REQUIRED_DICT_KEYS">
+<span class="sig-name descname"><span class="pre">REQUIRED_DICT_KEYS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ion_symbol',</span> <span class="pre">'atomic_number',</span> <span class="pre">'mass_number',</span> <span class="pre">'source_program',</span> <span class="pre">'ionization_potential',</span> <span class="pre">'target']</span></em><a class="headerlink" href="#pymkm.io.StoppingPowerTable.REQUIRED_DICT_KEYS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.REQUIRED_HEADER_KEYS">
+<span class="sig-name descname"><span class="pre">REQUIRED_HEADER_KEYS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Ion',</span> <span class="pre">'AtomicNumber',</span> <span class="pre">'MassNumber',</span> <span class="pre">'SourceProgram',</span> <span class="pre">'IonizationPotential',</span> <span class="pre">'Target']</span></em><a class="headerlink" href="#pymkm.io.StoppingPowerTable.REQUIRED_HEADER_KEYS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.energy_grid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy_grid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#pymkm.io.StoppingPowerTable.energy_grid" title="Link to this definition">¶</a></dt>
+<dd><p>Access the energy array (grid).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Energy values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.from_dict">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><span class="pre">StoppingPowerTable</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable.from_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Create a StoppingPowerTable instance from a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Dictionary containing all required fields.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>StoppingPowerTable instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTable" title="pymkm.io.StoppingPowerTable">StoppingPowerTable</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required fields are missing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.from_txt">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_txt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><span class="pre">StoppingPowerTable</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.from_txt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable.from_txt" title="Link to this definition">¶</a></dt>
+<dd><p>Create a StoppingPowerTable from a .txt file containing header and data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Path to the input .txt file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>StoppingPowerTable instance parsed from file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTable" title="pymkm.io.StoppingPowerTable">StoppingPowerTable</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required header keys or element definitions are missing or inconsistent.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.get_lookup_table">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_lookup_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.get_lookup_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable.get_lookup_table" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve the ion properties lookup table (<a class="reference external" href="https://ciaaw.org/atomic-weights.htm">https://ciaaw.org/atomic-weights.htm</a>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary mapping element names to their properties (symbol, Z, A, color).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, dict[str, int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.interpolate">
+<span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">let</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable.interpolate" title="Link to this definition">¶</a></dt>
+<dd><p>Interpolate LET or energy values using internal data.</p>
+<p>Delegates to <cite>Interpolator</cite> and supports log-log interpolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Energy values at which to compute LET.</p></li>
+<li><p><strong>let</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – LET values at which to compute corresponding energies.</p></li>
+<li><p><strong>loglog</strong> (<em>bool</em>) – Whether to perform interpolation in log-log space.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Interpolated LETs or a dict of energies for each LET.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray or dict[float, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.ion_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ion_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pymkm.io.StoppingPowerTable.ion_name" title="Link to this definition">¶</a></dt>
+<dd><p>Get the ion symbol (e.g., “C” for carbon).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Ion symbol string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_figure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable.plot" title="Link to this definition">¶</a></dt>
+<dd><p>Plot stopping power (LET) as a function of energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<em>str</em><em>, </em><em>optional</em>) – Optional label for the plot legend.</p></li>
+<li><p><strong>show</strong> (<em>bool</em>) – Whether to call plt.show().</p></li>
+<li><p><strong>new_figure</strong> (<em>bool</em>) – If True, create a new figure and title; otherwise, reuse the current axes.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable.resample" title="Link to this definition">¶</a></dt>
+<dd><p>Resample the LET curve onto a new energy grid using log-log interpolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_grid</strong> (<em>np.ndarray</em>) – The target energy grid (must be strictly increasing).</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the new grid is not strictly increasing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.stopping_power">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stopping_power</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#pymkm.io.StoppingPowerTable.stopping_power" title="Link to this definition">¶</a></dt>
+<dd><p>Access the LET (stopping power) array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>LET values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTable.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTable.to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Serialize the object to a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing ion metadata and LET table.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.io.</span></span><span class="sig-name descname"><span class="pre">StoppingPowerTableSet</span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A container for managing multiple StoppingPowerTable instances.</p>
+<p>Provides unified access to stopping power curves for multiple ions, identified
+by name, symbol, or atomic number. Supports serialization, resampling, filtering,
+and plotting.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><span class="pre">StoppingPowerTable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.add" title="Link to this definition">¶</a></dt>
+<dd><p>Add a stopping power table to the set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ion_input</strong> (<em>str</em>) – Ion identifier (name, symbol, or atomic number).</p></li>
+<li><p><strong>table</strong> (<a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><em>pymkm.io.stopping_power.StoppingPowerTable</em></a>) – Instance of <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> to add.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.filter_by_ions">
+<span class="sig-name descname"><span class="pre">filter_by_ions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><span class="pre">StoppingPowerTableSet</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.filter_by_ions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.filter_by_ions" title="Link to this definition">¶</a></dt>
+<dd><p>Create a subset containing only the specified ions.
+Each table is a <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ion_inputs</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of identifiers (names, symbols, or atomic numbers).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New StoppingPowerTableSet with selected ions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet" title="pymkm.io.StoppingPowerTableSet">StoppingPowerTableSet</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.from_default_source">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_default_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><span class="pre">StoppingPowerTableSet</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.from_default_source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.from_default_source" title="Link to this definition">¶</a></dt>
+<dd><p>Load tables from a default internal source (e.g., “mstar_3_12”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>source</strong> (<em>str</em>) – Name of the predefined source directory.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Table set initialized from source.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet" title="pymkm.io.StoppingPowerTableSet">StoppingPowerTableSet</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If any file cannot be loaded.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.from_dict">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><span class="pre">StoppingPowerTableSet</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.from_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Create a table set from a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>dict</em><em>]</em>) – Dictionary mapping ion names to serialized tables.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>StoppingPowerTableSet instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet" title="pymkm.io.StoppingPowerTableSet">StoppingPowerTableSet</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If tables have inconsistent source program or ionization potential.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.from_directory">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><span class="pre">StoppingPowerTableSet</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.from_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.from_directory" title="Link to this definition">¶</a></dt>
+<dd><p>Load all .txt stopping power tables from a directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>directory</strong> (<em>str</em>) – Path to directory containing .txt files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>StoppingPowerTableSet with all successfully loaded tables.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet" title="pymkm.io.StoppingPowerTableSet">StoppingPowerTableSet</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.from_json">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><span class="pre">StoppingPowerTableSet</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.from_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.from_json" title="Link to this definition">¶</a></dt>
+<dd><p>Create a table set from a JSON string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>json_str</strong> (<em>str</em>) – JSON-formatted table set string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Deserialized StoppingPowerTableSet.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet" title="pymkm.io.StoppingPowerTableSet">StoppingPowerTableSet</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><span class="pre">StoppingPowerTable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.get" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a table by ion identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ion_input</strong> (<em>str</em>) – Ion name, symbol, or atomic number.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Corresponding <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> or None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable">pymkm.io.stopping_power.StoppingPowerTable</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.get_available_ions">
+<span class="sig-name descname"><span class="pre">get_available_ions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.get_available_ions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.get_available_ions" title="Link to this definition">¶</a></dt>
+<dd><p>Get the list of ion names present in the set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of ion names.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.get_common_energy_range">
+<span class="sig-name descname"><span class="pre">get_common_energy_range</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.get_common_energy_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.get_common_energy_range" title="Link to this definition">¶</a></dt>
+<dd><p>Get the overlapping energy range across all tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[min, max] energy range, or None if no common range exists.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[float] or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.get_energy_grid">
+<span class="sig-name descname"><span class="pre">get_energy_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.get_energy_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.get_energy_grid" title="Link to this definition">¶</a></dt>
+<dd><p>Get the energy grid for a given ion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ion_input</strong> (<em>str</em>) – Ion identifier.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Energy array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.get_stopping_power">
+<span class="sig-name descname"><span class="pre">get_stopping_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.get_stopping_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.get_stopping_power" title="Link to this definition">¶</a></dt>
+<dd><p>Get the stopping power values for a given ion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ion_input</strong> (<em>str</em>) – Ion identifier.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LET array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.interpolate_all">
+<span class="sig-name descname"><span class="pre">interpolate_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.interpolate_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.interpolate_all" title="Link to this definition">¶</a></dt>
+<dd><p>Interpolate LET values at given energies for all tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> (<em>np.ndarray</em>) – Energy values at which to interpolate.</p></li>
+<li><p><strong>loglog</strong> (<em>bool</em>) – Use log-log interpolation if True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping ion names to interpolated LET arrays.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.items" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.keys" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.load">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><span class="pre">StoppingPowerTableSet</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.load" title="Link to this definition">¶</a></dt>
+<dd><p>Load a table set from a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Path to JSON file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loaded StoppingPowerTableSet.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet" title="pymkm.io.StoppingPowerTableSet">StoppingPowerTableSet</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.plot" title="Link to this definition">¶</a></dt>
+<dd><p>Plot stopping power curves for one or more ions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ions</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – List of ion identifiers to plot. If None, all are plotted.</p></li>
+<li><p><strong>show</strong> (<em>bool</em>) – Whether to display the plot using plt.show().</p></li>
+<li><p><strong>single_plot</strong> (<em>bool</em>) – If True, plot all ions on one figure; otherwise, one figure per ion.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.remove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a table by ion identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ion_input</strong> (<em>str</em>) – Ion name, symbol, or atomic number.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.resample_all">
+<span class="sig-name descname"><span class="pre">resample_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.resample_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.resample_all" title="Link to this definition">¶</a></dt>
+<dd><p>Resample the LET curves of all tables onto a new energy grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_grid</strong> (<em>np.ndarray</em>) – Strictly increasing energy grid in MeV/u.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the grid is not strictly increasing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.save" title="Link to this definition">¶</a></dt>
+<dd><p>Save the table set to a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Output file path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Serialize all tables to a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary of ion names to serialized data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.to_json" title="Link to this definition">¶</a></dt>
+<dd><p>Serialize the set to a JSON string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON-formatted string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymkm.io.StoppingPowerTableSet.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet.values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.StoppingPowerTableSet.values" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pymkm.io.data_registry.html">pymkm.io.data_registry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.get_available_sources"><code class="docutils literal notranslate"><span class="pre">get_available_sources()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.get_default_txt_path"><code class="docutils literal notranslate"><span class="pre">get_default_txt_path()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.list_available_defaults"><code class="docutils literal notranslate"><span class="pre">list_available_defaults()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.load_lookup_table"><code class="docutils literal notranslate"><span class="pre">load_lookup_table()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pymkm.io.stopping_power.html">pymkm.io.stopping_power</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.DEFAULT_TARGET"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.DEFAULT_TARGET</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.REQUIRED_DICT_KEYS"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.REQUIRED_DICT_KEYS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.REQUIRED_HEADER_KEYS"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.REQUIRED_HEADER_KEYS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.energy_grid"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.energy_grid</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.from_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.from_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.from_txt"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.from_txt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.get_lookup_table"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.get_lookup_table()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.interpolate"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.interpolate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.ion_name"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.ion_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.plot"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.resample"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.resample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.stopping_power"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.stopping_power</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.to_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.to_dict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pymkm.io.table_set.html">pymkm.io.table_set</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.add"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.filter_by_ions"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.filter_by_ions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.from_default_source"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_default_source()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.from_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.from_directory"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_directory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.from_json"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.get"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.get_available_ions"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_available_ions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.get_common_energy_range"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_common_energy_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.get_energy_grid"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_energy_grid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.get_stopping_power"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_stopping_power()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.interpolate_all"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.interpolate_all()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.items"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.items()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.keys"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.keys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.load"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.plot"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.remove"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.remove()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.resample_all"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.resample_all()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.save"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.save()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.to_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.to_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.to_json"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.to_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.values"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.values()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="pymkm.io.data_registry.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">pymkm.io.data_registry</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="pymkm.data.defaults.mstar_3_12.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">pymkm.data.defaults.mstar_3_12</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Giuseppe Magro et al
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">pymkm.io</a><ul>
+<li><a class="reference internal" href="#modules">Modules</a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a><ul>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.DEFAULT_TARGET"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.DEFAULT_TARGET</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.REQUIRED_DICT_KEYS"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.REQUIRED_DICT_KEYS</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.REQUIRED_HEADER_KEYS"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.REQUIRED_HEADER_KEYS</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.energy_grid"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.energy_grid</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.from_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.from_txt"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.from_txt()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.get_lookup_table"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.get_lookup_table()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.interpolate"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.interpolate()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.ion_name"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.ion_name</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.plot"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.plot()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.resample"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.resample()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.stopping_power"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.stopping_power</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTable.to_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.to_dict()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a><ul>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.add"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.add()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.filter_by_ions"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.filter_by_ions()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.from_default_source"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_default_source()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.from_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.from_directory"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_directory()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.from_json"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.from_json()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.get"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.get_available_ions"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_available_ions()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.get_common_energy_range"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_common_energy_range()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.get_energy_grid"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_energy_grid()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.get_stopping_power"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.get_stopping_power()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.interpolate_all"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.interpolate_all()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.items"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.items()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.keys"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.keys()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.load"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.load()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.plot"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.plot()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.remove"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.remove()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.resample_all"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.resample_all()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.save"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.save()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.to_dict"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.to_json"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.to_json()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.io.StoppingPowerTableSet.values"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.values()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    </body>
+</html>
