@@ -287,11 +287,13 @@
           <section id="module-pymkm.data.defaults.mstar_3_12">
 <span id="pymkm-data-defaults-mstar-3-12"></span><h1>pymkm.data.defaults.mstar_3_12<a class="headerlink" href="#module-pymkm.data.defaults.mstar_3_12" title="Link to this heading">¶</a></h1>
 <p>Stopping power tables from MSTAR 3.12.</p>
-<p>This set includes LET data obtained using the MSTAR code (version 3.12),
-commonly used in heavy ion dosimetry.</p>
-<p>Each file contains stopping power values for a specific ion, tabulated
+<p>This dataset contains precomputed LET tables for ions in liquid water
+generated using the MSTAR code (version 3.12, <a class="reference external" href="https://nds.iaea.org/stopping-legacy/MstarWWW/MSTARInstr.htmlmai">https://nds.iaea.org/stopping-legacy/MstarWWW/MSTARInstr.htmlmai</a>).</p>
+<p>Each .txt file contains stopping power values for a specific ion, tabulated
 as energy (MeV/u) vs. LET (MeV/cm), for water as the reference medium.</p>
-<p>The data is used internally by pyMKM for benchmarking and default modeling.</p>
+<p>These values can be used to initialize:
+- <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a>
+- <a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a></p>
 </section>
 
         </article>

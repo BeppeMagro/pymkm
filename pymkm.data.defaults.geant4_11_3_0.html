@@ -287,9 +287,10 @@
           <section id="module-pymkm.data.defaults.geant4_11_3_0">
 <span id="pymkm-data-defaults-geant4-11-3-0"></span><h1>pymkm.data.defaults.geant4_11_3_0<a class="headerlink" href="#module-pymkm.data.defaults.geant4_11_3_0" title="Link to this heading">¶</a></h1>
 <p>Stopping power tables from Geant4 11.3.0.</p>
-<p>This dataset contains LET tables computed with the Geant4 toolkit (version 11.3.0)
-using water as the target medium.</p>
-<p>Each <cite>.txt</cite> file corresponds to one ion species and can be accessed using pyMKM’s data utilities.</p>
+<p>This dataset contains precomputed LET tables for ions in liquid water
+generated using the Geant4 toolkit (version 11.3.0).</p>
+<p>Each .txt file contains stopping power values for a specific ion, tabulated
+as energy (MeV/u) vs. LET (MeV/cm), for water as the reference medium.</p>
 <p>These values can be used to initialize:
 - <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a>
 - <a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a></p>

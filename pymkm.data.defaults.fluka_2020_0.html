@@ -289,11 +289,11 @@
 <p>Stopping power tables from FLUKA 2020.0.</p>
 <p>This dataset contains precomputed LET tables for ions in liquid water
 generated using the FLUKA Monte Carlo code (version 2020.0).</p>
-<p>Each file corresponds to a single ion (e.g., Hydrogen, Carbon, Oxygen),
-formatted as a <cite>.txt</cite> table with energy vs. stopping power values.</p>
-<p>These data can be loaded using:
-- <a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.get_default_txt_path" title="pymkm.io.data_registry.get_default_txt_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_default_txt_path()</span></code></a>
-- <a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.from_default_source" title="pymkm.io.table_set.StoppingPowerTableSet.from_default_source"><code class="xref py py-class docutils literal notranslate"><span class="pre">from_default_source</span></code></a></p>
+<p>Each .txt file contains stopping power values for a specific ion, tabulated
+as energy (MeV/u) vs. LET (MeV/cm), for water as the reference medium.</p>
+<p>These values can be used to initialize:
+- <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a>
+- <a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a></p>
 </section>
 
         </article>
