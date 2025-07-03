@@ -287,26 +287,24 @@
           <section id="module-pymkm.data">
 <span id="pymkm-data"></span><h1>pymkm.data<a class="headerlink" href="#module-pymkm.data" title="Link to this heading">¶</a></h1>
 <p>Data resources for pyMKM.</p>
-<p>This subpackage provides structured data used in microdosimetric calculations,
-including periodic element properties and default stopping power tables.</p>
+<p>This subpackage provides structured data required for microdosimetric modeling,
+including periodic element definitions and reference stopping power tables
+from external Monte Carlo codes.</p>
 <section id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">elements.json</span></code>:
-Lookup table mapping element names and symbols to atomic number, mass number, and visualization color.
-Used for consistency and validation when initializing LET tables.</p></li>
+Lookup table mapping element symbols and names to atomic number, mass number,
+and display color. Used for validating and initializing LET table inputs.
+Elemental data are based on values published by the IUPAC:
+<a class="reference external" href="https://ciaaw.org/atomic-weights.htm">https://ciaaw.org/atomic-weights.htm</a></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">defaults/</span></code>:
-Contains precomputed stopping power tables (.txt files) for various Monte Carlo codes
-and versions, organized by subfolder. These files are used to initialize
-<a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> instances via
+Contains precomputed stopping power tables (in .txt format) for various Monte Carlo
+transport codes and versions. These files can be used to initialize
+<a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> via
 <a class="reference internal" href="pymkm.io.data_registry.html#pymkm.io.data_registry.get_default_txt_path" title="pymkm.io.data_registry.get_default_txt_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_default_txt_path()</span></code></a> or
-<a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.from_default_source" title="pymkm.io.table_set.StoppingPowerTableSet.from_default_source"><code class="xref py py-class docutils literal notranslate"><span class="pre">from_default_source</span></code></a>.</p></li>
+<a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet.from_default_source" title="pymkm.io.table_set.StoppingPowerTableSet.from_default_source"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_default_source()</span></code></a>.</p></li>
 </ul>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
-<p>These resources are accessed internally using <code class="xref py py-mod docutils literal notranslate"><span class="pre">importlib.resources</span></code>,
-so that they can be bundled as package data and accessed seamlessly whether installed or used locally.</p>
 </section>
 <section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
@@ -383,7 +381,6 @@ so that they can be bundled as package data and accessed seamlessly whether inst
             <ul>
 <li><a class="reference internal" href="#">pymkm.data</a><ul>
 <li><a class="reference internal" href="#contents">Contents</a></li>
-<li><a class="reference internal" href="#usage">Usage</a></li>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 </ul>
 </li>

@@ -334,19 +334,23 @@
          <span class="n">y</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;z_bar_star_domain&quot;</span><span class="p">,</span> 
          <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Plot microdosimetric quantities from the MKTable for one or more ions.</span>
+<span class="sd">    Plot microdosimetric quantities from the MKTable.</span>
 
-<span class="sd">    :param ions: List of ion identifiers (e.g., &#39;C&#39;, 6, &#39;Carbon&#39;). If None, all ions are plotted.</span>
+<span class="sd">    Supported axes:</span>
+<span class="sd">      - x: &#39;energy&#39; [MeV/u] or &#39;let&#39; [MeV/cm]</span>
+<span class="sd">      - y: &#39;z_bar_star_domain&#39;, &#39;z_bar_domain&#39;, or &#39;z_bar_nucleus&#39; [Gy] (z̄*, z̄_d, and z̄_n)</span>
+
+<span class="sd">    :param ions: List of ion identifiers (e.g., ‘C’, 6, ‘Carbon’). If None, all ions are plotted.</span>
 <span class="sd">    :type ions: list[str or int], optional</span>
 <span class="sd">    :param x: Quantity for the x-axis (&#39;energy&#39; or &#39;let&#39;).</span>
 <span class="sd">    :type x: str</span>
-<span class="sd">    :param y: Quantity for the y-axis (&#39;z_bar_star_domain&#39;, &#39;z_bar_domain&#39;, or &#39;z_bar_nucleus&#39;).</span>
+<span class="sd">    :param y: Quantity for the y-axis (must match a column in MKTable results).</span>
 <span class="sd">    :type y: str</span>
-<span class="sd">    :param verbose: If True, displays model configuration details on the plot.</span>
+<span class="sd">    :param verbose: If True, display model and geometry parameters inside the plot.</span>
 <span class="sd">    :type verbose: bool</span>
 
-<span class="sd">    :raises RuntimeError: If no results are available in MKTable.</span>
-<span class="sd">    :raises ValueError: If invalid column names are provided.</span>
+<span class="sd">    :raises RuntimeError: If MKTable has no computed results.</span>
+<span class="sd">    :raises ValueError: If x or y is invalid.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>

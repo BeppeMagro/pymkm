@@ -306,11 +306,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_run_energy_let_task</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wrapper function for task execution in parallel pools.</span>
-<span class="sd">    </span>
-<span class="sd">    :param func: Callable to execute.</span>
-<span class="sd">    :param args: Arguments for the callable.</span>
-<span class="sd">    :returns: Result of func(*args).</span>
+<span class="sd">    Internal wrapper for multiprocessing task execution.</span>
+
+<span class="sd">    :param func: Callable function to execute.</span>
+<span class="sd">    :type func: Callable</span>
+<span class="sd">    :param args: Tuple of arguments for the function.</span>
+<span class="sd">    :type args: tuple</span>
+<span class="sd">    :return: Output of func(*args)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
 
@@ -321,18 +323,18 @@
     <span class="n">atomic_number</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute microdosimetric quantities for a single (energy, LET) pair.</span>
+<span class="sd">    Compute specific energies for one (energy, LET) pair.</span>
 
-<span class="sd">    :param params: Flattened MKTableParameters as a dictionary.</span>
+<span class="sd">    :param params: Flattened MKTableParameters dictionary.</span>
 <span class="sd">    :type params: dict</span>
-<span class="sd">    :param energy: Kinetic energy per nucleon (MeV/u).</span>
+<span class="sd">    :param energy: Kinetic energy per nucleon [MeV/u].</span>
 <span class="sd">    :type energy: float</span>
-<span class="sd">    :param let: LET value in MeV/μm.</span>
+<span class="sd">    :param let: Linear energy transfer [MeV/cm].</span>
 <span class="sd">    :type let: float</span>
-<span class="sd">    :param atomic_number: Atomic number Z of the ion.</span>
+<span class="sd">    :param atomic_number: Atomic number of the ion.</span>
 <span class="sd">    :type atomic_number: int</span>
 
-<span class="sd">    :returns: Dictionary of computed quantities (z̄*, optionally z̄_d, z̄_n).</span>
+<span class="sd">    :return: Dictionary of computed microdosimetric quantities.</span>
 <span class="sd">    :rtype: dict</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">track</span> <span class="o">=</span> <span class="n">ParticleTrack</span><span class="p">(</span>
@@ -417,7 +419,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_compute_for_ion</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">MKTable</span><span class="p">,</span> <span class="n">ion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">integration_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trapz&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute all microdosimetric quantities for a given ion in the table set.</span>
+<span class="sd">    Compute all specific energies for a given ion in the table set.</span>
 
 <span class="sd">    :param ion: Ion identifier (e.g., &quot;C&quot;, &quot;Carbon&quot;, 6).</span>
 <span class="sd">    :type ion: str</span>
@@ -503,25 +505,26 @@
     <span class="n">integration_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trapz&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute microdosimetric tables for the selected ions using MKM or SMK.</span>
+<span class="sd">    Compute per-ion microdosimetric tables using MKM or SMK model.</span>
 
-<span class="sd">    This method orchestrates all steps required to build dose-averaged quantities:</span>
-<span class="sd">    - Optional energy resampling</span>
-<span class="sd">    - z₀ estimation (if not provided)</span>
-<span class="sd">    - Specific energy calculation</span>
-<span class="sd">    - Saturation correction</span>
-<span class="sd">    - Table aggregation per ion</span>
+<span class="sd">    For each ion:</span>
+<span class="sd">      - Retrieves energy–LET grid</span>
+<span class="sd">      - Computes specific energy and dose-averaged quantities</span>
+<span class="sd">      - Applies saturation correction and optional OSMK</span>
+<span class="sd">      - Aggregates into a structured table</span>
 
-<span class="sd">    :param ions: List of ion identifiers to compute. If None, all ions are used.</span>
+<span class="sd">    :param self: MKTable instance.</span>
+<span class="sd">    :type self: MKTable</span>
+<span class="sd">    :param ions: Ion identifiers to compute. If None, all available ions are used.</span>
 <span class="sd">    :type ions: list[str or int], optional</span>
-<span class="sd">    :param energy: Optional custom energy grid for resampling.</span>
+<span class="sd">    :param energy: Custom energy grid for resampling (if any).</span>
 <span class="sd">    :type energy: float or list or np.ndarray, optional</span>
-<span class="sd">    :param parallel: Enable parallel computation using multiple processes.</span>
+<span class="sd">    :param parallel: Whether to enable multiprocessing.</span>
 <span class="sd">    :type parallel: bool</span>
-<span class="sd">    :param integration_method: Integration rule (&#39;trapz&#39;, &#39;simps&#39;, or &#39;quad&#39;).</span>
+<span class="sd">    :param integration_method: Integration scheme (&#39;trapz&#39;, &#39;simps&#39;, &#39;quad&#39;).</span>
 <span class="sd">    :type integration_method: str</span>
 
-<span class="sd">    :raises RuntimeError: If MKTable is not properly initialized.</span>
+<span class="sd">    :raises RuntimeError: If MKTable is not initialized.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>

@@ -284,7 +284,8 @@
 <span class="sd">This module defines the :class:`StoppingPowerTable`, which stores and validates</span>
 <span class="sd">LET vs. energy curves for a given ion in liquid water.</span>
 
-<span class="sd">Features include:</span>
+<span class="sd">Main features</span>
+<span class="sd">-------------</span>
 
 <span class="sd">- Parsing from text files or dictionaries</span>
 <span class="sd">- Interpolation and resampling</span>
@@ -292,6 +293,17 @@
 <span class="sd">- Metadata handling (Z, A, source, ionization potential)</span>
 
 <span class="sd">This class serves as the core data structure for model computations.</span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+
+<span class="sd">&gt;&gt;&gt; from pymkm.io.stopping_power import StoppingPowerTable</span>
+<span class="sd">&gt;&gt;&gt; spt = StoppingPowerTable.from_txt(&quot;defaults/mstar_3_12/Z06_A12_Carbon.txt&quot;)</span>
+<span class="sd">&gt;&gt;&gt; spt.ion_symbol</span>
+<span class="sd">&#39;C&#39;</span>
+<span class="sd">&gt;&gt;&gt; spt.energy[:3]</span>
+<span class="sd">array([1.0, 2.0, 3.0])</span>
+<span class="sd">&gt;&gt;&gt; spt.plot(show=False)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -322,9 +334,13 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_lookup_table</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Retrieve the ion properties lookup table (https://ciaaw.org/atomic-weights.htm)</span>
-<span class="sd">        </span>
-<span class="sd">        :returns: A dictionary mapping element names to their properties (symbol, Z, A, color).</span>
+<span class="sd">        Retrieve the ion properties lookup table used to resolve ion metadata.</span>
+<span class="sd">    </span>
+<span class="sd">        The table maps element names (e.g., &quot;Carbon&quot;) to their symbol, atomic number,</span>
+<span class="sd">        mass number, and display color. Based on IUPAC reference data from:</span>
+<span class="sd">        https://ciaaw.org/atomic-weights.htm</span>
+<span class="sd">    </span>
+<span class="sd">        :returns: A dictionary with element names as keys and their properties as nested dictionaries.</span>
 <span class="sd">        :rtype: dict[str, dict[str, int]]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">load_lookup_table</span><span class="p">()</span></div>
@@ -343,11 +359,11 @@
 <span class="sd">        :param let: Corresponding LET values in MeV/cm.</span>
 <span class="sd">        :type let: np.ndarray</span>
 <span class="sd">        :param mass_number: Optional mass number override.</span>
-<span class="sd">        :type mass_number: int, optional</span>
+<span class="sd">        :type mass_number: Optional[int]</span>
 <span class="sd">        :param source_program: Optional name of the source that provided the data.</span>
-<span class="sd">        :type source_program: str, optional</span>
+<span class="sd">        :type source_program: Optional[str]</span>
 <span class="sd">        :param ionization_potential: Optional ionization potential of the medium.</span>
-<span class="sd">        :type ionization_potential: float, optional</span>
+<span class="sd">        :type ionization_potential: Optional[float]</span>
 <span class="sd">    </span>
 <span class="sd">        :raises TypeError: If ion_input is not a valid type.</span>
 <span class="sd">        :raises ValueError: If ion cannot be resolved in the lookup table.</span>
@@ -491,7 +507,7 @@
 <span class="sd">        Plot stopping power (LET) as a function of energy.</span>
 <span class="sd">    </span>
 <span class="sd">        :param label: Optional label for the plot legend.</span>
-<span class="sd">        :type label: str, optional</span>
+<span class="sd">        :type label: Optional[str]</span>
 <span class="sd">        :param show: Whether to call plt.show().</span>
 <span class="sd">        :type show: bool</span>
 <span class="sd">        :param new_figure: If True, create a new figure and title; otherwise, reuse the current axes.</span>
@@ -543,9 +559,9 @@
 <span class="sd">        Delegates to `Interpolator` and supports log-log interpolation.</span>
 <span class="sd">    </span>
 <span class="sd">        :param energy: Energy values at which to compute LET.</span>
-<span class="sd">        :type energy: np.ndarray, optional</span>
+<span class="sd">        :type energy: Optional[np.ndarray]</span>
 <span class="sd">        :param let: LET values at which to compute corresponding energies.</span>
-<span class="sd">        :type let: np.ndarray, optional</span>
+<span class="sd">        :type let: Optional[np.ndarray]</span>
 <span class="sd">        :param loglog: Whether to perform interpolation in log-log space.</span>
 <span class="sd">        :type loglog: bool</span>
 <span class="sd">    </span>

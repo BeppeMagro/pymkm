@@ -298,15 +298,9 @@ Implements <a class="reference internal" href="pymkm.physics.particle_track.html
 dose distributions around ion tracks using the Scholz-Kraft and Kiefer-Chatterjee formalisms.</p></li>
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">specific_energy</span></code>:
 Provides the <a class="reference internal" href="pymkm.physics.specific_energy.html#pymkm.physics.specific_energy.SpecificEnergy" title="pymkm.physics.specific_energy.SpecificEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpecificEnergy</span></code></a> class to compute
-microdosimetric specific energy quantities, including z(b), z₀, saturation-corrected
+microdosimetric specific energy quantities, including single-event saturation-corrected
 values, and dose-averaged specific energy.</p></li>
 </ul>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
-<p>These modules form the computational core of pyMKM and are typically used by
-higher-level interfaces to build LET tables, calculate saturation corrections,
-or derive biologically effective doses.</p>
 </section>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymkm.physics.ParticleTrack">
@@ -343,27 +337,19 @@ If None, a default grid is generated from energy and penumbra radius.</p>
 <dt class="sig sig-object py" id="pymkm.physics.SpecificEnergy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.physics.</span></span><span class="sig-name descname"><span class="pre">SpecificEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.physics.particle_track.html#pymkm.physics.particle_track.ParticleTrack" title="pymkm.physics.particle_track.ParticleTrack"><span class="pre">ParticleTrack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.SpecificEnergy" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Compute microdosimetric specific energy quantities for a single ion track.</p>
-<dl class="simple">
-<dt>This class provides methods for calculating:</dt><dd><ul class="simple">
-<li><p>Single-event specific energy z(b)</p></li>
-<li><p>Saturation parameter z₀</p></li>
-<li><p>Saturation-corrected specific energy z′(b), z_sat(b)</p></li>
-<li><p>Dose-averaged specific energy z̄</p></li>
-</ul>
-</dd>
-</dl>
-<p>The sensitive region is modeled as a cylinder perpendicular to the ion track.</p>
+<p>Compute microdosimetric specific energy quantities from a single ion track.</p>
+<p>Supports MKM/SMK calculations of z₁(b), z′₁(b), z₀, and dose-averaged values.
+The sensitive region is modeled as a cylinder perpendicular to the particle track.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.physics.SpecificEnergy.compute_saturation_parameter">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_saturation_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nucleus_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy.compute_saturation_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.SpecificEnergy.compute_saturation_parameter" title="Link to this definition">¶</a></dt>
-<dd><p>Compute the saturation parameter z₀ for overkill correction.</p>
+<dd><p>Compute the saturation parameter z₀ for MKM overkill correction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>domain_radius</strong> (<em>float</em>) – Radius of the sensitive domain in micrometers.</p></li>
-<li><p><strong>nucleus_radius</strong> (<em>float</em>) – Radius of the nucleus in micrometers.</p></li>
-<li><p><strong>beta0</strong> (<em>float</em>) – Quadratic coefficient β₀ of the LQ model at low LET (Gy⁻²).</p></li>
+<li><p><strong>domain_radius</strong> (<em>float</em>) – Radius of the sensitive domain (e.g. sub-nuclear volume), in μm.</p></li>
+<li><p><strong>nucleus_radius</strong> (<em>float</em>) – Radius of the cell nucleus, in μm.</p></li>
+<li><p><strong>beta0</strong> (<em>float</em>) – β₀ coefficient of the LQ model at low LET (in Gy⁻²).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -373,7 +359,7 @@ If None, a default grid is generated from energy and penumbra radius.</p>
 <dd class="field-odd"><p>float</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If any input is non-positive.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If any input is not strictly positive.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -381,25 +367,36 @@ If None, a default grid is generated from energy and penumbra radius.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.physics.SpecificEnergy.dose_averaged_specific_energy">
 <span class="sig-name descname"><span class="pre">dose_averaged_specific_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_corrected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'square_root'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'trapz'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy.dose_averaged_specific_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.SpecificEnergy.dose_averaged_specific_energy" title="Link to this definition">¶</a></dt>
-<dd><p>Compute the dose-averaged specific energy z̄.</p>
+<dd><p>Compute dose-averaged specific energy: z̄ or z̄′.</p>
+<p>If no saturation correction is applied, computes:</p>
+<blockquote>
+<div><p>z̄ = [ ∫ z₁(b)² * b db ] / [ ∫ z₁(b) * b db ]</p>
+</div></blockquote>
+<dl class="simple">
+<dt>If corrected values z′₁(b) are provided:</dt><dd><ul class="simple">
+<li><p>Square-root model: uses [z′₁(b)]² in the numerator</p></li>
+<li><p>Quadratic model: uses z₁(b) or z₁_sat(b) in the numerator</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>z_array</strong> (<em>np.ndarray</em>) – Uncorrected z(b) values (Gy).</p></li>
-<li><p><strong>b_array</strong> (<em>np.ndarray</em>) – Impact parameter values (μm), must be sorted.</p></li>
-<li><p><strong>z_corrected</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Optional corrected z_eff(b) values.</p></li>
-<li><p><strong>model</strong> (<em>str</em><em>, </em><em>optional</em>) – Correction model (‘square_root’ or ‘quadratic’).</p></li>
-<li><p><strong>integration_method</strong> (<em>str</em><em>, </em><em>optional</em>) – Integration rule to use: ‘trapz’, ‘simps’, or ‘quad’.</p></li>
+<li><p><strong>z_array</strong> (<em>np.ndarray</em>) – Uncorrected single-event specific energy values z₁(b) [Gy].</p></li>
+<li><p><strong>b_array</strong> (<em>np.ndarray</em>) – Impact parameter values [μm], must be sorted.</p></li>
+<li><p><strong>z_corrected</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – Optional corrected values (e.g. z′₁(b) or z₁_sat(b)).</p></li>
+<li><p><strong>model</strong> (<em>str</em>) – Saturation model used if z_corrected is given (‘square_root’ or ‘quadratic’).</p></li>
+<li><p><strong>integration_method</strong> (<em>str</em>) – Integration rule to use: ‘trapz’, ‘simps’, or ‘quad’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dose-averaged specific energy z̄ in Gy.</p>
+<dd class="field-even"><p>Dose-averaged specific energy [Gy].</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If integration method or model is invalid.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If model or integration method is invalid.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -407,23 +404,30 @@ If None, a default grid is generated from energy and penumbra radius.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.physics.SpecificEnergy.saturation_corrected_single_event_specific_energy">
 <span class="sig-name descname"><span class="pre">saturation_corrected_single_event_specific_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'square_root'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy.saturation_corrected_single_event_specific_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.SpecificEnergy.saturation_corrected_single_event_specific_energy" title="Link to this definition">¶</a></dt>
-<dd><p>Apply saturation correction to single-event specific energy.</p>
+<dd><p>Compute z′₁(b): saturation-corrected specific energy from z₁(b) using z₀.</p>
+<dl class="simple">
+<dt>Applies overkill correction to single-event specific energy using either:</dt><dd><ul class="simple">
+<li><p>Square-root model: z′₁(b) = z₀ · sqrt(1 - exp(-[z₁(b)/z₀]²))</p></li>
+<li><p>Quadratic model:   z₁_sat(b) = [z′₁(b)]² / z₁(b)</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>z0</strong> (<em>float</em>) – Saturation parameter z₀ in Gy.</p></li>
-<li><p><strong>z_array</strong> (<em>np.ndarray</em>) – Array of uncorrected z(b) values.</p></li>
-<li><p><strong>model</strong> (<em>str</em><em>, </em><em>optional</em>) – Correction model to use (‘square_root’ or ‘quadratic’).</p></li>
+<li><p><strong>z0</strong> (<em>float</em>) – Saturation parameter z₀ (Gy).</p></li>
+<li><p><strong>z_array</strong> (<em>np.ndarray</em>) – Array of uncorrected z₁(b) values (Gy).</p></li>
+<li><p><strong>model</strong> (<em>str</em>) – Saturation correction model to apply: ‘square_root’ or ‘quadratic’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Array of corrected specific energy values.</p>
+<dd class="field-even"><p>Array of corrected specific energy values: z′₁(b) or z₁_sat(b) (Gy).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If model is unsupported.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If the model is not supported.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -431,22 +435,33 @@ If None, a default grid is generated from energy and penumbra radius.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.physics.SpecificEnergy.single_event_specific_energy">
 <span class="sig-name descname"><span class="pre">single_event_specific_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">impact_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_points_b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_points_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy.single_event_specific_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.SpecificEnergy.single_event_specific_energy" title="Link to this definition">¶</a></dt>
-<dd><p>Compute the single-event specific energy z(b) as a function of impact parameter.</p>
+<dd><p>Compute z₁(b): single-event specific energy as a function of impact parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>impact_parameters</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Optional array of impact parameters in micrometers. If None, a default grid is generated.</p></li>
-<li><p><strong>base_points_b</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of impact parameter points. If None, defaults to internal base setting.</p></li>
-<li><p><strong>base_points_r</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of radial sampling points. If None, defaults to internal base setting.</p></li>
-<li><p><strong>parallel</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to parallelize over impact parameters.</p></li>
-<li><p><strong>return_time</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to also return elapsed wall time in seconds.</p></li>
+<li><p><strong>impact_parameters</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – Optional array of impact parameters b (in μm).</p></li>
+<li><p><strong>base_points_b</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of sampling points for the b grid.</p></li>
+<li><p><strong>base_points_r</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of radial integration points per b.</p></li>
+<li><p><strong>parallel</strong> (<em>bool</em>) – If True, evaluates all b values in parallel using threads.</p></li>
+<li><p><strong>return_time</strong> (<em>bool</em>) – If True, returns the computation time in seconds.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Tuple of (z_array, b_array) or (z_array, b_array, elapsed_time).</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>If <cite>return_time</cite> is False: tuple (z_array, b_array)</p></li>
+<li><p>If <cite>return_time</cite> is True: tuple (z_array, b_array, elapsed_time)</p></li>
+</ul>
+<p>where:
+- z_array: specific energy per event at each b [Gy]
+- b_array: impact parameter values [μm]
+- elapsed_time: wall-clock time in seconds [s]</p>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[np.ndarray, np.ndarray] or tuple[np.ndarray, np.ndarray, float]</p>
+<dd class="field-odd"><p>Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, float]]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If impact_parameters are invalid.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -536,7 +551,6 @@ If None, a default grid is generated from energy and penumbra radius.</p>
             <ul>
 <li><a class="reference internal" href="#">pymkm.physics</a><ul>
 <li><a class="reference internal" href="#modules">Modules</a></li>
-<li><a class="reference internal" href="#usage">Usage</a></li>
 <li><a class="reference internal" href="#pymkm.physics.ParticleTrack"><code class="docutils literal notranslate"><span class="pre">ParticleTrack</span></code></a><ul>
 <li><a class="reference internal" href="#pymkm.physics.ParticleTrack.initial_local_dose"><code class="docutils literal notranslate"><span class="pre">ParticleTrack.initial_local_dose()</span></code></a></li>
 </ul>

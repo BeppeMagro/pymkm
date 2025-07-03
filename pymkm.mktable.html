@@ -287,31 +287,35 @@
           <section id="module-pymkm.mktable">
 <span id="pymkm-mktable"></span><h1>pymkm.mktable<a class="headerlink" href="#module-pymkm.mktable" title="Link to this heading">¶</a></h1>
 <p>Tools for generating microdosimetric model tables (MKTable).</p>
-<p>This subpackage provides all components needed to generate, manage,
-analyze and export microdosimetric tables used in the MKM and SMK
-radiobiological models, including the oxygen-enhanced OSMK 2023 variant.</p>
-<p>The core workflow includes configuration of physical and numerical parameters,
-computation of dose-averaged specific energies, optional overkill corrections,
-and export to interoperable formats.</p>
+<p>This subpackage provides all components to compute, analyze, and export
+dose-averaged specific energy quantities used in the Microdosimetric Kinetic Model (MKM),
+its stochastic extension (SMK), and the oxygen-enhanced variant as described by Inaniwa &amp; Kanematsu, (JRR, 2023).</p>
+<p>The typical workflow includes:
+- configuration of model and geometry parameters
+- per-ion table computation from LET data
+- saturation correction and optional hypoxia adjustment
+- interactive visualization and export to clinical-compatible formats</p>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">core</span></code>:
 Defines <a class="reference internal" href="#pymkm.mktable.MKTableParameters" title="pymkm.mktable.core.MKTableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTableParameters</span></code></a> and <a class="reference internal" href="#pymkm.mktable.MKTable" title="pymkm.mktable.core.MKTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTable</span></code></a>,
-which manage model configuration, geometry, stopping power sets, and computed data.</p></li>
+which manage configuration, geometry, stopping power sets, and result storage.</p></li>
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">compute</span></code>:
-Implements <code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code>, the main engine to compute
-microdosimetric quantities (z̄*, z̄_d, z̄_n) from input LET tables.</p></li>
+Implements <code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code>, the numerical engine that builds
+microdosimetric tables from energy–LET inputs.</p></li>
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">plot</span></code>:
-Provides <code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code> for visualizing results for multiple ions,
-with energy or LET on the x-axis.</p></li>
+Adds <code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code>, enabling multi-ion plots of
+dose-averaged specific energy quantities vs. energy or LET.</p></li>
 </ul>
 </section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
-<p>This subpackage is the main user-facing interface of pyMKM.
-After configuring a <a class="reference internal" href="#pymkm.mktable.MKTableParameters" title="pymkm.mktable.core.MKTableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTableParameters</span></code></a> object, you can:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mktable</span> <span class="o">=</span> <span class="n">MKTable</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+<p>This subpackage is the main high-level interface to pyMKM.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.mktable</span><span class="w"> </span><span class="kn">import</span> <span class="n">MKTable</span><span class="p">,</span> <span class="n">MKTableParameters</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">MKTableParameters</span><span class="p">(</span><span class="n">domain_radius</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">nucleus_radius</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">mktable</span> <span class="o">=</span> <span class="n">MKTable</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 <span class="n">mktable</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="n">mktable</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 <span class="n">mktable</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
@@ -329,24 +333,28 @@ result storage, and export functionalities.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.compute">
 <span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'trapz'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pymkm.mktable.MKTable.compute" title="Link to this definition">¶</a></dt>
-<dd><p>Compute microdosimetric tables for the selected ions using MKM or SMK.</p>
-<p>This method orchestrates all steps required to build dose-averaged quantities:
-- Optional energy resampling
-- z₀ estimation (if not provided)
-- Specific energy calculation
-- Saturation correction
-- Table aggregation per ion</p>
+<dd><p>Compute per-ion microdosimetric tables using MKM or SMK model.</p>
+<dl class="simple">
+<dt>For each ion:</dt><dd><ul class="simple">
+<li><p>Retrieves energy–LET grid</p></li>
+<li><p>Computes specific energy and dose-averaged quantities</p></li>
+<li><p>Applies saturation correction and optional OSMK</p></li>
+<li><p>Aggregates into a structured table</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ions</strong> (<em>list</em><em>[</em><em>str</em><em> or </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – List of ion identifiers to compute. If None, all ions are used.</p></li>
-<li><p><strong>energy</strong> (<em>float</em><em> or </em><em>list</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – Optional custom energy grid for resampling.</p></li>
-<li><p><strong>parallel</strong> (<em>bool</em>) – Enable parallel computation using multiple processes.</p></li>
-<li><p><strong>integration_method</strong> (<em>str</em>) – Integration rule (‘trapz’, ‘simps’, or ‘quad’).</p></li>
+<li><p><strong>self</strong> (<a class="reference internal" href="#pymkm.mktable.MKTable" title="pymkm.mktable.MKTable"><em>MKTable</em></a>) – MKTable instance.</p></li>
+<li><p><strong>ions</strong> (<em>list</em><em>[</em><em>str</em><em> or </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Ion identifiers to compute. If None, all available ions are used.</p></li>
+<li><p><strong>energy</strong> (<em>float</em><em> or </em><em>list</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – Custom energy grid for resampling (if any).</p></li>
+<li><p><strong>parallel</strong> (<em>bool</em>) – Whether to enable multiprocessing.</p></li>
+<li><p><strong>integration_method</strong> (<em>str</em>) – Integration scheme (‘trapz’, ‘simps’, ‘quad’).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>RuntimeError</strong> – If MKTable is not properly initialized.</p>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If MKTable is not initialized.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -354,13 +362,14 @@ result storage, and export functionalities.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.display">
 <span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preview_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/mktable/core.html#MKTable.display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.mktable.MKTable.display" title="Link to this definition">¶</a></dt>
-<dd><p>Display summaries and previews of all ion-specific results.</p>
+<dd><p>Print a formatted preview of the computed tables for all ions.</p>
+<p>Shows metadata, model parameters, and head/tail of each ion’s table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>preview_rows</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of top/bottom rows to show per ion.</p>
+<dd class="field-odd"><p><strong>preview_rows</strong> (<em>int</em>) – Number of rows to display from start and end of each table.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If no results are available.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If no tables have been computed.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -388,13 +397,13 @@ result storage, and export functionalities.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.load">
 <span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/mktable/core.html#MKTable.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.mktable.MKTable.load" title="Link to this definition">¶</a></dt>
-<dd><p>Load MKTable data from a pickle file.</p>
+<dd><p>Load previously saved MKTable results from a pickle file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em> or </em><em>Path</em>) – Path to the pickle file.</p>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em> or </em><em>Path</em>) – Path to the .pkl file containing saved table data.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>FileNotFoundError</strong> – If the file does not exist.</p>
+<dd class="field-even"><p><strong>FileNotFoundError</strong> – If the specified file does not exist.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -416,20 +425,27 @@ result storage, and export functionalities.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.plot">
 <span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'energy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'z_bar_star_domain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymkm.mktable.MKTable.plot" title="Link to this definition">¶</a></dt>
-<dd><p>Plot microdosimetric quantities from the MKTable for one or more ions.</p>
+<dd><p>Plot microdosimetric quantities from the MKTable.</p>
+<dl class="simple">
+<dt>Supported axes:</dt><dd><ul class="simple">
+<li><p>x: ‘energy’ [MeV/u] or ‘let’ [MeV/cm]</p></li>
+<li><p>y: ‘z_bar_star_domain’, ‘z_bar_domain’, or ‘z_bar_nucleus’ [Gy] (z̄*, z̄_d, and z̄_n)</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ions</strong> (<em>list</em><em>[</em><em>str</em><em> or </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – List of ion identifiers (e.g., ‘C’, 6, ‘Carbon’). If None, all ions are plotted.</p></li>
 <li><p><strong>x</strong> (<em>str</em>) – Quantity for the x-axis (‘energy’ or ‘let’).</p></li>
-<li><p><strong>y</strong> (<em>str</em>) – Quantity for the y-axis (‘z_bar_star_domain’, ‘z_bar_domain’, or ‘z_bar_nucleus’).</p></li>
-<li><p><strong>verbose</strong> (<em>bool</em>) – If True, displays model configuration details on the plot.</p></li>
+<li><p><strong>y</strong> (<em>str</em>) – Quantity for the y-axis (must match a column in MKTable results).</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – If True, display model and geometry parameters inside the plot.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>RuntimeError</strong> – If no results are available in MKTable.</p></li>
-<li><p><strong>ValueError</strong> – If invalid column names are provided.</p></li>
+<li><p><strong>RuntimeError</strong> – If MKTable has no computed results.</p></li>
+<li><p><strong>ValueError</strong> – If x or y is invalid.</p></li>
 </ul>
 </dd>
 </dl>
@@ -438,7 +454,7 @@ result storage, and export functionalities.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.save">
 <span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/mktable/core.html#MKTable.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.mktable.MKTable.save" title="Link to this definition">¶</a></dt>
-<dd><p>Save the MKTable to a pickle file.</p>
+<dd><p>Save the computed MKTable results to a pickle file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Optional output file path. If None, uses default name.</p>
@@ -452,10 +468,12 @@ result storage, and export functionalities.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.summary">
 <span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/mktable/core.html#MKTable.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.mktable.MKTable.summary" title="Link to this definition">¶</a></dt>
-<dd><p>Print a tabulated summary of current MKTable configuration.</p>
+<dd><p>Print a summary of the current MKTable configuration.</p>
+<p>Displays model type, physical parameters, and sampling settings.
+If verbose is True, lists available ions and technical details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, includes technical and ion-specific settings.</p>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, include detailed configuration info.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -464,19 +482,54 @@ result storage, and export functionalities.</p>
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.write_txt">
 <span class="sig-name descname"><span class="pre">write_txt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'classic'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'stochastic'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_atomic_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/mktable/core.html#MKTable.write_txt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.mktable.MKTable.write_txt" title="Link to this definition">¶</a></dt>
 <dd><p>Export results to a .txt file compatible with external tools.</p>
+<p>Required <cite>params</cite> depend on the selected model:</p>
+<dl class="simple">
+<dt>For model=”classic” (MKM):</dt><dd><dl class="simple">
+<dt>Required:</dt><dd><ul class="simple">
+<li><p>“CellType”: str</p></li>
+<li><p>“Alpha_0”: float</p></li>
+</ul>
+</dd>
+<dt>Optional:</dt><dd><ul class="simple">
+<li><p>“Beta”: float</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>For model=”stochastic” (SMK):</dt><dd><dl class="simple">
+<dt>Required:</dt><dd><ul class="simple">
+<li><p>“CellType”: str</p></li>
+<li><p>“Alpha_ref”: float</p></li>
+<li><p>“Beta_ref”: float</p></li>
+<li><p>“Alpha0”: float</p></li>
+</ul>
+</dd>
+<dt>Optional:</dt><dd><ul class="simple">
+<li><p>“Beta0”: float</p></li>
+<li><p>“scale_factor”: float (defaults to 1.0)</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>params</strong> (<em>dict</em>) – Required metadata for export (model-dependent).</p></li>
-<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Optional path to output .txt file.</p></li>
-<li><p><strong>model</strong> (<em>Literal</em><em>[</em><em>&quot;classic&quot;</em><em>, </em><em>&quot;stochastic&quot;</em><em>]</em><em>, </em><em>optional</em>) – Explicitly set export model: ‘classic’ or ‘stochastic’.</p></li>
+<li><p><strong>params</strong> (<em>dict</em>) – Model-dependent metadata to include in the header.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – Output file path. If None, a default name is generated.</p></li>
+<li><p><strong>model</strong> (<em>Literal</em><em>[</em><em>&quot;classic&quot;</em><em>, </em><em>&quot;stochastic&quot;</em><em>]</em><em>, </em><em>optional</em>) – Force output format. If None, inferred from configuration.</p></li>
 <li><p><strong>max_atomic_number</strong> (<em>int</em>) – Maximum Z for ions to include.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>ValueError</strong> – If required params or results are missing.</p></li>
-<li><p><strong>KeyError</strong> – If unexpected or missing keys are in <cite>params</cite>.</p></li>
+<li><p><strong>ValueError</strong> – <ul>
+<li><p>If no data has been computed yet.</p></li>
+<li><p>If required parameters are missing.</p></li>
+<li><p>If atomic number exceeds available Z range.</p></li>
+</ul>
+</p></li>
+<li><p><strong>KeyError</strong> – If unexpected or invalid keys are present in <cite>params</cite>.</p></li>
 </ul>
 </dd>
 </dl>

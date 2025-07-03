@@ -294,24 +294,28 @@ saturation correction, and optional oxygen-effect scaling (OSMK 2023).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pymkm.mktable.compute.compute">
 <span class="sig-prename descclassname"><span class="pre">pymkm.mktable.compute.</span></span><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTable" title="pymkm.mktable.core.MKTable"><span class="pre">MKTable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'trapz'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pymkm/mktable/compute.html#compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.mktable.compute.compute" title="Link to this definition">¶</a></dt>
-<dd><p>Compute microdosimetric tables for the selected ions using MKM or SMK.</p>
-<p>This method orchestrates all steps required to build dose-averaged quantities:
-- Optional energy resampling
-- z₀ estimation (if not provided)
-- Specific energy calculation
-- Saturation correction
-- Table aggregation per ion</p>
+<dd><p>Compute per-ion microdosimetric tables using MKM or SMK model.</p>
+<dl class="simple">
+<dt>For each ion:</dt><dd><ul class="simple">
+<li><p>Retrieves energy–LET grid</p></li>
+<li><p>Computes specific energy and dose-averaged quantities</p></li>
+<li><p>Applies saturation correction and optional OSMK</p></li>
+<li><p>Aggregates into a structured table</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ions</strong> (<em>list</em><em>[</em><em>str</em><em> or </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – List of ion identifiers to compute. If None, all ions are used.</p></li>
-<li><p><strong>energy</strong> (<em>float</em><em> or </em><em>list</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – Optional custom energy grid for resampling.</p></li>
-<li><p><strong>parallel</strong> (<em>bool</em>) – Enable parallel computation using multiple processes.</p></li>
-<li><p><strong>integration_method</strong> (<em>str</em>) – Integration rule (‘trapz’, ‘simps’, or ‘quad’).</p></li>
+<li><p><strong>self</strong> (<a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTable" title="pymkm.mktable.MKTable"><em>MKTable</em></a>) – MKTable instance.</p></li>
+<li><p><strong>ions</strong> (<em>list</em><em>[</em><em>str</em><em> or </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Ion identifiers to compute. If None, all available ions are used.</p></li>
+<li><p><strong>energy</strong> (<em>float</em><em> or </em><em>list</em><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – Custom energy grid for resampling (if any).</p></li>
+<li><p><strong>parallel</strong> (<em>bool</em>) – Whether to enable multiprocessing.</p></li>
+<li><p><strong>integration_method</strong> (<em>str</em>) – Integration scheme (‘trapz’, ‘simps’, ‘quad’).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>RuntimeError</strong> – If MKTable is not properly initialized.</p>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If MKTable is not initialized.</p>
 </dd>
 </dl>
 </dd></dl>

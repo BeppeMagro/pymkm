@@ -289,7 +289,8 @@
 <p>Representation of stopping power data for individual ions.</p>
 <p>This module defines the <a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a>, which stores and validates
 LET vs. energy curves for a given ion in liquid water.</p>
-<p>Features include:</p>
+<section id="main-features">
+<h2>Main features<a class="headerlink" href="#main-features" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Parsing from text files or dictionaries</p></li>
 <li><p>Interpolation and resampling</p></li>
@@ -297,6 +298,17 @@ LET vs. energy curves for a given ion in liquid water.</p>
 <li><p>Metadata handling (Z, A, source, ionization potential)</p></li>
 </ul>
 <p>This class serves as the core data structure for model computations.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.io.stopping_power</span><span class="w"> </span><span class="kn">import</span> <span class="n">StoppingPowerTable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spt</span> <span class="o">=</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">from_txt</span><span class="p">(</span><span class="s2">&quot;defaults/mstar_3_12/Z06_A12_Carbon.txt&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spt</span><span class="o">.</span><span class="n">ion_symbol</span>
+<span class="go">&#39;C&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spt</span><span class="o">.</span><span class="n">energy</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">array([1.0, 2.0, 3.0])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymkm.io.stopping_power.StoppingPowerTable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.io.stopping_power.</span></span><span class="sig-name descname"><span class="pre">StoppingPowerTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ion_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">let</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_program</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ionization_potential</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.stopping_power.StoppingPowerTable" title="Link to this definition">¶</a></dt>
@@ -375,10 +387,13 @@ LET vs. energy curves for a given ion in liquid water.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.io.stopping_power.StoppingPowerTable.get_lookup_table">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_lookup_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.get_lookup_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.stopping_power.StoppingPowerTable.get_lookup_table" title="Link to this definition">¶</a></dt>
-<dd><p>Retrieve the ion properties lookup table (<a class="reference external" href="https://ciaaw.org/atomic-weights.htm">https://ciaaw.org/atomic-weights.htm</a>)</p>
+<dd><p>Retrieve the ion properties lookup table used to resolve ion metadata.</p>
+<p>The table maps element names (e.g., “Carbon”) to their symbol, atomic number,
+mass number, and display color. Based on IUPAC reference data from:
+<a class="reference external" href="https://ciaaw.org/atomic-weights.htm">https://ciaaw.org/atomic-weights.htm</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary mapping element names to their properties (symbol, Z, A, color).</p>
+<dd class="field-odd"><p>A dictionary with element names as keys and their properties as nested dictionaries.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict[str, dict[str, int]]</p>
@@ -394,8 +409,8 @@ LET vs. energy curves for a given ion in liquid water.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>energy</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Energy values at which to compute LET.</p></li>
-<li><p><strong>let</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – LET values at which to compute corresponding energies.</p></li>
+<li><p><strong>energy</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – Energy values at which to compute LET.</p></li>
+<li><p><strong>let</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – LET values at which to compute corresponding energies.</p></li>
 <li><p><strong>loglog</strong> (<em>bool</em>) – Whether to perform interpolation in log-log space.</p></li>
 </ul>
 </dd>
@@ -429,7 +444,7 @@ LET vs. energy curves for a given ion in liquid water.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em><em>, </em><em>optional</em>) – Optional label for the plot legend.</p></li>
+<li><p><strong>label</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional label for the plot legend.</p></li>
 <li><p><strong>show</strong> (<em>bool</em>) – Whether to call plt.show().</p></li>
 <li><p><strong>new_figure</strong> (<em>bool</em>) – If True, create a new figure and title; otherwise, reuse the current axes.</p></li>
 </ul>
@@ -539,6 +554,7 @@ LET vs. energy curves for a given ion in liquid water.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">pymkm.io.stopping_power</a><ul>
+<li><a class="reference internal" href="#main-features">Main features</a></li>
 <li><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a><ul>
 <li><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable.DEFAULT_TARGET"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.DEFAULT_TARGET</span></code></a></li>
 <li><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable.REQUIRED_DICT_KEYS"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.REQUIRED_DICT_KEYS</span></code></a></li>

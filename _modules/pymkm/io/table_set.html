@@ -279,20 +279,31 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.io.table_set</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Container for managing multiple stopping power tables.</span>
+<span class="sd">Management of multiple ion stopping power tables.</span>
 
-<span class="sd">This module defines the :class:`StoppingPowerTableSet`, a high-level</span>
-<span class="sd">container for multiple :class:`~pymkm.io.stopping_power.StoppingPowerTable`</span>
-<span class="sd">instances.</span>
+<span class="sd">This module defines the :class:`StoppingPowerTableSet`, a high-level container</span>
+<span class="sd">for managing multiple :class:`~pymkm.io.stopping_power.StoppingPowerTable` instances,</span>
+<span class="sd">each representing LET vs. energy data for a different ion in liquid water.</span>
 
-<span class="sd">Main features:</span>
+<span class="sd">Main features</span>
+<span class="sd">-------------</span>
 
-<span class="sd">- Add/remove/get tables via ion name, symbol, or atomic number</span>
-<span class="sd">- Batch resampling, filtering, and plotting</span>
-<span class="sd">- I/O utilities to load/save in JSON or directory-based formats</span>
-<span class="sd">- Support for default sources (e.g., mstar_3_12, geant4_11_3_0)</span>
+<span class="sd">- Add, remove, or retrieve tables by ion name, symbol, or atomic number</span>
+<span class="sd">- Batch interpolation, resampling, filtering, and plotting</span>
+<span class="sd">- JSON and directory-based I/O</span>
+<span class="sd">- Support for internal default sources: ``mstar_3_12``, ``geant4_11_3_0``, ``fluka_2020_0``</span>
 
-<span class="sd">Used by MKTable to supply LET data per ion.</span>
+<span class="sd">Used throughout pyMKM to provide LET data to physical and biological models.</span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+
+<span class="sd">&gt;&gt;&gt; from pymkm.io.table_set import StoppingPowerTableSet</span>
+<span class="sd">&gt;&gt;&gt; s = StoppingPowerTableSet.from_default_source(&quot;mstar_3_12&quot;)</span>
+<span class="sd">&gt;&gt;&gt; sorted(s.get_available_ions())</span>
+<span class="sd">[&#39;Beryllium&#39;, &#39;Boron&#39;, &#39;Carbon&#39;, &#39;Fluorine&#39;, &#39;Helium&#39;, &#39;Hydrogen&#39;,</span>
+<span class="sd"> &#39;Lithium&#39;, &#39;Neon&#39;, &#39;Nitrogen&#39;, &#39;Oxygen&#39;]</span>
+<span class="sd">&gt;&gt;&gt; s.get(&quot;Carbon&quot;).plot(show=False)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
@@ -736,7 +747,7 @@
 <span class="sd">        Plot stopping power curves for one or more ions.</span>
 <span class="sd">    </span>
 <span class="sd">        :param ions: List of ion identifiers to plot. If None, all are plotted.</span>
-<span class="sd">        :type ions: list[str], optional</span>
+<span class="sd">        :type ions: Optional[List[str]]</span>
 <span class="sd">        :param show: Whether to display the plot using plt.show().</span>
 <span class="sd">        :type show: bool</span>
 <span class="sd">        :param single_plot: If True, plot all ions on one figure; otherwise, one figure per ion.</span>

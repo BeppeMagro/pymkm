@@ -279,18 +279,32 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.physics.particle_track</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Radial dose models for charged particle tracks.</span>
+<span class="sd">Radial dose models for charged particle tracks in water.</span>
 
 <span class="sd">This module defines the :class:`ParticleTrack`, which implements two analytical models:</span>
 
-<span class="sd">- Scholz-Kraft model (Phys. Med. Biol., 1996)</span>
-<span class="sd">- Kiefer-Chatterjee model (Radiat. Environ. Biophys., 1988)</span>
+<span class="sd">- Scholz-Kraft model (Adv. Space Res., 1996)</span>
+<span class="sd">- Kiefer-Chatterjee model (Radiat. Environ. Biophys., 1976 and Phys. Med. Biol., 1986)</span>
+
+<span class="sd">For model descriptions and a comparative analysis, see:</span>
+<span class="sd">Elsässer et al., (New J. Phys., 2008)</span>
 
 <span class="sd">Both models compute local dose as a function of radial distance from the ion trajectory,</span>
 <span class="sd">based on physical parameters such as energy, atomic number, LET, and core radius type.</span>
 
 <span class="sd">These dose profiles serve as the basis for computing specific energy deposition</span>
 <span class="sd">in MKM and SMK.</span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+
+<span class="sd">&gt;&gt;&gt; from pymkm.physics.particle_track import ParticleTrack</span>
+<span class="sd">&gt;&gt;&gt; track = ParticleTrack(model_name=&quot;Scholz-Kraft&quot;, energy=100)</span>
+<span class="sd">&gt;&gt;&gt; r, d = track.initial_local_dose()</span>
+<span class="sd">&gt;&gt;&gt; r.shape, d.shape</span>
+<span class="sd">((300,), (300,))</span>
+<span class="sd">&gt;&gt;&gt; d[:3]</span>
+<span class="sd">array([val1, val2, val3])  # sample output</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>

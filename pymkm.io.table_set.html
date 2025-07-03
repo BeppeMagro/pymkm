@@ -286,18 +286,29 @@
         <article role="main" id="furo-main-content">
           <section id="module-pymkm.io.table_set">
 <span id="pymkm-io-table-set"></span><h1>pymkm.io.table_set<a class="headerlink" href="#module-pymkm.io.table_set" title="Link to this heading">¶</a></h1>
-<p>Container for managing multiple stopping power tables.</p>
-<p>This module defines the <a class="reference internal" href="#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a>, a high-level
-container for multiple <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a>
-instances.</p>
-<p>Main features:</p>
+<p>Management of multiple ion stopping power tables.</p>
+<p>This module defines the <a class="reference internal" href="#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a>, a high-level container
+for managing multiple <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> instances,
+each representing LET vs. energy data for a different ion in liquid water.</p>
+<section id="main-features">
+<h2>Main features<a class="headerlink" href="#main-features" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>Add/remove/get tables via ion name, symbol, or atomic number</p></li>
-<li><p>Batch resampling, filtering, and plotting</p></li>
-<li><p>I/O utilities to load/save in JSON or directory-based formats</p></li>
-<li><p>Support for default sources (e.g., mstar_3_12, geant4_11_3_0)</p></li>
+<li><p>Add, remove, or retrieve tables by ion name, symbol, or atomic number</p></li>
+<li><p>Batch interpolation, resampling, filtering, and plotting</p></li>
+<li><p>JSON and directory-based I/O</p></li>
+<li><p>Support for internal default sources: <code class="docutils literal notranslate"><span class="pre">mstar_3_12</span></code>, <code class="docutils literal notranslate"><span class="pre">geant4_11_3_0</span></code>, <code class="docutils literal notranslate"><span class="pre">fluka_2020_0</span></code></p></li>
 </ul>
-<p>Used by MKTable to supply LET data per ion.</p>
+<p>Used throughout pyMKM to provide LET data to physical and biological models.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.io.table_set</span><span class="w"> </span><span class="kn">import</span> <span class="n">StoppingPowerTableSet</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">StoppingPowerTableSet</span><span class="o">.</span><span class="n">from_default_source</span><span class="p">(</span><span class="s2">&quot;mstar_3_12&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_available_ions</span><span class="p">())</span>
+<span class="go">[&#39;Beryllium&#39;, &#39;Boron&#39;, &#39;Carbon&#39;, &#39;Fluorine&#39;, &#39;Helium&#39;, &#39;Hydrogen&#39;,</span>
+<span class="go"> &#39;Lithium&#39;, &#39;Neon&#39;, &#39;Nitrogen&#39;, &#39;Oxygen&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Carbon&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymkm.io.table_set.StoppingPowerTableSet">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.io.table_set.</span></span><span class="sig-name descname"><span class="pre">StoppingPowerTableSet</span></span><a class="reference internal" href="_modules/pymkm/io/table_set.html#StoppingPowerTableSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.table_set.StoppingPowerTableSet" title="Link to this definition">¶</a></dt>
@@ -545,7 +556,7 @@ Each table is a <a class="reference internal" href="pymkm.io.stopping_power.html
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ions</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – List of ion identifiers to plot. If None, all are plotted.</p></li>
+<li><p><strong>ions</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of ion identifiers to plot. If None, all are plotted.</p></li>
 <li><p><strong>show</strong> (<em>bool</em>) – Whether to display the plot using plt.show().</p></li>
 <li><p><strong>single_plot</strong> (<em>bool</em>) – If True, plot all ions on one figure; otherwise, one figure per ion.</p></li>
 </ul>
@@ -682,6 +693,7 @@ Each table is a <a class="reference internal" href="pymkm.io.stopping_power.html
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">pymkm.io.table_set</a><ul>
+<li><a class="reference internal" href="#main-features">Main features</a></li>
 <li><a class="reference internal" href="#pymkm.io.table_set.StoppingPowerTableSet"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet</span></code></a><ul>
 <li><a class="reference internal" href="#pymkm.io.table_set.StoppingPowerTableSet.add"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.add()</span></code></a></li>
 <li><a class="reference internal" href="#pymkm.io.table_set.StoppingPowerTableSet.filter_by_ions"><code class="docutils literal notranslate"><span class="pre">StoppingPowerTableSet.filter_by_ions()</span></code></a></li>
