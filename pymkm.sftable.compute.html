@@ -286,18 +286,16 @@
         <article role="main" id="furo-main-content">
           <section id="module-pymkm.sftable.compute">
 <span id="pymkm-sftable-compute"></span><h1>pymkm.sftable.compute<a class="headerlink" href="#module-pymkm.sftable.compute" title="Link to this heading">¶</a></h1>
-<p>Computation of survival fraction curves from microdosimetric input.</p>
-<p>This module defines the method <code class="xref py py-meth docutils literal notranslate"><span class="pre">SFTable.compute()</span></code>, which calculates survival
-fraction (SF) values over a dose grid based on results from an MKTable.</p>
+<p>Computation of survival fraction (SF) curves from microdosimetric input.</p>
+<p>This module defines the method <code class="xref py py-meth docutils literal notranslate"><span class="pre">SFTable.compute()</span></code>, which calculates SF
+values over a dose grid based on results from an MKTable.</p>
 <p>Supported models include:</p>
 <ul class="simple">
 <li><p>MKM (classic)</p></li>
 <li><p>SMK (stochastic)</p></li>
 <li><p>OSMK 2021/2023 (stochastic with oxygen correction)</p></li>
 </ul>
-<p>The method supports optional interpolation, recomputation, and model switching.
-Results are stored in <code class="xref py py-attr docutils literal notranslate"><span class="pre">SFTable.table</span></code> as a list of survival fraction curves
-and associated metadata.</p>
+<p>The method supports optional interpolation, recomputation, and model switching.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="pymkm.sftable.compute.compute">
 <span class="sig-prename descclassname"><span class="pre">pymkm.sftable.compute.</span></span><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.sftable.core.html#pymkm.sftable.core.SFTable" title="pymkm.sftable.core.SFTable"><span class="pre">SFTable</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">let</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_recompute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'classic'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'stochastic'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_oxygen_effect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pymkm/sftable/compute.html#compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.sftable.compute.compute" title="Link to this definition">¶</a></dt>
@@ -307,11 +305,11 @@ and associated metadata.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ion</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – Ion name, symbol, or atomic number.</p></li>
-<li><p><strong>energy</strong> (<em>float</em><em>, </em><em>optional</em>) – Kinetic energy per nucleon [MeV/u]. Interpolated if not provided.</p></li>
-<li><p><strong>let</strong> (<em>float</em><em>, </em><em>optional</em>) – Linear energy transfer [MeV/cm]. Interpolated if not provided.</p></li>
-<li><p><strong>force_recompute</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, recomputes results even if cached data exist.</p></li>
+<li><p><strong>energy</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Kinetic energy per nucleon [MeV/u]. Interpolated if not provided.</p></li>
+<li><p><strong>let</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Linear energy transfer [MeV/cm]. Interpolated if not provided.</p></li>
+<li><p><strong>force_recompute</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If True, recomputes results even if cached data exist.</p></li>
 <li><p><strong>model</strong> (<em>Literal</em><em>[</em><em>&quot;classic&quot;</em><em>, </em><em>&quot;stochastic&quot;</em><em>]</em><em>, </em><em>optional</em>) – Microdosimetric model to use: “classic” or “stochastic”.</p></li>
-<li><p><strong>apply_oxygen_effect</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply OSMK model. Ignored if model != “stochastic”.</p></li>
+<li><p><strong>apply_oxygen_effect</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to apply OSMK model. Ignored if model != “stochastic”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -321,24 +319,6 @@ and associated metadata.</p>
 <dd class="field-odd"><p><strong>ValueError</strong> – If inputs are inconsistent, or if required parameters are missing.</p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The output is stored in <code class="docutils literal notranslate"><span class="pre">self.table</span></code> as a list of dictionaries. Each dictionary contains:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">params</span></code>: a dict with keys <code class="docutils literal notranslate"><span class="pre">ion</span></code>, <code class="docutils literal notranslate"><span class="pre">energy</span></code>, <code class="docutils literal notranslate"><span class="pre">let</span></code>, <code class="docutils literal notranslate"><span class="pre">model</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">calculation_info</span></code>: “computed” or “interpolated”.</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">data</span></code>: a pandas DataFrame with two columns:</dt><dd><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">dose</span></code>: Dose grid [Gy].</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">survival_fraction</span></code>: Survival probability at each dose.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-<p>This attribute is overwritten each time <code class="docutils literal notranslate"><span class="pre">compute()</span></code> is called.
-To visualize results, use the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> method.</p>
-</div>
 </dd></dl>
 
 </section>

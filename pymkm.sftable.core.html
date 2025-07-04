@@ -294,8 +294,7 @@ survival fraction curves using MKM, SMK, or OSMK models.</p></li>
 <li><p><a class="reference internal" href="#pymkm.sftable.core.SFTable" title="pymkm.sftable.core.SFTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SFTable</span></code></a>: A computation manager that integrates MKTable results with
 biological model parameters to produce survival fraction outputs.</p></li>
 </ul>
-<p>The module supports OSMK 2021 and OSMK 2023 models, including automatic validation
-of inputs and display utilities.</p>
+<p>The module supports OSMK 2021 and OSMK 2023 models.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymkm.sftable.core.SFTable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.sftable.core.</span></span><span class="sig-name descname"><span class="pre">SFTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pymkm.sftable.core.SFTableParameters" title="pymkm.sftable.core.SFTableParameters"><span class="pre">SFTableParameters</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/sftable/core.html#SFTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.sftable.core.SFTable" title="Link to this definition">¶</a></dt>
@@ -309,11 +308,11 @@ of inputs and display utilities.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ion</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – Ion name, symbol, or atomic number.</p></li>
-<li><p><strong>energy</strong> (<em>float</em><em>, </em><em>optional</em>) – Kinetic energy per nucleon [MeV/u]. Interpolated if not provided.</p></li>
-<li><p><strong>let</strong> (<em>float</em><em>, </em><em>optional</em>) – Linear energy transfer [MeV/cm]. Interpolated if not provided.</p></li>
-<li><p><strong>force_recompute</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, recomputes results even if cached data exist.</p></li>
+<li><p><strong>energy</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Kinetic energy per nucleon [MeV/u]. Interpolated if not provided.</p></li>
+<li><p><strong>let</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Linear energy transfer [MeV/cm]. Interpolated if not provided.</p></li>
+<li><p><strong>force_recompute</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If True, recomputes results even if cached data exist.</p></li>
 <li><p><strong>model</strong> (<em>Literal</em><em>[</em><em>&quot;classic&quot;</em><em>, </em><em>&quot;stochastic&quot;</em><em>]</em><em>, </em><em>optional</em>) – Microdosimetric model to use: “classic” or “stochastic”.</p></li>
-<li><p><strong>apply_oxygen_effect</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply OSMK model. Ignored if model != “stochastic”.</p></li>
+<li><p><strong>apply_oxygen_effect</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to apply OSMK model. Ignored if model != “stochastic”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -323,24 +322,6 @@ of inputs and display utilities.</p>
 <dd class="field-odd"><p><strong>ValueError</strong> – If inputs are inconsistent, or if required parameters are missing.</p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The output is stored in <code class="docutils literal notranslate"><span class="pre">self.table</span></code> as a list of dictionaries. Each dictionary contains:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">params</span></code>: a dict with keys <code class="docutils literal notranslate"><span class="pre">ion</span></code>, <code class="docutils literal notranslate"><span class="pre">energy</span></code>, <code class="docutils literal notranslate"><span class="pre">let</span></code>, <code class="docutils literal notranslate"><span class="pre">model</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">calculation_info</span></code>: “computed” or “interpolated”.</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">data</span></code>: a pandas DataFrame with two columns:</dt><dd><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">dose</span></code>: Dose grid [Gy].</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">survival_fraction</span></code>: Survival probability at each dose.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-<p>This attribute is overwritten each time <code class="docutils literal notranslate"><span class="pre">compute()</span></code> is called.
-To visualize results, use the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> method.</p>
-</div>
 </dd></dl>
 
 <dl class="py method">
@@ -359,13 +340,13 @@ To visualize results, use the <code class="docutils literal notranslate"><span c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.sftable.core.SFTable.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">let</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymkm.sftable.core.SFTable.plot" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">let</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymkm.sftable.core.SFTable.plot" title="Link to this definition">¶</a></dt>
 <dd><p>Plot survival fraction curves stored in <code class="docutils literal notranslate"><span class="pre">self.table</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, displays model parameters on the plot.</p></li>
-<li><p><strong>let</strong> (<em>float</em><em>, </em><em>optional</em>) – LET value [MeV/cm] to filter the curves to plot. If None, all results are shown.</p></li>
+<li><p><strong>verbose</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If True, displays model parameters on the plot.</p></li>
+<li><p><strong>let</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – LET value [MeV/cm] to filter the curves to plot. If None, all results are shown.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -392,19 +373,19 @@ To visualize results, use the <code class="docutils literal notranslate"><span c
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mktable</strong> (<a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTable" title="pymkm.mktable.core.MKTable"><em>pymkm.mktable.core.MKTable</em></a>) – Precomputed MKTable containing specific energy values.</p></li>
-<li><p><strong>alpha0</strong> (<em>float</em><em>, </em><em>optional</em>) – Total linear coefficient α₀ in the LQ model [Gy⁻¹]. Required unless both <cite>alphaL</cite> and <cite>alphaS</cite> are provided.</p></li>
-<li><p><strong>beta0</strong> (<em>float</em><em>, </em><em>optional</em>) – Quadratic coefficient β₀ in the LQ model [Gy⁻²]. If not provided, it is retrieved from <cite>mktable.parameters</cite>.</p></li>
-<li><p><strong>dose_grid</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Dose grid [Gy] over which to compute survival fractions. Defaults to np.arange(0, 15.5, 0.5).</p></li>
-<li><p><strong>alphaL</strong> (<em>float</em><em>, </em><em>optional</em>) – Linear coefficient for lethal lesions [Gy⁻¹] (OSMK 2021/2023).</p></li>
-<li><p><strong>alphaS</strong> (<em>float</em><em>, </em><em>optional</em>) – Linear coefficient for sublethal lesions [Gy⁻¹] (OSMK 2021/2023).</p></li>
-<li><p><strong>zR</strong> (<em>float</em><em>, </em><em>optional</em>) – Radiation quality–dependent oxygen parameter [Gy] (OSMK 2021 only).</p></li>
-<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – Exponent for R_max(zd) expression (OSMK 2021 only).</p></li>
-<li><p><strong>Rm</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum value of R_max (OSMK 2021 only).</p></li>
-<li><p><strong>f_rd_max</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum domain radius scaling factor under hypoxia (OSMK 2023 only).</p></li>
-<li><p><strong>f_z0_max</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum saturation parameter scaling factor under hypoxia (OSMK 2023 only).</p></li>
-<li><p><strong>Rmax</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum radioresistance at pO₂ = 0 mmHg (OSMK 2023 only).</p></li>
-<li><p><strong>K</strong> (<em>float</em><em>, </em><em>optional</em>) – Oxygen pressure [mmHg] at which R(pO₂) = (1 + Rmax)/2. Default is 3.0 (Inaniwa 2021).</p></li>
-<li><p><strong>pO2</strong> (<em>float</em><em>, </em><em>optional</em>) – Oxygen partial pressure [mmHg] at which to evaluate the oxygen effect.
+<li><p><strong>alpha0</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Total linear coefficient α₀ in the LQ model [Gy⁻¹]. Required unless both <cite>alphaL</cite> and <cite>alphaS</cite> are provided.</p></li>
+<li><p><strong>beta0</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Quadratic coefficient β₀ in the LQ model [Gy⁻²]. If not provided, it is retrieved from <cite>mktable.parameters</cite>.</p></li>
+<li><p><strong>dose_grid</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – Dose grid [Gy] over which to compute survival fractions. Defaults to np.arange(0, 15.5, 0.5).</p></li>
+<li><p><strong>alphaL</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Linear coefficient for lethal lesions [Gy⁻¹] (OSMK 2021/2023).</p></li>
+<li><p><strong>alphaS</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Linear coefficient for sublethal lesions [Gy⁻¹] (OSMK 2021/2023).</p></li>
+<li><p><strong>zR</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Radiation quality–dependent oxygen parameter [Gy] (OSMK 2021 only).</p></li>
+<li><p><strong>gamma</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Exponent for R_max(zd) expression (OSMK 2021 only).</p></li>
+<li><p><strong>Rm</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Minimum value of R_max (OSMK 2021 only).</p></li>
+<li><p><strong>f_rd_max</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Maximum domain radius scaling factor under hypoxia (OSMK 2023 only).</p></li>
+<li><p><strong>f_z0_max</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Maximum saturation parameter scaling factor under hypoxia (OSMK 2023 only).</p></li>
+<li><p><strong>Rmax</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Maximum radioresistance at pO₂ = 0 mmHg (OSMK 2023 only).</p></li>
+<li><p><strong>K</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Oxygen pressure [mmHg] at which R(pO₂) = (1 + Rmax)/2. Default is 3.0 (Inaniwa 2021).</p></li>
+<li><p><strong>pO2</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Oxygen partial pressure [mmHg] at which to evaluate the oxygen effect.
 Enables OSMK mode if set.</p></li>
 </ul>
 </dd>

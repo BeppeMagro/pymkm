@@ -288,8 +288,7 @@
 <span class="sd">- :class:`SFTable`: A computation manager that integrates MKTable results with</span>
 <span class="sd">  biological model parameters to produce survival fraction outputs.</span>
 
-<span class="sd">The module supports OSMK 2021 and OSMK 2023 models, including automatic validation</span>
-<span class="sd">of inputs and display utilities.</span>
+<span class="sd">The module supports OSMK 2021 and OSMK 2023 models.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
@@ -311,44 +310,44 @@
 <span class="sd">    :type mktable: pymkm.mktable.core.MKTable</span>
 
 <span class="sd">    :param alpha0: Total linear coefficient α₀ in the LQ model [Gy⁻¹]. Required unless both `alphaL` and `alphaS` are provided.</span>
-<span class="sd">    :type alpha0: float, optional</span>
+<span class="sd">    :type alpha0: Optional[float]</span>
 
 <span class="sd">    :param beta0: Quadratic coefficient β₀ in the LQ model [Gy⁻²]. If not provided, it is retrieved from `mktable.parameters`.</span>
-<span class="sd">    :type beta0: float, optional</span>
+<span class="sd">    :type beta0: Optional[float]</span>
 
 <span class="sd">    :param dose_grid: Dose grid [Gy] over which to compute survival fractions. Defaults to np.arange(0, 15.5, 0.5).</span>
-<span class="sd">    :type dose_grid: np.ndarray, optional</span>
+<span class="sd">    :type dose_grid: Optional[np.ndarray]</span>
 
 <span class="sd">    :param alphaL: Linear coefficient for lethal lesions [Gy⁻¹] (OSMK 2021/2023).</span>
-<span class="sd">    :type alphaL: float, optional</span>
+<span class="sd">    :type alphaL: Optional[float]</span>
 
 <span class="sd">    :param alphaS: Linear coefficient for sublethal lesions [Gy⁻¹] (OSMK 2021/2023).</span>
-<span class="sd">    :type alphaS: float, optional</span>
+<span class="sd">    :type alphaS: Optional[float]</span>
 
 <span class="sd">    :param zR: Radiation quality–dependent oxygen parameter [Gy] (OSMK 2021 only).</span>
-<span class="sd">    :type zR: float, optional</span>
+<span class="sd">    :type zR: Optional[float]</span>
 
 <span class="sd">    :param gamma: Exponent for R_max(zd) expression (OSMK 2021 only).</span>
-<span class="sd">    :type gamma: float, optional</span>
+<span class="sd">    :type gamma: Optional[float]</span>
 
 <span class="sd">    :param Rm: Minimum value of R_max (OSMK 2021 only).</span>
-<span class="sd">    :type Rm: float, optional</span>
+<span class="sd">    :type Rm: Optional[float]</span>
 
 <span class="sd">    :param f_rd_max: Maximum domain radius scaling factor under hypoxia (OSMK 2023 only).</span>
-<span class="sd">    :type f_rd_max: float, optional</span>
+<span class="sd">    :type f_rd_max: Optional[float]</span>
 
 <span class="sd">    :param f_z0_max: Maximum saturation parameter scaling factor under hypoxia (OSMK 2023 only).</span>
-<span class="sd">    :type f_z0_max: float, optional</span>
+<span class="sd">    :type f_z0_max: Optional[float]</span>
 
 <span class="sd">    :param Rmax: Maximum radioresistance at pO₂ = 0 mmHg (OSMK 2023 only).</span>
-<span class="sd">    :type Rmax: float, optional</span>
+<span class="sd">    :type Rmax: Optional[float]</span>
 
 <span class="sd">    :param K: Oxygen pressure [mmHg] at which R(pO₂) = (1 + Rmax)/2. Default is 3.0 (Inaniwa 2021).</span>
-<span class="sd">    :type K: float, optional</span>
+<span class="sd">    :type K: Optional[float]</span>
 
 <span class="sd">    :param pO2: Oxygen partial pressure [mmHg] at which to evaluate the oxygen effect.</span>
 <span class="sd">        Enables OSMK mode if set.</span>
-<span class="sd">    :type pO2: float, optional</span>
+<span class="sd">    :type pO2: Optional[float]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">mktable</span><span class="p">:</span> <span class="n">MKTable</span>
@@ -462,7 +461,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the SFTable with a set of biological and model parameters.</span>
 <span class="sd">        </span>
-<span class="sd">        :param parameters: An SFTableParameters instance containing model, geometry, and oxygen settings.</span>
+<span class="sd">        :param parameters: An SFTableParameters instance containing model and oxygen settings.</span>
 <span class="sd">        :type parameters: SFTableParameters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">parameters</span>

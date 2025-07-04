@@ -279,10 +279,10 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.sftable.compute</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Computation of survival fraction curves from microdosimetric input.</span>
+<span class="sd">Computation of survival fraction (SF) curves from microdosimetric input.</span>
 
-<span class="sd">This module defines the method :meth:`SFTable.compute`, which calculates survival</span>
-<span class="sd">fraction (SF) values over a dose grid based on results from an MKTable.</span>
+<span class="sd">This module defines the method :meth:`SFTable.compute`, which calculates SF</span>
+<span class="sd">values over a dose grid based on results from an MKTable.</span>
 
 <span class="sd">Supported models include:</span>
 
@@ -291,8 +291,6 @@
 <span class="sd">- OSMK 2021/2023 (stochastic with oxygen correction)</span>
 
 <span class="sd">The method supports optional interpolation, recomputation, and model switching.</span>
-<span class="sd">Results are stored in :attr:`SFTable.table` as a list of survival fraction curves</span>
-<span class="sd">and associated metadata.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SFTable</span>
@@ -329,32 +327,19 @@
 <span class="sd">    :param ion: Ion name, symbol, or atomic number.</span>
 <span class="sd">    :type ion: Union[str, int]</span>
 <span class="sd">    :param energy: Kinetic energy per nucleon [MeV/u]. Interpolated if not provided.</span>
-<span class="sd">    :type energy: float, optional</span>
+<span class="sd">    :type energy: Optional[float]</span>
 <span class="sd">    :param let: Linear energy transfer [MeV/cm]. Interpolated if not provided.</span>
-<span class="sd">    :type let: float, optional</span>
+<span class="sd">    :type let: Optional[float]</span>
 <span class="sd">    :param force_recompute: If True, recomputes results even if cached data exist.</span>
-<span class="sd">    :type force_recompute: bool, optional</span>
+<span class="sd">    :type force_recompute: Optional[bool]</span>
 <span class="sd">    :param model: Microdosimetric model to use: &quot;classic&quot; or &quot;stochastic&quot;.</span>
 <span class="sd">    :type model: Literal[&quot;classic&quot;, &quot;stochastic&quot;], optional</span>
 <span class="sd">    :param apply_oxygen_effect: Whether to apply OSMK model. Ignored if model != &quot;stochastic&quot;.</span>
-<span class="sd">    :type apply_oxygen_effect: bool, optional</span>
+<span class="sd">    :type apply_oxygen_effect: Optional[bool]</span>
 <span class="sd">    </span>
 <span class="sd">    :returns: None. Results are stored in ``self.table``.</span>
 <span class="sd">    </span>
 <span class="sd">    :raises ValueError: If inputs are inconsistent, or if required parameters are missing.</span>
-<span class="sd">    </span>
-<span class="sd">    .. note::</span>
-<span class="sd">    </span>
-<span class="sd">       The output is stored in ``self.table`` as a list of dictionaries. Each dictionary contains:</span>
-<span class="sd">    </span>
-<span class="sd">       - ``params``: a dict with keys ``ion``, ``energy``, ``let``, ``model``.</span>
-<span class="sd">       - ``calculation_info``: &quot;computed&quot; or &quot;interpolated&quot;.</span>
-<span class="sd">       - ``data``: a pandas DataFrame with two columns:</span>
-<span class="sd">           - ``dose``: Dose grid [Gy].</span>
-<span class="sd">           - ``survival_fraction``: Survival probability at each dose.</span>
-<span class="sd">    </span>
-<span class="sd">       This attribute is overwritten each time ``compute()`` is called.</span>
-<span class="sd">       To visualize results, use the ``plot()`` method.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
    
     <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> 
