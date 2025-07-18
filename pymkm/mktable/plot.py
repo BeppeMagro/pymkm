@@ -83,11 +83,6 @@ def plot(self: MKTable,
         "energy": "Energy [MeV/u]",
         "let": "LET [MeV/cm]"
     }
-    source_info_map = {
-        "default:fluka_2020_0": "FLUKA 2020",
-        "default:geant4_11_3_0": "Geant4 11.3",
-        "default:mstar_3_12": "MSTAR 3.12"
-    }
 
     x_min, x_max = np.inf, -np.inf
     y_max = -np.inf
@@ -99,7 +94,7 @@ def plot(self: MKTable,
         x_max = max(x_max, np.max(x_vals))
         y_max = max(y_max, np.max(y_vals))
 
-    plot_title = f"Source: {source_info_map[self.sp_table_set.source_info]}, Track model: {self.params.model_name} (Core: {self.params.core_radius_type})"
+    plot_title = f"Source: {self.sp_table_set.source_info}, Track model: {self.params.model_name} (Core: {self.params.core_radius_type})"
 
     _, ax = plt.subplots(figsize=(12, 8))
     for ion in ions:
