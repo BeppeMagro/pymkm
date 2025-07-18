@@ -7,17 +7,19 @@ def main():
 
     # Select input parameters for rbe tables generation
     cell_type = "HSG"
-    atomic_numbers = [2, 6, 8] # He, C, O
-    atomic_numbers = [2] # He
-    source = "geant4_11_3_0" # Source code used to generate stopping power tables (available with pymkm: fluka_2020_0, geant4_11_3_0 or mstar_3_12)
+    # atomic_numbers = [2, 6, 8] # He, C, O
+    atomic_numbers = [2]
+    source = "mstar_3_12" # Source code used to generate stopping power tables (available with pymkm: fluka_2020_0, geant4_11_3_0 or mstar_3_12)
     model_name = "Kiefer-Chatterjee" # Amorphous track structure model (Kiefer-Chatterjee or Scholz-Kraft)
     core_type = "energy-dependent" # Core radius model ('constant' or 'energy-dependent')
     domain_radius = 0.23 # μm
     nucleus_radius = 8.1 # μm
+    alpha0 = 0.12 # 1/Gy
     beta0 = 0.043 # 1/Gy^2
     z0 = 88.0 # Gy
-
-    title = f"Source: {source}, Track model: {model_name} (Core: {core_type})"
+    alpharef = 0.12 # 1/Gy
+    betaref = 0.0615 # 1/Gy^2
+    clinicl_scale_factor = 1.0
 
     print(f"\nGenerating stopping power tables for ion Z = {atomic_numbers} (using source '{source}')...")
     sp_table_set = StoppingPowerTableSet.from_default_source(source).filter_by_ions(atomic_numbers)
@@ -41,23 +43,17 @@ def main():
     # Plot model result using built-in method
     mk_table.plot(ions=atomic_numbers, x="energy", y="z_bar_star_domain", verbose=True)
 
-    plt.title(title, fontsize=14)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-    # plt.pause(0.1)
-
     # Write to .txt file 
     path = "./SMK_table.txt"
     params = {
-        "CellType": "HSG",
-        "Alpha_ref": 0.12,
-        "Beta_ref": 0.0615,
-        "scale_factor": 1.0,
-        "Alpha0": 0.12,
-        "Beta0": 0.043
+        "CellType": cell_type,
+        "Alpha_ref": alpharef,
+        "Beta_ref": betaref,
+        "scale_factor": clinicl_scale_factor,
+        "Alpha0": alpha0,
+        "Beta0": beta0
     }
-    mk_table.write_txt(model="stochastic", params=params, filename=path, max_atomic_number=2)
+    mk_table.write_txt(model="stochastic", params=params, filename=path, max_atomic_number=max(atomic_numbers))
 
 
 if __name__ == "__main__":

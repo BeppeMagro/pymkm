@@ -21,7 +21,8 @@ plt.rcParams.update({
     "ytick.major.width": 1.2,
     "xtick.major.size": 5,
     "ytick.major.size": 5,
-    "legend.fontsize": 14
+    "legend.fontsize": 14,
+    "axes.titlesize": 16
 })
 import numpy as np
 
@@ -66,7 +67,6 @@ def plot(self: MKTable,
     :raises RuntimeError: If no results are available in MKTable.
     :raises ValueError: If invalid column names are provided.
     """
-    
     if not self.table:
         raise RuntimeError("No computed results found. Please run 'compute()' before plotting.")
 
@@ -83,6 +83,11 @@ def plot(self: MKTable,
         "energy": "Energy [MeV/u]",
         "let": "LET [MeV/cm]"
     }
+    source_info_map = {
+        "default:fluka_2020_0": "FLUKA 2020",
+        "default:geant4_11_3_0": "Geant4 11.3",
+        "default:mstar_3_12": "MSTAR 3.12"
+    }
 
     x_min, x_max = np.inf, -np.inf
     y_max = -np.inf
@@ -94,20 +99,23 @@ def plot(self: MKTable,
         x_max = max(x_max, np.max(x_vals))
         y_max = max(y_max, np.max(y_vals))
 
-    plt.figure(figsize=(12, 8))
+    plot_title = f"Source: {source_info_map[self.sp_table_set.source_info]}, Track model: {self.params.model_name} (Core: {self.params.core_radius_type})"
+
+    _, ax = plt.subplots(figsize=(12, 8))
     for ion in ions:
         df = self.table[ion]["data"]
         ion_symbol = self.sp_table_set.get(ion).ion_symbol
         color = self.sp_table_set.get(ion).color
-        plt.plot(df[x], df[y], label=ion_symbol, color=color, alpha=0.5, linewidth=6)
+        ax.plot(df[x], df[y], label=ion_symbol, color=color, alpha=0.5, linewidth=6)
 
-    plt.xlabel(x_label_map.get(x, x.capitalize()))
-    plt.ylabel(y_label_map.get(y, y.replace('_', ' ').capitalize()))
-    plt.xscale("log" if x == "energy" else "linear")
-    plt.ylim(0, y_max * 1.05)
-    plt.xlim(x_min, x_max)
-    plt.grid(True, which='both', linestyle='--', alpha=0.1)
-    plt.legend()
+    ax.set_xlabel(x_label_map.get(x, x.capitalize()))
+    ax.set_ylabel(y_label_map.get(y, y.replace('_', ' ').capitalize()))
+    ax.set_xscale("log" if x == "energy" else "linear")
+    ax.set_ylim(0, y_max * 1.05)
+    ax.set_xlim(x_min, x_max)
+    ax.set_title(plot_title, wrap=True)
+    ax.grid(True, which='both', linestyle='--', alpha=0.1)
+    ax.legend()
 
     if verbose:
         param_dict = vars(self.params)
@@ -124,12 +132,11 @@ def plot(self: MKTable,
         model_version = f"Model: {self.model_version}"
         info_lines = [model_version] + [f"{k}: {v} {unit}" for k, v, unit in main_parameters]
         info_text = "\n".join(info_lines)
-        ax = plt.gca()
         ax.text(0.05, 0.05, info_text, transform=ax.transAxes,
                 fontsize=14, verticalalignment='bottom', horizontalalignment='left',
                 bbox=dict(facecolor='white', alpha=0.85, edgecolor='black', boxstyle='round'))
+        
     plt.tight_layout()    
-    plt.show(block=False)
-    plt.pause(0.1)
+    plt.show()
 
 MKTable.plot = plot
