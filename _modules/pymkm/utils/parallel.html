@@ -294,24 +294,31 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <div class="viewcode-block" id="optimal_worker_count">
 <a class="viewcode-back" href="../../../pymkm.utils.parallel.html#pymkm.utils.parallel.optimal_worker_count">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">optimal_worker_count</span><span class="p">(</span><span class="n">workload</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">optimal_worker_count</span><span class="p">(</span><span class="n">workload</span><span class="p">,</span> <span class="n">user_requested</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Determine the optimal number of worker processes based on workload size and CPU availability.</span>
+<span class="sd">    Determine the optimal number of worker processes based on workload size, CPU availability,</span>
+<span class="sd">    and optionally user input.</span>
 
 <span class="sd">    If the workload size is smaller than the number of CPU cores, the number of workers</span>
 <span class="sd">    is set equal to the workload size. Otherwise, one core is reserved to avoid oversubscription.</span>
 
+<span class="sd">    If a user-requested value is provided, it will be respected unless it exceeds CPU-1.</span>
+
 <span class="sd">    :param workload: The total number of tasks to process. Can be an iterable or an integer.</span>
 <span class="sd">    :type workload: iterable or int</span>
+<span class="sd">    :param user_requested: Optional user-defined number of workers.</span>
+<span class="sd">    :type user_requested: int or None</span>
 
 <span class="sd">    :returns: Optimal number of worker processes (always at least 1).</span>
 <span class="sd">    :rtype: int</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Get the number of CPU cores available, fallback to 1 if not detected</span>
     <span class="n">num_cores</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    <span class="n">max_workers</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_cores</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Determine size of workload</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">workload</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">workload</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">workload</span><span class="p">)</span>
@@ -320,8 +327,16 @@
     <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">1</span>
 
-    <span class="c1"># Use all elements if fewer than available cores; else, reserve one core</span>
-    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_cores</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span></div>
+    <span class="k">if</span> <span class="n">user_requested</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">capped</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">user_requested</span><span class="p">,</span> <span class="n">max_workers</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">user_requested</span> <span class="o">&gt;</span> <span class="n">max_workers</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Requested </span><span class="si">{</span><span class="n">user_requested</span><span class="si">}</span><span class="s2"> workers, but only </span><span class="si">{</span><span class="n">max_workers</span><span class="si">}</span><span class="s2"> allowed based on CPU count. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="n">capped</span><span class="si">}</span><span class="s2"> workers instead.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">capped</span>
+
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">max_workers</span><span class="p">)</span></div>
 
 </pre></div>
         </article>
