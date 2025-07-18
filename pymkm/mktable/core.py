@@ -416,7 +416,7 @@ class MKTable:
             f.write(f"CellType  {params['CellType']}\n\n")
     
             if model == "classic":
-                f.write(f"Parameter Alpha_0 {params['Alpha_0']:.3f}\n")
+                f.write(f"Parameter Alpha_0 {params['Alpha_0']:.5f}\n")
                 beta_param = params.get("Beta")
                 beta_obj = self.params.beta0
     
@@ -428,18 +428,18 @@ class MKTable:
                             f"Mismatch between beta0 in params ({beta_param}) and self.params ({beta_obj})"
                         )
                 beta = beta_obj if beta_obj is not None else beta_param
-                f.write(f"Parameter Beta {beta:.3f}\n")
-                f.write(f"Parameter DomainRadius {self.params.domain_radius:.3f}\n")
-                f.write(f"Parameter NucleusRadius {self.params.nucleus_radius:.3f}\n\n")
+                f.write(f"Parameter Beta {beta:.5f}\n")
+                f.write(f"Parameter DomainRadius {self.params.domain_radius:.5f}\n")
+                f.write(f"Parameter NucleusRadius {self.params.nucleus_radius:.5f}\n\n")
     
             else:  # stochastic
-                f.write(f"Parameter Alpha_ref {params['Alpha_ref']:.3f}\n")
-                f.write(f"Parameter Beta_ref {params['Beta_ref']:.3f}\n")
+                f.write(f"Parameter Alpha_ref {params['Alpha_ref']:.5f}\n")
+                f.write(f"Parameter Beta_ref {params['Beta_ref']:.5f}\n")
                 scale = params.get("scale_factor", 1.0)
                 if 'scale_factor' not in params:
                     warnings.warn("'scale_factor' not provided, defaulting to 1.00")
                 f.write(f"Parameter scale_factor {scale:.2f}\n")
-                f.write(f"Parameter Alpha0 {params['Alpha0']:.3f}\n")
+                f.write(f"Parameter Alpha0 {params['Alpha0']:.5f}\n")
     
                 beta_param = params.get("Beta0")
                 beta_obj = self.params.beta0
@@ -451,7 +451,7 @@ class MKTable:
                             f"Mismatch between Beta0 in params ({beta_param}) and self.params ({beta_obj})"
                         )
                 beta = beta_obj if beta_obj is not None else beta_param
-                f.write(f"Parameter Beta0 {beta:.3f}\n\n")
+                f.write(f"Parameter Beta0 {beta:.5f}\n\n")
     
             for ion_key, result in self.table.items():
                 Z = self.table[ion_key]["stopping_power_info"].get("atomic_number")
@@ -479,7 +479,7 @@ class MKTable:
                         )
                 f.write("\n")
     
-        print(f"📝 Table written to: {path}")
+        print(f"Table written to: {path}")
     
         
         

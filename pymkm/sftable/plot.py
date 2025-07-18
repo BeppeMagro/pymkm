@@ -67,19 +67,19 @@ def plot(self, *, verbose: bool = False, let: float = None):
 
         color = self.params.mktable.sp_table_set.get(ion).color
 
-        plt.figure(figsize=(10, 6))
-        plt.plot(df["dose"], df["survival_fraction"],
+        _, ax = plt.subplots(figsize=(12, 8))
+        ax.plot(df["dose"], df["survival_fraction"],
                  label=f"{ion} | E={energy} MeV/u",
                  color=color, alpha=0.5, linewidth=6)
 
-        plt.xlabel("Dose [Gy]", fontsize=14)
-        plt.ylabel("Survival fraction", fontsize=14)
-        plt.title(f"Survival Curve\nLET = {let_val} MeV/cm | Model: {model}", fontsize=16)
-        plt.grid(True, linestyle='--', alpha=0.5)
-        plt.xlim(left=0)
-        plt.ylim(top=1)
-        plt.yscale("log")
-        plt.legend()
+        ax.set_xlabel("Dose [Gy]", fontsize=14)
+        ax.set_ylabel("Survival fraction", fontsize=14)
+        ax.set_title(f"Survival Curve\nLET = {let_val} MeV/cm | Model: {model}", fontsize=16)
+        ax.grid(True, linestyle='--', alpha=0.5)
+        ax.set_xlim(left=0)
+        ax.set_ylim(top=1)
+        ax.set_yscale("log")
+        ax.legend()
 
         if verbose and idx == 0:
             alpha0 = self.params.alpha0
@@ -92,13 +92,12 @@ def plot(self, *, verbose: bool = False, let: float = None):
         
             info_text = (
                 f"Model: {model}\n"
-                f"α₀: {alpha0:.3f} Gy⁻¹\n"
-                f"β₀: {beta0:.3f} Gy⁻²\n"
+                f"α₀: {alpha0:.4f} Gy⁻¹\n"
+                f"β₀: {beta0:.4f} Gy⁻²\n"
                 f"Calculation: {calc_info}"
                 f"{osmk_info}"
             )
 
-            ax = plt.gca()
             ax.text(0.05, 0.05, info_text, transform=ax.transAxes,
                     fontsize=12, verticalalignment='bottom', horizontalalignment='left',
                     bbox=dict(facecolor='white', alpha=0.8, edgecolor='black', boxstyle='round'))
