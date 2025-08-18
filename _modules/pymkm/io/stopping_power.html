@@ -322,6 +322,9 @@
 <span class="sd">    Class for representing and handling stopping power (LET) data for ions in liquid water.</span>
 <span class="sd">    </span>
 <span class="sd">    Provides utilities for data validation, plotting, serialization, and interpolation.</span>
+<span class="sd">    :attr REQUIRED_HEADER_KEYS: Required header keys for parsing stopping power tables.</span>
+<span class="sd">    :attr REQUIRED_DICT_KEYS: Required dictionary keys for internal representation.</span>
+<span class="sd">    :attr DEFAULT_TARGET: Default target material (``WATER_LIQUID``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="n">REQUIRED_HEADER_KEYS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Ion&quot;</span><span class="p">,</span> <span class="s2">&quot;AtomicNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;MassNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;SourceProgram&quot;</span><span class="p">,</span> <span class="s2">&quot;IonizationPotential&quot;</span><span class="p">,</span> <span class="s2">&quot;Target&quot;</span><span class="p">]</span>
@@ -478,7 +481,7 @@
 <span class="sd">        Create a :class:`StoppingPowerTable` instance from a serialized dictionary.</span>
 
 <span class="sd">        The input dictionary must contain at least the required fields</span>
-<span class="sd">        listed in ``StoppingPowerTable.REQUIRED_DICT_KEYS``, also listed below.</span>
+<span class="sd">        listed in :attr:`StoppingPowerTable.REQUIRED_DICT_KEYS`, also listed below.</span>
 
 <span class="sd">        **Expected dictionary format**::</span>
 
@@ -604,8 +607,8 @@
 <span class="sd">        Create a :class:`StoppingPowerTable` from a .txt file containing header and data.</span>
 
 <span class="sd">        The input file must contain a header with required fields and a data section</span>
-<span class="sd">        with energy and LET values. The header must include the Ion, AtomicNumber,</span>
-<span class="sd">        MassNumber, SourceProgram, IonizationPotential, and Target (case-sensitive) fields.</span>
+<span class="sd">        with energy and LET values. The header must include the ``Ion``, ``AtomicNumber``,</span>
+<span class="sd">        ``MassNumber``, ``SourceProgram``, ``IonizationPotential``, and ``Target`` (case-sensitive) fields.</span>
 
 <span class="sd">        *Example header*::</span>
 <span class="sd">           </span>

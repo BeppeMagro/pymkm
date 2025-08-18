@@ -455,8 +455,7 @@
 <span class="sd">        Create a :class:`StoppingPowerTableSet` set from a dictionary. </span>
 
 <span class="sd">        The input dictionary must map ion names to serialized </span>
-<span class="sd">        stopping power tables. Each table dictionary must be a valid input for :meth:`StoppingPowerTable.from_dict`.</span>
-<span class="sd">        See :meth:`StoppingPowerTable.from_dict` for details on the expected format.</span>
+<span class="sd">        stopping power tables. Each table dictionary must be a valid input for :meth:`~pymkm.io.stopping_power.StoppingPowerTable.from_dict`.</span>
 
 <span class="sd">        **Expected dictionary format**::</span>
 
@@ -502,7 +501,7 @@
 
 <span class="sd">        The JSON must represent a dictionary mapping ion names to</span>
 <span class="sd">        serialized stopping power tables. Each table must follow the</span>
-<span class="sd">        format accepted by :meth:`StoppingPowerTable.from_dict`.</span>
+<span class="sd">        format accepted by :meth:`~pymkm.io.stopping_power.StoppingPowerTable.from_dict`.</span>
 <span class="sd">    </span>
 <span class="sd">        :param json_str: JSON-formatted table set string.</span>
 <span class="sd">        :type json_str: str</span>
@@ -544,7 +543,7 @@
 <span class="sd">        Load :class:`StoppingPowerTable` instances from `.txt` files in a directory.</span>
 
 <span class="sd">        Each file must follow the format described in</span>
-<span class="sd">        :meth:`StoppingPowerTable.from_txt`.</span>
+<span class="sd">        :meth:`~pymkm.io.stopping_power.StoppingPowerTable.from_txt`.</span>
 <span class="sd">    </span>
 <span class="sd">        :param directory: Path to directory containing .txt files.</span>
 <span class="sd">        :type directory: str</span>
