@@ -346,13 +346,26 @@ LET vs. energy curves for a given ion in liquid water.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.io.stopping_power.StoppingPowerTable.from_dict">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><span class="pre">StoppingPowerTable</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.stopping_power.StoppingPowerTable.from_dict" title="Link to this definition">¶</a></dt>
-<dd><p>Create a StoppingPowerTable instance from a dictionary.</p>
+<dd><p>Create a <a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> instance from a serialized dictionary.</p>
+<p>The input dictionary must contain at least the required fields
+listed in <code class="docutils literal notranslate"><span class="pre">StoppingPowerTable.REQUIRED_DICT_KEYS</span></code>, also listed below.</p>
+<p><strong>Expected dictionary format</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;ion_symbol&quot;</span><span class="p">:</span> <span class="n">H</span><span class="p">,</span>                    <span class="c1"># str, symbol of the ion</span>
+    <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                    <span class="c1"># list/array of float, energy values (MeV/u)</span>
+    <span class="s2">&quot;let&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                       <span class="c1"># list/array of float, corresponding stopping powers (MeV/cm)</span>
+    <span class="s2">&quot;mass_number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>                   <span class="c1"># int, mass number of the ion</span>
+    <span class="s2">&quot;source_program&quot;</span><span class="p">:</span> <span class="n">fluka_2020_0</span>      <span class="c1"># str, program used to generate data</span>
+    <span class="s2">&quot;ionization_potential&quot;</span><span class="p">:</span> <span class="mf">75.0</span>        <span class="c1"># float, ionization potential (eV)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Dictionary containing all required fields.</p>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Dictionary containing serialized table data.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>StoppingPowerTable instance.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> instance.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable">StoppingPowerTable</a></p>
@@ -366,13 +379,27 @@ LET vs. energy curves for a given ion in liquid water.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.io.stopping_power.StoppingPowerTable.from_txt">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_txt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><span class="pre">StoppingPowerTable</span></a></span></span><a class="reference internal" href="_modules/pymkm/io/stopping_power.html#StoppingPowerTable.from_txt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.io.stopping_power.StoppingPowerTable.from_txt" title="Link to this definition">¶</a></dt>
-<dd><p>Create a StoppingPowerTable from a .txt file containing header and data.</p>
+<dd><p>Create a <a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> from a .txt file containing header and data.</p>
+<p>The input file must contain a header with required fields and a data section
+with energy and LET values. The header must include the Ion, AtomicNumber,
+MassNumber, SourceProgram, IonizationPotential, and Target (case-sensitive) fields.</p>
+<p><em>Example header</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SourceProgram</span><span class="o">=</span><span class="n">fluka_2020_0</span>
+<span class="n">Target</span><span class="o">=</span><span class="n">WATER_LIQUID</span>
+<span class="n">IonizationPotential</span><span class="o">=</span><span class="mf">77.0</span>
+<span class="n">Ion</span><span class="o">=</span><span class="n">H</span>
+<span class="n">AtomicNumber</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">MassNumber</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>The data section should contain energy and LET values in two columns, expressed
+in MeV/u and MeV/cm respectively.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Path to the input .txt file.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>StoppingPowerTable instance parsed from file.</p>
+<dd class="field-even"><p><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoppingPowerTable</span></code></a> instance parsed from file.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#pymkm.io.stopping_power.StoppingPowerTable" title="pymkm.io.stopping_power.StoppingPowerTable">StoppingPowerTable</a></p>

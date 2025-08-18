@@ -452,8 +452,20 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a table set from a dictionary.</span>
-<span class="sd">        </span>
+<span class="sd">        Create a :class:`StoppingPowerTableSet` set from a dictionary. </span>
+
+<span class="sd">        The input dictionary must map ion names to serialized </span>
+<span class="sd">        stopping power tables. Each table dictionary must be a valid input for :meth:`StoppingPowerTable.from_dict`.</span>
+<span class="sd">        See :meth:`StoppingPowerTable.from_dict` for details on the expected format.</span>
+
+<span class="sd">        **Expected dictionary format**::</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;Hydrogen&quot;: {},</span>
+<span class="sd">                &quot;Helium&quot;: {},</span>
+<span class="sd">                ...</span>
+<span class="sd">            }</span>
+
 <span class="sd">        :param data: Dictionary mapping ion names to serialized tables.</span>
 <span class="sd">        :type data: dict[str, dict]</span>
 <span class="sd">        </span>
@@ -486,12 +498,16 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a table set from a JSON string.</span>
+<span class="sd">        Create a :class:`StoppingPowerTableSet` from a JSON string.</span>
+
+<span class="sd">        The JSON must represent a dictionary mapping ion names to</span>
+<span class="sd">        serialized stopping power tables. Each table must follow the</span>
+<span class="sd">        format accepted by :meth:`StoppingPowerTable.from_dict`.</span>
 <span class="sd">    </span>
 <span class="sd">        :param json_str: JSON-formatted table set string.</span>
 <span class="sd">        :type json_str: str</span>
 <span class="sd">    </span>
-<span class="sd">        :returns: Deserialized StoppingPowerTableSet.</span>
+<span class="sd">        :returns: Deserialized :class:`StoppingPowerTableSet`.</span>
 <span class="sd">        :rtype: StoppingPowerTableSet</span>
 <span class="sd">        &quot;&quot;&quot;</span>        
         <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
@@ -525,7 +541,10 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_directory</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Load all .txt stopping power tables from a directory.</span>
+<span class="sd">        Load :class:`StoppingPowerTable` instances from `.txt` files in a directory.</span>
+
+<span class="sd">        Each file must follow the format described in</span>
+<span class="sd">        :meth:`StoppingPowerTable.from_txt`.</span>
 <span class="sd">    </span>
 <span class="sd">        :param directory: Path to directory containing .txt files.</span>
 <span class="sd">        :type directory: str</span>

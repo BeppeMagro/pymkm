@@ -475,14 +475,28 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTable&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a StoppingPowerTable instance from a dictionary.</span>
-<span class="sd">        </span>
-<span class="sd">        :param data: Dictionary containing all required fields.</span>
+<span class="sd">        Create a :class:`StoppingPowerTable` instance from a serialized dictionary.</span>
+
+<span class="sd">        The input dictionary must contain at least the required fields</span>
+<span class="sd">        listed in ``StoppingPowerTable.REQUIRED_DICT_KEYS``, also listed below.</span>
+
+<span class="sd">        **Expected dictionary format**::</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;ion_symbol&quot;: H,                    # str, symbol of the ion</span>
+<span class="sd">                &quot;energy&quot;: [...],                    # list/array of float, energy values (MeV/u)</span>
+<span class="sd">                &quot;let&quot;: [...],                       # list/array of float, corresponding stopping powers (MeV/cm)</span>
+<span class="sd">                &quot;mass_number&quot;: 1,                   # int, mass number of the ion</span>
+<span class="sd">                &quot;source_program&quot;: fluka_2020_0      # str, program used to generate data</span>
+<span class="sd">                &quot;ionization_potential&quot;: 75.0        # float, ionization potential (eV)</span>
+<span class="sd">            }</span>
+
+<span class="sd">        :param data: Dictionary containing serialized table data.</span>
 <span class="sd">        :type data: dict</span>
-<span class="sd">        </span>
-<span class="sd">        :returns: StoppingPowerTable instance.</span>
+
+<span class="sd">        :returns: A new :class:`StoppingPowerTable` instance.</span>
 <span class="sd">        :rtype: StoppingPowerTable</span>
-<span class="sd">        </span>
+
 <span class="sd">        :raises ValueError: If required fields are missing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">REQUIRED_DICT_KEYS</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
@@ -587,12 +601,28 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_txt</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTable&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a StoppingPowerTable from a .txt file containing header and data.</span>
+<span class="sd">        Create a :class:`StoppingPowerTable` from a .txt file containing header and data.</span>
+
+<span class="sd">        The input file must contain a header with required fields and a data section</span>
+<span class="sd">        with energy and LET values. The header must include the Ion, AtomicNumber,</span>
+<span class="sd">        MassNumber, SourceProgram, IonizationPotential, and Target (case-sensitive) fields.</span>
+
+<span class="sd">        *Example header*::</span>
+<span class="sd">           </span>
+<span class="sd">            SourceProgram=fluka_2020_0</span>
+<span class="sd">            Target=WATER_LIQUID</span>
+<span class="sd">            IonizationPotential=77.0</span>
+<span class="sd">            Ion=H</span>
+<span class="sd">            AtomicNumber=1</span>
+<span class="sd">            MassNumber=1</span>
+
+<span class="sd">        The data section should contain energy and LET values in two columns, expressed</span>
+<span class="sd">        in MeV/u and MeV/cm respectively.</span>
 <span class="sd">        </span>
 <span class="sd">        :param filepath: Path to the input .txt file.</span>
 <span class="sd">        :type filepath: str</span>
 <span class="sd">        </span>
-<span class="sd">        :returns: StoppingPowerTable instance parsed from file.</span>
+<span class="sd">        :returns: :class:`StoppingPowerTable` instance parsed from file.</span>
 <span class="sd">        :rtype: StoppingPowerTable</span>
 <span class="sd">        </span>
 <span class="sd">        :raises ValueError: If required header keys or element definitions are missing or inconsistent.</span>
