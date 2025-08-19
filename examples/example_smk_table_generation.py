@@ -25,7 +25,7 @@ def main():
     core_type = "energy-dependent" # Core radius model ('constant' or 'energy-dependent')
     domain_radius = 0.23 # μm
     nucleus_radius = 8.1 # μm
-    alpha0 = 0.12 # 1/Gy^2
+    alpha0 = 0.12 # 1/Gy
     beta0 = 0.043 # 1/Gy^2
     z0 = 88.0 # Gy
     alpha_ref = 0.12 # 1/Gy

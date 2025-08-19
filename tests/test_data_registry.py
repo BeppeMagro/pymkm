@@ -54,62 +54,15 @@ def test_get_default_txt_path_exception(monkeypatch):
 # Tests for get_available_sources
 
 def test_get_available_sources_files(monkeypatch):
-    required_header = "\n".join([
-        "Ion=H",
-        "AtomicNumber=1",
-        "MassNumber=1",
-        "SourceProgram=test",
-        "IonizationPotential=1.0",
-        "Target=water"
-    ])
-    class FakeTxtFile:
-        def __init__(self, name):
-            self.name = name
-            self.suffix = ".txt"
-        def __truediv__(self, other):
-            # For __init__.py check
-            return FakeInitFile(self.name)
-        def is_file(self):
-            return True
-        def iterdir(self):
-            return []
-        def open(self, mode):
-            from io import StringIO
-            return StringIO(required_header)
-        def __str__(self):
-            return self.name
-
-    class FakeInitFile:
-        def __init__(self, parent_name):
-            self.parent_name = parent_name
-        def is_file(self):
-            return True
-
     class FakeDir:
         def __init__(self, name):
             self.name = name
         def is_dir(self):
             return True
-        def __truediv__(self, other):
-            # For __init__.py check
-            return FakeInitFile(self.name)
-        def iterdir(self):
-            # Return one .txt file
-            return [FakeTxtFile(self.name + ".txt")]
-        @property
-        def name(self):
-            return self._name
-        @name.setter
-        def name(self, value):
-            self._name = value
-
     class FakeFiles:
         def iterdir(self):
             return [FakeDir("source1"), FakeDir("source2")]
-
     monkeypatch.setattr("importlib.resources.files", lambda pkg: FakeFiles())
-    monkeypatch.setattr("builtins.open", lambda file, mode='r': FakeTxtFile(file).open(mode))
-
     sources = get_available_sources()
     assert "source1" in sources and "source2" in sources
 
@@ -123,23 +76,9 @@ def test_get_available_sources_fallback(monkeypatch):
     fake_init = os.path.join(sourceA_dir, "__init__.py")
     with open(fake_init, "w") as f:
         f.write("")
+    monkeypatch.setattr("importlib.util.find_spec", lambda name: FakeSpec(fake_init))
     subdir = os.path.join(sourceA_dir, "subsource")
     os.makedirs(subdir, exist_ok=True)
-    sub_init = os.path.join(subdir, "__init__.py")
-    with open(sub_init, "w") as f:
-        f.write("")
-    txt_path = os.path.join(subdir, "valid.txt")
-    required_header = "\n".join([
-        "Ion=H",
-        "AtomicNumber=1",
-        "MassNumber=1",
-        "SourceProgram=test",
-        "IonizationPotential=1.0",
-        "Target=water"
-    ])
-    with open(txt_path, "w") as f:
-        f.write(required_header)
-    monkeypatch.setattr("importlib.util.find_spec", lambda name: FakeSpec(fake_init))
     sources = get_available_sources()
     assert "subsource" in sources
     temp_dir.cleanup()

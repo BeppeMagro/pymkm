@@ -17,7 +17,6 @@ import importlib.util
 from typing import List, Dict
 from pathlib import Path
 
-REQUIRED_HEADER_KEYS = ["Ion", "AtomicNumber", "MassNumber", "SourceProgram", "IonizationPotential", "Target"]
 
 def get_default_txt_path(source: str, filename: str) -> str:
     """
@@ -61,8 +60,7 @@ def get_available_sources() -> List[str]:
     """
     List all available data sources within the default data registry.
 
-    Looks for subdirectories under `pymkm.data.defaults` corresponding to different source categories
-    and checks if the directory contains .txt files with adequate header.
+    Looks for subdirectories under `pymkm.data.defaults` corresponding to different source categories.
 
     :returns: List of source names (subdirectory names).
     :rtype: list[str]
@@ -72,34 +70,13 @@ def get_available_sources() -> List[str]:
     try:
         from importlib.resources import files
         base = files("pymkm.data.defaults")
-        all_subdirectories = [f for f in base.iterdir() if f.is_dir()]
+        return [f.name for f in base.iterdir() if f.is_dir()]
     except Exception:
         spec = importlib.util.find_spec("pymkm.data.defaults")
         if spec and spec.origin:
             folder_path = Path(spec.origin).parent
-            all_subdirectories = [f for f in folder_path.iterdir() if f.is_dir()]
-        raise FileNotFoundError("Could not locate default sources.")
-        
-    subdirectories = []
-    for subdir in all_subdirectories:
-        # Check presence of __init__.py file 
-        init_path = subdir / "__init__.py"
-        if not init_path.is_file():
-            continue
-        txt_files = [f for f in subdir.iterdir() if f.suffix == ".txt"]
-        for txt_file in txt_files:
-            with open(txt_file, 'r') as f:
-                lines = f.readlines()
-            header = {line.split('=')[0].strip(): line.split('=')[1].strip()
-                      for line in lines if '=' in line}
-            missing = [key for key in REQUIRED_HEADER_KEYS if key not in header]
-            if missing:
-                raise FileNotFoundError(
-                    f"Source files with unexpected header format in default source folder {subdir.name}: {', '.join(missing)}.\nCould not locate default sources."
-                )
-        subdirectories.append(subdir.name)
-
-    return subdirectories
+            return [f.name for f in folder_path.iterdir() if f.is_dir()]
+    raise FileNotFoundError("Could not locate default sources.")
 
 
 def list_available_defaults(source: str) -> List[str]:
