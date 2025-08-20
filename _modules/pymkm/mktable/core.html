@@ -793,8 +793,9 @@
                 <span class="k">if</span> <span class="n">Z</span> <span class="o">&gt;</span> <span class="n">max_atomic_number</span><span class="p">:</span>
                     <span class="k">continue</span>
                 
+                <span class="n">symbol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">ion_key</span><span class="p">][</span><span class="s2">&quot;stopping_power_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ion_symbol&quot;</span><span class="p">)</span>
                 <span class="n">df</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fragment </span><span class="si">{</span><span class="n">ion_key</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fragment </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     
                 <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;classic&quot;</span><span class="p">:</span>
                     <span class="k">if</span> <span class="s2">&quot;z_bar_star_domain&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
