@@ -354,13 +354,20 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
         <span class="n">base</span> <span class="o">=</span> <span class="n">files</span><span class="p">(</span><span class="s2">&quot;pymkm.data.defaults&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()]</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;pymkm.data.defaults&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">spec</span> <span class="ow">and</span> <span class="n">spec</span><span class="o">.</span><span class="n">origin</span><span class="p">:</span>
             <span class="n">folder_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">folder_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()]</span>
-    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not locate default sources.&quot;</span><span class="p">)</span></div>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="n">folder_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Could not locate default sources.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">candidates</span>
+        <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;__&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">))</span>
+    <span class="p">]</span></div>
 
 
 

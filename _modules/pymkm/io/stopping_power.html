@@ -310,10 +310,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.io.data_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_lookup_table</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.utils.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interpolator</span>
 
+<span class="c1"># Always show warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;always&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StoppingPowerTable">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable">[docs]</a>
@@ -442,15 +445,47 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform internal consistency checks on the input data.</span>
-<span class="sd">        </span>
-<span class="sd">        :raises ValueError: If shapes mismatch, insufficient points, or non-monotonic energy.</span>
+<span class="sd">    </span>
+<span class="sd">        Validates that:</span>
+<span class="sd">          - Energy and LET arrays have identical shape.</span>
+<span class="sd">          - At least a minimum number of points are provided </span>
+<span class="sd">            (150 by default, unless source is &#39;mstar_3_12&#39;).</span>
+<span class="sd">          - Energy values are finite, non-NaN, strictly increasing,</span>
+<span class="sd">            and (ideally) within the validated energy range (0.1–1000 MeV/u).</span>
+<span class="sd">            Values outside this range trigger a strong visible warning.</span>
+<span class="sd">    </span>
+<span class="sd">        :raises ValueError: If shapes mismatch, insufficient points, non-finite values,</span>
+<span class="sd">                            or non-monotonic energy sequence.</span>
+<span class="sd">        :warns UserWarning: If energy values are outside the validated range.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Energy and LET arrays must have the same shape.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">150</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_program</span> <span class="o">!=</span> <span class="s1">&#39;mstar_3_12&#39;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least 150 data points are required.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Shape mismatch: energy </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, LET </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+    
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Energy and LET arrays must contain only finite values.&quot;</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">150</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_program</span> <span class="o">!=</span> <span class="s2">&quot;mstar_3_12&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Insufficient data points: got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span><span class="si">}</span><span class="s2">, need at least 150.&quot;</span>
+            <span class="p">)</span>
+    
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Energy values must be strictly increasing.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Energy values must be strictly increasing with no duplicates.&quot;</span><span class="p">)</span>
+    
+        <span class="c1"># Energy range check (validated domain of the package)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n\033</span><span class="s2">[93m&quot;</span>  <span class="c1"># bright yellow</span>
+                <span class="o">+</span> <span class="s2">&quot;═&quot;</span> <span class="o">*</span> <span class="mi">72</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;⚠️  WARNING: Energy values outside validated range (0.1–1000 MeV/u)</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;    Found range: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> – </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MeV/u</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;    Results may be unreliable outside this domain.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;═&quot;</span> <span class="o">*</span> <span class="mi">72</span>
+                <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m</span><span class="se">\n</span><span class="s2">&quot;</span>  <span class="c1"># reset</span>
+            <span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StoppingPowerTable.to_dict">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable.to_dict">[docs]</a>
