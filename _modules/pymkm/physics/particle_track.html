@@ -280,15 +280,15 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Radial dose models for charged particle tracks in water.</span>
 
-<span class="sd">This module defines the :class:`ParticleTrack`, which implements two analytical models:</span>
+<span class="sd">This module defines the :class:`ParticleTrack`, which implements two classes of analytical models:</span>
 
-<span class="sd">- Scholz-Kraft model (Adv. Space Res., 1996)</span>
-<span class="sd">- Kiefer-Chatterjee model (Radiat. Environ. Biophys., 1976 and Phys. Med. Biol., 1986)</span>
+<span class="sd">- A1) Scholz-Kraft model (Adv. Space Res., 1996)</span>
+<span class="sd">- A2) Elsaesser–Scholz model (New J. Phys., 2008)</span>
+<span class="sd">- A3) Friedrich model (Radiat. Environ. Biophys., 2013)</span>
 
-<span class="sd">For model descriptions and a comparative analysis, see:</span>
-<span class="sd">Elsässer et al., (New J. Phys., 2008)</span>
+<span class="sd">- B) Kiefer-Chatterjee model (Radiat. Environ. Biophys., 1976 and Phys. Med. Biol., 1986)</span>
 
-<span class="sd">Both models compute local dose as a function of radial distance from the ion trajectory,</span>
+<span class="sd">Both classes of models compute local dose as a function of radial distance from the ion trajectory,</span>
 <span class="sd">based on physical parameters such as energy, atomic number, LET, and core radius type.</span>
 
 <span class="sd">These dose profiles serve as the basis for computing specific energy deposition</span>
@@ -299,8 +299,8 @@
 
 <span class="sd">&gt;&gt;&gt; from pymkm.physics.particle_track import ParticleTrack</span>
 <span class="sd">&gt;&gt;&gt; track = ParticleTrack(model_name=&quot;Scholz-Kraft&quot;, energy=100)</span>
-<span class="sd">&gt;&gt;&gt; r, d = track.initial_local_dose()</span>
-<span class="sd">&gt;&gt;&gt; r.shape, d.shape</span>
+<span class="sd">&gt;&gt;&gt; d, r = track.initial_local_dose()</span>
+<span class="sd">&gt;&gt;&gt; d.shape, r.shape</span>
 <span class="sd">((300,), (300,))</span>
 <span class="sd">&gt;&gt;&gt; d[:3]</span>
 <span class="sd">array([val1, val2, val3])  # sample output</span>
@@ -336,7 +336,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize a ParticleTrack instance.</span>
 <span class="sd">    </span>
-<span class="sd">        :param model_name: The dose model to use (&#39;Scholz-Kraft&#39; or &#39;Kiefer-Chatterjee&#39;).</span>
+<span class="sd">        :param model_name: The dose model to use (&#39;Scholz-Kraft&#39;, &#39;Elsaesser–Scholz&#39;, &#39;Friedrich&#39; or &#39;Kiefer-Chatterjee&#39;).</span>
 <span class="sd">        :type model_name: str</span>
 <span class="sd">        :param core_radius_type: Core radius mode, either &#39;constant&#39; or &#39;energy-dependent&#39;.</span>
 <span class="sd">        :type core_radius_type: str</span>
@@ -353,21 +353,28 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">core_radius_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="s1">&#39;energy-dependent&#39;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid core_radius_type. Choose &#39;constant&#39; or &#39;energy-dependent&#39;.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">model_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Scholz-Kraft&#39;</span><span class="p">,</span> <span class="s1">&#39;Kiefer-Chatterjee&#39;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid model_name. Choose &#39;Scholz-Kraft&#39; or &#39;Kiefer-Chatterjee&#39;.&quot;</span><span class="p">)</span>
+        
+        <span class="n">valid_models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Scholz-Kraft&#39;</span><span class="p">,</span> <span class="s1">&#39;Kiefer-Chatterjee&#39;</span><span class="p">,</span> <span class="s1">&#39;Elsaesser–Scholz&#39;</span><span class="p">,</span> <span class="s1">&#39;Friedrich&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">model_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_models</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid model_name. Choose one of: </span><span class="si">{</span><span class="n">valid_models</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Kiefer-Chatterjee&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">core_radius_type</span> <span class="o">==</span> <span class="s1">&#39;constant&#39;</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&#39;Kiefer-Chatterjee&#39; model is incompatible with &#39;constant&#39; core radius type. Switching to &#39;energy-dependent&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">core_radius_type</span> <span class="o">!=</span> <span class="s1">&#39;energy-dependent&#39;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;&#39;Kiefer-Chatterjee&#39; model supports only &#39;energy-dependent&#39; core radius. &quot;</span>
+                    <span class="s2">&quot;Switching to &#39;energy-dependent&#39;.&quot;</span>
+                <span class="p">)</span>
                 <span class="n">core_radius_type</span> <span class="o">=</span> <span class="s1">&#39;energy-dependent&#39;</span>
             <span class="k">if</span> <span class="n">atomic_number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Atomic number must be provided for the Kiefer-Chatterjee model.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Scholz-Kraft&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">core_radius_type</span> <span class="o">==</span> <span class="s1">&#39;energy-dependent&#39;</span> <span class="ow">and</span> <span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Energy must be provided for energy-dependent core radius type in the Scholz-Kraft model.&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">core_radius_type</span> <span class="o">==</span> <span class="s1">&#39;constant&#39;</span> <span class="ow">and</span> <span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Energy is ignored when core radius type is &#39;constant&#39; in the Scholz-Kraft model.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">core_radius_type</span> <span class="o">!=</span> <span class="s1">&#39;constant&#39;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; supports only &#39;constant&#39; core radius. &quot;</span>
+                    <span class="s2">&quot;Switching to &#39;constant&#39;.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">core_radius_type</span> <span class="o">=</span> <span class="s1">&#39;constant&#39;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">core_radius_type</span> <span class="o">=</span> <span class="n">core_radius_type</span>
@@ -377,8 +384,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">base_points</span> <span class="o">=</span> <span class="n">base_points</span>
 
         <span class="c1"># Compute derived quantities</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">penumbra_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_penumbra_radius</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_velocity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">penumbra_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_penumbra_radius</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rho</span> <span class="o">=</span> <span class="mf">1e-12</span>  <span class="c1"># Density of water in g/μm³</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_convert_let</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">let_mev_per_cm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -419,11 +426,18 @@
 <span class="sd">        :raises ValueError: If core_radius_type is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">core_radius_type</span> <span class="o">==</span> <span class="s1">&#39;constant&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mf">1.0e-2</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Scholz-Kraft&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">1.0e-2</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Elsaesser–Scholz&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">3.0e-4</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Friedrich&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">6.5e-2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">1.0e-2</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">core_radius_type</span> <span class="o">==</span> <span class="s1">&#39;energy-dependent&#39;</span><span class="p">:</span>
             <span class="n">Rc0</span> <span class="o">=</span> <span class="mf">11.6e-3</span>
             <span class="n">Rc</span> <span class="o">=</span> <span class="n">Rc0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span>
-            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">Rc</span><span class="p">,</span> <span class="mf">3.0e-4</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Rc</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported core radius type.&quot;</span><span class="p">)</span>
 
@@ -474,11 +488,21 @@
         <span class="n">delta</span> <span class="o">=</span> <span class="mf">1.7</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Scholz-Kraft&#39;</span><span class="p">:</span>
             <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.05</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Elsaesser–Scholz&#39;</span><span class="p">,</span> <span class="s1">&#39;Friedrich&#39;</span><span class="p">):</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.062</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Kiefer-Chatterjee&#39;</span><span class="p">:</span>
             <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.0616</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid model name for penumbra radius computation.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">**</span> <span class="n">delta</span><span class="p">)</span>
+        
+        <span class="n">Rp_energy</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">**</span> <span class="n">delta</span><span class="p">)</span>
+        
+        <span class="c1"># if self.energy &lt; 2.0:  # MeV/u</span>
+        <span class="c1">#     lower_bound = 2.0 * Rp_energy / self.energy # LEM rule</span>
+        <span class="c1"># else:</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_core_radius</span><span class="p">()</span>
+            
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">Rp_energy</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_kiefer_chatterjee_dose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -492,6 +516,8 @@
 <span class="sd">    </span>
 <span class="sd">        :raises ValueError: If core_radius_type is not &#39;energy-dependent&#39;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;LET must be provided to compute the local dose profile.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">core_radius_type</span> <span class="o">!=</span> <span class="s1">&#39;energy-dependent&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Kiefer-Chatterjee model requires energy-dependent core radius.&quot;</span><span class="p">)</span>
         <span class="n">core_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_core_radius</span><span class="p">()</span>
@@ -516,6 +542,8 @@
 <span class="sd">        :returns: Dose values at each radius.</span>
 <span class="sd">        :rtype: np.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;LET must be provided to compute the local dose profile.&quot;</span><span class="p">)</span>
         <span class="n">core_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_core_radius</span><span class="p">()</span>
         <span class="n">lambda0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_lambda0</span><span class="p">()</span>
         <span class="n">LET</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span>
@@ -552,7 +580,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Radius values must be positive.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Kiefer-Chatterjee&#39;</span><span class="p">:</span>
             <span class="n">dose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kiefer_chatterjee_dose</span><span class="p">(</span><span class="n">radii</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;Scholz-Kraft&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Scholz-Kraft&#39;</span><span class="p">,</span> <span class="s1">&#39;Elsaesser–Scholz&#39;</span><span class="p">,</span> <span class="s1">&#39;Friedrich&#39;</span><span class="p">):</span>
             <span class="n">dose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scholz_kraft_dose</span><span class="p">(</span><span class="n">radii</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown model name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

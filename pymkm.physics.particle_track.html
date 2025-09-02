@@ -286,22 +286,25 @@
           <section id="module-pymkm.physics.particle_track">
 <span id="pymkm-physics-particle-track"></span><h1>pymkm.physics.particle_track<a class="headerlink" href="#module-pymkm.physics.particle_track" title="Link to this heading">¶</a></h1>
 <p>Radial dose models for charged particle tracks in water.</p>
-<p>This module defines the <a class="reference internal" href="#pymkm.physics.particle_track.ParticleTrack" title="pymkm.physics.particle_track.ParticleTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParticleTrack</span></code></a>, which implements two analytical models:</p>
+<p>This module defines the <a class="reference internal" href="#pymkm.physics.particle_track.ParticleTrack" title="pymkm.physics.particle_track.ParticleTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParticleTrack</span></code></a>, which implements two classes of analytical models:</p>
 <ul class="simple">
-<li><p>Scholz-Kraft model (Adv. Space Res., 1996)</p></li>
+<li><p>A1) Scholz-Kraft model (Adv. Space Res., 1996)</p></li>
+<li><p>A2) Elsaesser–Scholz model (New J. Phys., 2008)</p></li>
+<li><p>A3) Friedrich model (Radiat. Environ. Biophys., 2013)</p></li>
+<li><ol class="upperalpha simple" start="2">
 <li><p>Kiefer-Chatterjee model (Radiat. Environ. Biophys., 1976 and Phys. Med. Biol., 1986)</p></li>
+</ol>
+</li>
 </ul>
-<p>For model descriptions and a comparative analysis, see:
-Elsässer et al., (New J. Phys., 2008)</p>
-<p>Both models compute local dose as a function of radial distance from the ion trajectory,
+<p>Both classes of models compute local dose as a function of radial distance from the ion trajectory,
 based on physical parameters such as energy, atomic number, LET, and core radius type.</p>
 <p>These dose profiles serve as the basis for computing specific energy deposition
 in MKM and SMK.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.physics.particle_track</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParticleTrack</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">track</span> <span class="o">=</span> <span class="n">ParticleTrack</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;Scholz-Kraft&quot;</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">track</span><span class="o">.</span><span class="n">initial_local_dose</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">track</span><span class="o">.</span><span class="n">initial_local_dose</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span>
 <span class="go">((300,), (300,))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 <span class="go">array([val1, val2, val3])  # sample output</span>
