@@ -69,7 +69,6 @@ def inverse_dose_from_survival(doses: np.ndarray, survivals: np.ndarray, S_targe
 def main():
 
     ## Select input parameters for specific energy tables generation
-    cell_type = "HSG"
     atomic_number = 6 # C
     source = "mstar_3_12" # Source code used to generate stopping power tables (available with pymkm: fluka_2020_0, geant4_11_3_0 or mstar_3_12)
     model_name = "Kiefer-Chatterjee" # Amorphous track structure model (Kiefer-Chatterjee or Scholz-Kraft)
