@@ -55,7 +55,7 @@ atomic_numbers = [2, 6, 8] # He, C, O
 source = "mstar_3_12" # Source code used to generate stopping power tables (available with pymkm: fluka_2020_0, geant4_11_3_0 or mstar_3_12)
 domain_radius = 0.32 # μm
 nucleus_radius = 3.9 # μm
-alpha0 = 0.12 # 1/Gy
+alpha0 = 0.172 # 1/Gy
 beta0 = 0.0615 # 1/Gy^2
 
 ## Load stopping power tables
@@ -93,15 +93,15 @@ More examples available in the `examples/` folder and documentation.
 
 ```text
 pymkm/
-├── biology/       # OSMK oxygen effects and modulation
-├── data/          # Ion tables and stopping powers
-├── io/            # Data registry and loaders
-├── mktable/       # MKM/SMK microdosimetric table computation
-├── physics/       # Track structure and dose integration
-├── sftable/       # Survival curve computations
-├── utils/         # Geometry, interpolation, parallelism
-tests/             # Unit and integration tests
-examples/          # Demonstration scripts
+├── biology/        # OSMK oxygen effects and modulation
+├── data/           # Ion tables and stopping powers
+├── io/             # Data registry and loaders
+├── mktable/        # MKM/SMK microdosimetric table computation
+├── physics/        # Track structure and dose integration
+├── sftable/        # Survival curve computations
+├── utils/          # Geometry, interpolation, parallelism
+tests/              # Unit and integration tests
+examples/           # Demonstration scripts
 validation_results/ # Validation datasets and figures
 ```
 
@@ -122,7 +122,7 @@ Continuous integration is provided via GitHub Actions.
 
 If you use `pyMKM` in your research, please cite:
 
-> Magro G., Pavanello V., Jia Y., Grevillot L., Glimelius L., Mairani A.  
+> Magro G., Pavanello V., Jia Y., Grevillot L., Glimelius L. and Mairani A.  
 > **pyMKM: An Open-Source Python Package for Microdosimetric Kinetic Model Calculation in Research and Clinical Applications**  
 > GitHub: https://github.com/BeppeMagro/pymkm
 
