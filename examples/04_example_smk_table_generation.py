@@ -4,7 +4,7 @@ from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.io.table_set import StoppingPowerTableSet
 
 """
-Example usage of MKTableParameters to compute and visualize specific energies (z_d*, z_d and z_n*) tables
+Example usage of MKTable to compute and visualize specific energies (z_d*, z_d and z_n*) tables
 for the stochastic MK (SMK) model [Inaniwa et al. 2018].
 
 This script demonstrates how to:
