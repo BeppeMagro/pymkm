@@ -1,13 +1,9 @@
-import numpy as np
 import matplotlib.pyplot as plt
 import warnings
-from tqdm import tqdm
-from concurrent.futures import ProcessPoolExecutor
 
 from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.io.table_set import StoppingPowerTableSet
 from pymkm.sftable.core import SFTableParameters, SFTable
-from pymkm.utils.parallel import optimal_worker_count
 
 """
 This script demonstrates how to:
@@ -31,7 +27,6 @@ def main():
     model_name = "Kiefer-Chatterjee" # Amorphous track structure model (Kiefer-Chatterjee or Scholz-Kraft)
     core_type = "energy-dependent" # Core radius model ('constant' or 'energy-dependent')
     LET = 500 # Chosen LET value for survival fraction computation (MeV/cm)
-    cell_type = "HSG"
 
     mkm_parameters = { # HSG parameters declared in [Inaniwa et al. 2018]
         "domain_radius": 0.29, # μm
@@ -124,7 +119,7 @@ def main():
     # Prepare model-specific parameters
     model_configs = [
         {
-            "model": "MK",
+            "model": "MKM",
             "params": {"mktable": mk_table, "alpha0": mkm_parameters["alpha0"], "beta0": mkm_parameters["beta0"]}
         },
         {
@@ -152,19 +147,19 @@ def main():
     _, ax = plt.subplots(figsize=(8, 6))
     color = sp_table_set.get(atomic_number).color
     linestyle_map = {
-        "MK": "-",
+        "MKM": "-",
         "SMK": "",
-        "OSMK2021": "--",
+        "OSMK2021": ":",
         "OSMK2023": ""
     }
     alpha_map = {
-        "MK": 0.4,
+        "MKM": 0.4,
         "SMK": 1,
         "OSMK2021": 0.4,
         "OSMK2023": 1
     }
     marker_map = {
-        "MK": None,
+        "MKM": None,
         "SMK": "s",
         "OSMK2021": None,
         "OSMK2023": "o"

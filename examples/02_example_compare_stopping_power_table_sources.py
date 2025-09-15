@@ -8,7 +8,6 @@ This script demonstrates how to:
   - Plot the stopping power curves to compare different sources.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
