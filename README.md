@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/pymkm_logo_none.png" alt="pyMKM logo" width="400"/>
+</p>
+
 # 🧬 pyMKM
 
 [![CI](https://github.com/BeppeMagro/pymkm/actions/workflows/ci.yml/badge.svg)](https://github.com/BeppeMagro/pymkm/actions)
