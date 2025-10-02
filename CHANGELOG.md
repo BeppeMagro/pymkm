@@ -13,3 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.6] - 2025-06-25
 - 0.0.6
+
+## [0.0.7] - 2025-10-02
+- Pre-release 0.0.7 for workflow testing
