@@ -661,20 +661,20 @@
         <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;classic&quot;</span><span class="p">,</span> <span class="s2">&quot;stochastic&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">max_atomic_number</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="n">max_atomic_number</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Export results to a .txt file compatible with external tools.</span>
-<span class="sd">       </span>
+<span class="sd">        </span>
 <span class="sd">        Required `params` depend on the selected model:</span>
-<span class="sd">    </span>
+<span class="sd">        </span>
 <span class="sd">        For model=&quot;classic&quot; (MKM):</span>
 <span class="sd">            Required:</span>
 <span class="sd">                - &quot;CellType&quot;: str</span>
 <span class="sd">                - &quot;Alpha_0&quot;: float</span>
 <span class="sd">            Optional:</span>
 <span class="sd">                - &quot;Beta&quot;: float</span>
-<span class="sd">    </span>
+<span class="sd">        </span>
 <span class="sd">        For model=&quot;stochastic&quot; (SMK):</span>
 <span class="sd">            Required:</span>
 <span class="sd">                - &quot;CellType&quot;: str</span>
@@ -684,22 +684,27 @@
 <span class="sd">            Optional:</span>
 <span class="sd">                - &quot;Beta0&quot;: float</span>
 <span class="sd">                - &quot;scale_factor&quot;: float (defaults to 1.0)</span>
-<span class="sd">    </span>
+<span class="sd">        </span>
 <span class="sd">        :param params: Model-dependent metadata to include in the header.</span>
 <span class="sd">        :type params: dict</span>
 <span class="sd">        :param filename: Output file path. If None, a default name is generated.</span>
 <span class="sd">        :type filename: str or Path, optional</span>
 <span class="sd">        :param model: Force output format. If None, inferred from configuration.</span>
 <span class="sd">        :type model: Literal[&quot;classic&quot;, &quot;stochastic&quot;], optional</span>
-<span class="sd">        :param max_atomic_number: Maximum Z for ions to include.</span>
-<span class="sd">        :type max_atomic_number: int</span>
-<span class="sd">    </span>
+<span class="sd">        :param max_atomic_number: Maximum Z for ions to include. </span>
+<span class="sd">            If None (default), all available ions are included.</span>
+<span class="sd">        :type max_atomic_number: int, optional</span>
+<span class="sd">        </span>
 <span class="sd">        :raises ValueError:</span>
 <span class="sd">            - If no data has been computed yet.</span>
 <span class="sd">            - If required parameters are missing.</span>
 <span class="sd">            - If atomic number exceeds available Z range.</span>
-<span class="sd">        :raises KeyError: If unexpected or invalid keys are present in `params`.</span>
+<span class="sd">            - If Beta/Beta0 consistency checks fail.</span>
+<span class="sd">        :raises KeyError: </span>
+<span class="sd">            - If unexpected or invalid keys are present in `params`.</span>
+<span class="sd">            - If required microdosimetric columns are missing in the table.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot write: MKTable has not been computed yet. Run &#39;compute()&#39; first.&quot;</span><span class="p">)</span>
     
@@ -728,8 +733,11 @@
         <span class="c1"># Determine maximum available Z from stopping_power_info</span>
         <span class="n">available_Z</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">&quot;stopping_power_info&quot;</span><span class="p">][</span><span class="s2">&quot;atomic_number&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">]</span>
         <span class="n">max_Z_table</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">available_Z</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">max_atomic_number</span> <span class="o">&gt;</span> <span class="n">max_Z_table</span><span class="p">:</span>
+    
+        <span class="c1"># If no max_atomic_number is provided, include all ions</span>
+        <span class="k">if</span> <span class="n">max_atomic_number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_atomic_number</span> <span class="o">=</span> <span class="n">max_Z_table</span>
+        <span class="k">elif</span> <span class="n">max_atomic_number</span> <span class="o">&gt;</span> <span class="n">max_Z_table</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Requested max_atomic_number=</span><span class="si">{</span><span class="n">max_atomic_number</span><span class="si">}</span><span class="s2"> exceeds computed table max Z=</span><span class="si">{</span><span class="n">max_Z_table</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
     
         <span class="c1"># Common header</span>
@@ -779,8 +787,6 @@
     
             <span class="k">for</span> <span class="n">ion_key</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">Z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">ion_key</span><span class="p">][</span><span class="s2">&quot;stopping_power_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;atomic_number&quot;</span><span class="p">)</span>
-                <span class="c1"># if Z is None:</span>
-                <span class="c1">#     continue</span>
                 <span class="k">if</span> <span class="n">Z</span> <span class="o">&gt;</span> <span class="n">max_atomic_number</span><span class="p">:</span>
                     <span class="k">continue</span>
                 
@@ -808,6 +814,7 @@
 </div>
 
     
+        
         
         
 </pre></div>
