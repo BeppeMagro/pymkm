@@ -6,7 +6,7 @@
 
 # 🧬 pyMKM
 
-[![CI](https://github.com/BeppeMagro/pymkm/actions/workflows/ci.yml/badge.svg)](https://github.com/BeppeMagro/pymkm/actions)
+[![CI](https://github.com/BeppeMagro/pymkm/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/BeppeMagro/pymkm/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-online-success)](https://beppemagro.github.io/pymkm/)
 [![Deploy Docs](https://github.com/BeppeMagro/pymkm/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/BeppeMagro/pymkm/actions/workflows/gh-pages.yml)
 [![TestPyPI](https://img.shields.io/badge/TestPyPI-pymkm-blue)](https://test.pypi.org/project/pymkm/)
