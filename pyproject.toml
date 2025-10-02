@@ -1,33 +1,37 @@
 [build-system]
-requires = [ "setuptools>=61.0", "setuptools-scm",]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pymkm"
-version = "0.0.6"
+version = "0.0.7"
 description = "Microdosimetric Kinetic Model utilities for radiobiology research and hadrontherapy."
 readme = "README.md"
 requires-python = ">=3.9"
-keywords = [ "MKM", "RBE", "radiobiology", "hadrontherapy", "LET",]
-classifiers = [ "Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent",]
-dependencies = [ "matplotlib", "numpy", "pandas", "scipy", "tabulate", "tqdm",]
+keywords = ["MKM", "RBE", "radiobiology", "hadrontherapy", "LET"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "scipy",
+    "tabulate",
+    "tqdm",
+]
+
 [[project.authors]]
 name = "Giuseppe Magro"
 email = "giuseppe.magro@cnao.it"
-
-[[project.authors]]
-name = "Vittoria Pavanello"
-email = "vittoria.pavanello@cnao.it"
-
-[[project.authors]]
-name = "Andrea Mairani"
-email = "andrea.mairani@med.uni-heidelberg.de"
 
 [project.license]
 text = "MIT"
 
 [project.optional-dependencies]
-dev = [ "pytest", "pytest-cov", "black", "mypy",]
+dev = ["pytest", "pytest-cov", "black", "mypy"]
 
 [project.urls]
 Homepage = "https://github.com/BeppeMagro/pymkm"
@@ -39,8 +43,4 @@ packages = ["pymkm"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-"pymkm.data" = [ "**/*.txt", "elements.json",]
-
-[tool.setuptools_scm]
-version_scheme = "post-release"
-local_scheme = "node-and-date"
+"pymkm.data" = ["**/*.txt", "elements.json"]
