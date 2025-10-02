@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/pymkm_logo_none.png" alt="pyMKM logo" width="400"/>
+  <img src="https://raw.githubusercontent.com/BeppeMagro/pymkm/main/assets/pymkm_logo_none.png" alt="pyMKM logo" width="400"/>
 </p>
 
 ---
