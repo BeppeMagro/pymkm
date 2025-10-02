@@ -38,8 +38,11 @@ Homepage = "https://github.com/BeppeMagro/pymkm"
 Repository = "https://github.com/BeppeMagro/pymkm"
 Issues = "https://github.com/BeppeMagro/pymkm/issues"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pymkm*"]
+
 [tool.setuptools]
-packages = ["pymkm"]
 include-package-data = true
 
 [tool.setuptools.package-data]
