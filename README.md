@@ -38,11 +38,8 @@ It is intended for use in radiobiology research, Monte Carlo-based dosimetry, an
 For the beta release (available on TestPyPI):
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ \
-            --extra-index-url https://pypi.org/simple \
-            pymkm
+pip install -i https://test.pypi.org/simple/ pymkm
 ```
-
 > ⚠️ Note: A stable release on PyPI will follow.
 
 From source:
