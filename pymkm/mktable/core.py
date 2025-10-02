@@ -366,20 +366,20 @@ class MKTable:
         params: dict,
         filename: Union[str, Path] = None,
         model: Literal["classic", "stochastic"] = None,
-        max_atomic_number: int
+        max_atomic_number: Optional[int] = None
     ):
         """
         Export results to a .txt file compatible with external tools.
-       
+        
         Required `params` depend on the selected model:
-    
+        
         For model="classic" (MKM):
             Required:
                 - "CellType": str
                 - "Alpha_0": float
             Optional:
                 - "Beta": float
-    
+        
         For model="stochastic" (SMK):
             Required:
                 - "CellType": str
@@ -389,22 +389,27 @@ class MKTable:
             Optional:
                 - "Beta0": float
                 - "scale_factor": float (defaults to 1.0)
-    
+        
         :param params: Model-dependent metadata to include in the header.
         :type params: dict
         :param filename: Output file path. If None, a default name is generated.
         :type filename: str or Path, optional
         :param model: Force output format. If None, inferred from configuration.
         :type model: Literal["classic", "stochastic"], optional
-        :param max_atomic_number: Maximum Z for ions to include.
-        :type max_atomic_number: int
-    
+        :param max_atomic_number: Maximum Z for ions to include. 
+            If None (default), all available ions are included.
+        :type max_atomic_number: int, optional
+        
         :raises ValueError:
             - If no data has been computed yet.
             - If required parameters are missing.
             - If atomic number exceeds available Z range.
-        :raises KeyError: If unexpected or invalid keys are present in `params`.
+            - If Beta/Beta0 consistency checks fail.
+        :raises KeyError: 
+            - If unexpected or invalid keys are present in `params`.
+            - If required microdosimetric columns are missing in the table.
         """
+        
         if not self.table:
             raise ValueError("Cannot write: MKTable has not been computed yet. Run 'compute()' first.")
     
@@ -433,8 +438,11 @@ class MKTable:
         # Determine maximum available Z from stopping_power_info
         available_Z = [self.table[k]["stopping_power_info"]["atomic_number"] for k in self.table]
         max_Z_table = max(available_Z)
-
-        if max_atomic_number > max_Z_table:
+    
+        # If no max_atomic_number is provided, include all ions
+        if max_atomic_number is None:
+            max_atomic_number = max_Z_table
+        elif max_atomic_number > max_Z_table:
             raise ValueError(f"Requested max_atomic_number={max_atomic_number} exceeds computed table max Z={max_Z_table}.")
     
         # Common header
@@ -484,8 +492,6 @@ class MKTable:
     
             for ion_key, result in self.table.items():
                 Z = self.table[ion_key]["stopping_power_info"].get("atomic_number")
-                # if Z is None:
-                #     continue
                 if Z > max_atomic_number:
                     continue
                 
@@ -511,5 +517,6 @@ class MKTable:
     
         print(f"\nTable written to: {path}")
     
+        
         
         

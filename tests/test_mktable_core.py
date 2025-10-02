@@ -203,6 +203,34 @@ def test_default_filename_creates_valid_path():
 
 # --- write_txt ---
 @pytest.mark.filterwarnings("ignore:Both z0 and beta0 provided.*")
+def test_write_txt_defaults_to_all_ions(tmp_path):
+    """Ensure that if max_atomic_number is None, all available ions are included."""
+    params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    table = MKTable(parameters=params)
+    # Simula due ioni con Z diversi
+    df = pd.DataFrame({"energy": [1.0], "z_bar_star_domain": [0.2]})
+    table.table["H"] = {
+        "stopping_power_info": {"atomic_number": 1, "ion_symbol": "H"},
+        "params": {},
+        "data": df
+    }
+    table.table["C"] = {
+        "stopping_power_info": {"atomic_number": 6, "ion_symbol": "C"},
+        "params": {},
+        "data": df
+    }
+    path = tmp_path / "default_all.txt"
+    # non passo max_atomic_number → deve includere H e C
+    table.write_txt(
+        params={"CellType": "HSG", "Alpha_0": 0.1, "Beta": 0.05},
+        filename=path,
+        model="classic"
+    )
+    content = path.read_text()
+    assert "Fragment H" in content
+    assert "Fragment C" in content
+
+@pytest.mark.filterwarnings("ignore:Both z0 and beta0 provided.*")
 def test_write_txt_smk_beta_both_provided(tmp_path):
     params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.06, z0=1.0, use_stochastic_model=True)
     table = MKTable(parameters=params)
