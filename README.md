@@ -16,7 +16,7 @@
 It is intended for use in radiobiology research, Monte Carlo-based dosimetry, and biologically guided treatment planning in hadrontherapy.
 
 📘 **[Official Documentation](https://beppemagro.github.io/pymkm/)**  
-📝 **[Paper (draft)](---)**
+📝 **[Paper (Computation, 2025)](https://doi.org/10.3390/computation13110264)**
 
 ---
 
@@ -129,9 +129,9 @@ Continuous integration is provided via GitHub Actions.
 
 If you use `pyMKM` in your research, please cite:
 
-> Magro G., Pavanello V., Jia Y., Grevillot L., Glimelius L. and Mairani A.  
-> **pyMKM: An Open-Source Python Package for Microdosimetric Kinetic Model Calculation in Research and Clinical Applications**  
-> GitHub: https://github.com/BeppeMagro/pymkm
+> Magro, G., Pavanello, V., Jia, Y., Grevillot, L., Glimelius, L., & Mairani, A. (2025). 
+> **pyMKM: An Open-Source Python Package for Microdosimetric Kinetic Model Calculation in Research and Clinical Applications.**
+> Computation, 13(11), 264. https://doi.org/10.3390/computation13110264
 
 ---
 
@@ -151,5 +151,5 @@ This work was funded by the National Plan for NRRP Complementary Investments (PN
 ## 🌐 Links
 
 - 📘 Docs: [https://beppemagro.github.io/pymkm/](https://beppemagro.github.io/pymkm/)
-- 🔬 Article: [---](---)
+- 🔬 Article: [https://doi.org/10.3390/computation13110264](https://doi.org/10.3390/computation13110264)
 - 💬 Issues: [https://github.com/BeppeMagro/pymkm/issues](https://github.com/BeppeMagro/pymkm/issues)
