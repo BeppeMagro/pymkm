@@ -35,13 +35,17 @@ It is intended for use in radiobiology research, Monte Carlo-based dosimetry, an
 
 ## 📥 Installation
 
+For the stable release (available on PyPI):
+
+```bash
+pip install pymkm
+```
+
 For the beta release (available on TestPyPI):
 
 ```bash
 pip install -i https://test.pypi.org/simple/ pymkm
 ```
-> ⚠️ Note: A stable release on PyPI will follow.
-
 From source:
 
 ```bash
