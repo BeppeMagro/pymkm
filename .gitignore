@@ -67,6 +67,7 @@ dmypy.json
 *.sh
 *.dot
 assets/*.drawio
+examples/_*
 build_and_verify.bat
 sync_dependencies_grep.py
 .spyproject/
