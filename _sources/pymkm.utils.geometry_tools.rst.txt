@@ -1,5 +1,5 @@
-pymkm.utils.geometry\_tools
-===========================
+pymkm.utils.geometry\_tools module
+==================================
 
 .. automodule:: pymkm.utils.geometry_tools
    :members:

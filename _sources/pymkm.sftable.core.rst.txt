@@ -1,5 +1,5 @@
-pymkm.sftable.core
-==================
+pymkm.sftable.core module
+=========================
 
 .. automodule:: pymkm.sftable.core
    :members:

@@ -1,5 +1,5 @@
-pymkm.data.defaults.fluka\_2020\_0
-==================================
+pymkm.data.defaults.fluka\_2020\_0 package
+==========================================
 
 .. automodule:: pymkm.data.defaults.fluka_2020_0
    :members:

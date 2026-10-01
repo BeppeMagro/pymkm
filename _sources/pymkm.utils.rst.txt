@@ -1,5 +1,5 @@
-pymkm.utils
-===========
+pymkm.utils package
+===================
 
 .. automodule:: pymkm.utils
    :members:
@@ -13,5 +13,6 @@ Submodules
    :maxdepth: 4
 
    pymkm.utils.geometry_tools
+   pymkm.utils.integration
    pymkm.utils.interpolation
    pymkm.utils.parallel

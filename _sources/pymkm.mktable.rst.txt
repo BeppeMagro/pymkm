@@ -1,5 +1,5 @@
-pymkm.mktable
-=============
+pymkm.mktable package
+=====================
 
 .. automodule:: pymkm.mktable
    :members:

@@ -1,5 +1,5 @@
-pymkm.sftable.plot
-==================
+pymkm.sftable.plot module
+=========================
 
 .. automodule:: pymkm.sftable.plot
    :members:

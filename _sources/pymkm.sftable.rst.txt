@@ -1,5 +1,5 @@
-pymkm.sftable
-=============
+pymkm.sftable package
+=====================
 
 .. automodule:: pymkm.sftable
    :members:

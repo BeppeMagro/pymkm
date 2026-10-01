@@ -1,5 +1,5 @@
-pymkm.io.stopping\_power
-========================
+pymkm.io.stopping\_power module
+===============================
 
 .. automodule:: pymkm.io.stopping_power
    :members:

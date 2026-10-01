@@ -1,5 +1,5 @@
-pymkm.io.data\_registry
-=======================
+pymkm.io.data\_registry module
+==============================
 
 .. automodule:: pymkm.io.data_registry
    :members:

@@ -1,5 +1,5 @@
-pymkm.data.defaults.mstar\_3\_12
-================================
+pymkm.data.defaults.mstar\_3\_12 package
+========================================
 
 .. automodule:: pymkm.data.defaults.mstar_3_12
    :members:

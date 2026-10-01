@@ -1,5 +1,5 @@
-pymkm
-=====
+pymkm package
+=============
 
 .. automodule:: pymkm
    :noindex:
@@ -18,6 +18,3 @@ Subpackages
    pymkm.physics
    pymkm.sftable
    pymkm.utils
-
-   
-   

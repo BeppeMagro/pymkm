@@ -1,8 +1,7 @@
-pymkm.mktable.core
-==================
+pymkm.mktable.core module
+=========================
 
 .. automodule:: pymkm.mktable.core
    :members:
-   :noindex:
    :undoc-members:
    :show-inheritance:
