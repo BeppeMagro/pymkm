@@ -1,5 +1,5 @@
-pymkm.physics.specific\_energy
-==============================
+pymkm.physics.specific\_energy module
+=====================================
 
 .. automodule:: pymkm.physics.specific_energy
    :members:

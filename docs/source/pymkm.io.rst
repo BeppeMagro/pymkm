@@ -1,5 +1,5 @@
-pymkm.io
-========
+pymkm.io package
+================
 
 .. automodule:: pymkm.io
    :members:

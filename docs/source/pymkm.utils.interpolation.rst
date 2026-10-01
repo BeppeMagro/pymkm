@@ -1,5 +1,5 @@
-pymkm.utils.interpolation
-=========================
+pymkm.utils.interpolation module
+================================
 
 .. automodule:: pymkm.utils.interpolation
    :members:

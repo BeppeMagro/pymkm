@@ -1,5 +1,5 @@
-pymkm.data.defaults
-===================
+pymkm.data.defaults package
+===========================
 
 .. automodule:: pymkm.data.defaults
    :members:

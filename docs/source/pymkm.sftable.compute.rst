@@ -1,5 +1,5 @@
-pymkm.sftable.compute
-=====================
+pymkm.sftable.compute module
+============================
 
 .. automodule:: pymkm.sftable.compute
    :members:

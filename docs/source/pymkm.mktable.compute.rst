@@ -1,4 +1,4 @@
-pymkm.mktable.compute
+pymkm.mktable.compute module
 ============================
 
 .. automodule:: pymkm.mktable.compute

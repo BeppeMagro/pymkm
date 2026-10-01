@@ -1,5 +1,5 @@
-pymkm.biology.oxygen\_effect
-============================
+pymkm.biology.oxygen\_effect module
+===================================
 
 .. automodule:: pymkm.biology.oxygen_effect
    :members:

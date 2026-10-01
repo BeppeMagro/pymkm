@@ -27,8 +27,7 @@ jobs:
 
       - name: 🛠 Build HTML with Sphinx
         run: |
-          sudo apt-get install -y make
-          make -C docs html
+          python tools/build_docs.py
           touch docs/build/html/.nojekyll
 
       - name: 🚀 Deploy to GitHub Pages

@@ -1,5 +1,5 @@
-pymkm.data
-==========
+pymkm.data package
+==================
 
 .. automodule:: pymkm.data
    :members:

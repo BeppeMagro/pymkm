@@ -1,5 +1,5 @@
-pymkm.physics
-=============
+pymkm.physics package
+=====================
 
 .. automodule:: pymkm.physics
    :members:

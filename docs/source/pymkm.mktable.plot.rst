@@ -1,5 +1,5 @@
-pymkm.mktable.plot
-==================
+pymkm.mktable.plot module
+=========================
 
 .. automodule:: pymkm.mktable.plot
    :members:

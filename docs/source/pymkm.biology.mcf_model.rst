@@ -1,7 +1,7 @@
-pymkm.io.stopping\_power module
+pymkm.biology.mcf\_model module
 ===============================
 
-.. automodule:: pymkm.io.stopping_power
+.. automodule:: pymkm.biology.mcf_model
    :members:
    :undoc-members:
    :show-inheritance:

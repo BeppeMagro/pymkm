@@ -298,7 +298,7 @@ def compute(
       - Aggregates into a structured table
 
     :param self: MKTable instance.
-    :type self: MKTable
+    :type self: pymkm.mktable.core.MKTable
     :param ions: Ion identifiers to compute. If None, all available ions are used.
     :type ions: list[str or int], optional
     :param energy: Custom energy grid for resampling (if any).
