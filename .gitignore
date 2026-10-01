@@ -64,7 +64,6 @@ dmypy.json
 .vscode/
 
 # Custom project files
-*.sh
 *.dot
 assets/*.drawio
 examples/_*
