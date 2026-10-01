@@ -9,8 +9,6 @@ recursive-include pymkm/data *.json
 
 # Include only in source distribution (sdist)
 recursive-include examples *
-recursive-include validation_results *
-recursive-include tests *
 
 # Prune dev/cache/build dirs
 prune .pytest_cache
@@ -18,7 +16,5 @@ prune .spyproject
 prune dist
 
 # Exclude dev scripts and leftover files
-exclude build_and_verify.bat
 global-exclude *.sh
-global-exclude sync_dependencies_grep.py
 global-exclude .gitignore
