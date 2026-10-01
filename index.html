@@ -172,7 +172,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -190,7 +190,8 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="pymkm.html">pymkm package</a><input aria-label="Toggle navigation of pymkm package" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymkm.biology.html">pymkm.biology package</a><input aria-label="Toggle navigation of pymkm.biology package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.biology.mcf_model.html">pymkm.biology.mcf_model module</a></li>
@@ -272,26 +273,49 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="welcome-to-pymkm-s-documentation">
-<h1>Welcome to pyMKM’s documentation!<a class="headerlink" href="#welcome-to-pymkm-s-documentation" title="Link to this heading">¶</a></h1>
+          <section id="pymkm-documentation">
+<h1>pyMKM documentation<a class="headerlink" href="#pymkm-documentation" title="Link to this heading">¶</a></h1>
+<p><strong>pyMKM</strong> is an open-source Python package for microdosimetric calculations
+and cell-survival modelling in radiobiology and hadrontherapy.</p>
+<p>The package provides implementations of several formulations of the
+Microdosimetric Kinetic Model, including:</p>
+<ul class="simple">
+<li><p>the classical Microdosimetric Kinetic Model (MKM);</p></li>
+<li><p>the stochastic MKM (SMK);</p></li>
+<li><p>oxygen-modified MKM formulations (OSMK);</p></li>
+<li><p>the MCF-MKM formulation based on impact-parameter-dependent specific energy.</p></li>
+</ul>
+<p>pyMKM includes tools for track-structure calculations, specific-energy
+distributions, microdosimetric table generation, survival calculations,
+stopping-power data handling, and model validation.</p>
+<section id="api-reference">
+<h2>API reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h2>
+<p>The API reference is generated automatically from the current <code class="docutils literal notranslate"><span class="pre">pymkm</span></code>
+package structure.</p>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pymkm.html">pymkm package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pymkm.html">pymkm package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.html#main-subpackages">Main subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.html#subpackages">Subpackages</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h1>
+<section id="indices">
+<h2>Indices<a class="headerlink" href="#indices" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
+</section>
 </section>
 
         </article>
@@ -327,8 +351,28 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">pyMKM documentation</a><ul>
+<li><a class="reference internal" href="#api-reference">API reference</a></li>
+<li><a class="reference internal" href="#indices">Indices</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
