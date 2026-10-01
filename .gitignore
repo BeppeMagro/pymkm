@@ -60,12 +60,9 @@ dmypy.json
 # Jupyter
 .ipynb_checkpoints
 
-# VS Code debugging
-.vscode/
 
 # Custom project files
 *.dot
 examples/_*
 .spyproject/
 
-# temp_beta
