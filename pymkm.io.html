@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="pymkm.io.data_registry" href="pymkm.io.data_registry.html"><link rel="prev" title="pymkm.data.defaults.mstar_3_12" href="pymkm.data.defaults.mstar_3_12.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.io - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -342,12 +342,12 @@ for multiple ion tables with utilities for batch resampling, filtering, and plot
 listed in <a class="reference internal" href="#pymkm.io.StoppingPowerTable.REQUIRED_DICT_KEYS" title="pymkm.io.StoppingPowerTable.REQUIRED_DICT_KEYS"><code class="xref py py-attr docutils literal notranslate"><span class="pre">StoppingPowerTable.REQUIRED_DICT_KEYS</span></code></a>, also listed below.</p>
 <p><strong>Expected dictionary format</strong>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;ion_symbol&quot;</span><span class="p">:</span> <span class="n">H</span><span class="p">,</span>                    <span class="c1"># str, symbol of the ion</span>
-    <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                    <span class="c1"># list/array of float, energy values (MeV/u)</span>
-    <span class="s2">&quot;let&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                       <span class="c1"># list/array of float, corresponding stopping powers (MeV/cm)</span>
-    <span class="s2">&quot;mass_number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>                   <span class="c1"># int, mass number of the ion</span>
-    <span class="s2">&quot;source_program&quot;</span><span class="p">:</span> <span class="n">fluka_2020_0</span>      <span class="c1"># str, program used to generate data</span>
-    <span class="s2">&quot;ionization_potential&quot;</span><span class="p">:</span> <span class="mf">75.0</span>        <span class="c1"># float, ionization potential (eV)</span>
+    <span class="s2">"ion_symbol"</span><span class="p">:</span> <span class="n">H</span><span class="p">,</span>                    <span class="c1"># str, symbol of the ion</span>
+    <span class="s2">"energy"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                    <span class="c1"># list/array of float, energy values (MeV/u)</span>
+    <span class="s2">"let"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                       <span class="c1"># list/array of float, corresponding stopping powers (MeV/cm)</span>
+    <span class="s2">"mass_number"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>                   <span class="c1"># int, mass number of the ion</span>
+    <span class="s2">"source_program"</span><span class="p">:</span> <span class="n">fluka_2020_0</span>      <span class="c1"># str, program used to generate data</span>
+    <span class="s2">"ionization_potential"</span><span class="p">:</span> <span class="mf">75.0</span>        <span class="c1"># float, ionization potential (eV)</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -581,8 +581,8 @@ Each table is a <a class="reference internal" href="pymkm.io.stopping_power.html
 stopping power tables. Each table dictionary must be a valid input for <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.from_dict" title="pymkm.io.stopping_power.StoppingPowerTable.from_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_dict()</span></code></a>.</p>
 <p><strong>Expected dictionary format</strong>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;Hydrogen&quot;</span><span class="p">:</span> <span class="p">{},</span>
-    <span class="s2">&quot;Helium&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">"Hydrogen"</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">"Helium"</span><span class="p">:</span> <span class="p">{},</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>

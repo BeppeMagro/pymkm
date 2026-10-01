@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.mktable.compute - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -268,15 +268,16 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.mktable.compute</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Computation engine for MKTable.</span>
 
 <span class="sd">This module defines the logic to compute microdosimetric quantities</span>
-<span class="sd">(z̄*, z̄_d, z̄_n) for a set of ions based on the MKM or SMK model using energy–LET tables.</span>
+<span class="sd">for a set of ions based on MKM, SMK, or MCF-MKM using energy–LET tables.</span>
 
-<span class="sd">It integrates track structure modeling, specific energy calculation,</span>
-<span class="sd">saturation correction, and optional oxygen-effect scaling (OSMK 2023).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">It integrates track structure modeling and specific-energy calculation with</span>
+<span class="sd">model-specific averaging, saturation correction, and optional oxygen-effect</span>
+<span class="sd">scaling (OSMK 2023).</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -290,12 +291,20 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.physics.particle_track</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParticleTrack</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.physics.specific_energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpecificEnergy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.utils.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">optimal_worker_count</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.biology.oxygen_effect</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_relative_radioresistance</span><span class="p">,</span> <span class="n">compute_scaling_factors</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.biology.oxygen_effect</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">compute_osmk2023_radioresistance</span><span class="p">,</span>
+    <span class="n">compute_osmk2023_effective_parameters</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.biology.mcf_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">compute_scaled_nuclear_specific_energy</span><span class="p">,</span>
+    <span class="n">compute_mcf_correction_factor</span><span class="p">,</span>
+    <span class="n">compute_mcf_averaged_quantities</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">MKTable</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_run_energy_let_task</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Internal wrapper for multiprocessing task execution.</span>
 
 <span class="sd">    :param func: Callable function to execute.</span>
@@ -303,8 +312,47 @@
 <span class="sd">    :param args: Tuple of arguments for the function.</span>
 <span class="sd">    :type args: tuple</span>
 <span class="sd">    :return: Output of func(*args)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_worker_params</span><span class="p">(</span>
+    <span class="n">mktable</span><span class="p">:</span> <span class="n">MKTable</span><span class="p">,</span>
+    <span class="n">integration_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"trapz"</span><span class="p">,</span>
+    <span class="n">domain_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">z0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build the flattened parameter dictionary used by microdosimetric workers.</span>
+
+<span class="sd">    :param mktable: Source MKTable instance.</span>
+<span class="sd">    :type mktable: MKTable</span>
+<span class="sd">    :param integration_method: Numerical integration method.</span>
+<span class="sd">    :type integration_method: str</span>
+<span class="sd">    :param domain_radius: Optional effective domain radius overriding the table value.</span>
+<span class="sd">    :type domain_radius: float or None</span>
+<span class="sd">    :param z0: Optional effective saturation parameter overriding the table value.</span>
+<span class="sd">    :type z0: float or None</span>
+
+<span class="sd">    :return: Flattened worker parameter dictionary.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    """</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">mktable</span><span class="o">.</span><span class="n">params</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"model_name"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
+        <span class="s2">"core_radius_type"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">core_radius_type</span><span class="p">,</span>
+        <span class="s2">"base_points_b"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">base_points_b</span><span class="p">,</span>
+        <span class="s2">"base_points_r"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">base_points_r</span><span class="p">,</span>
+        <span class="s2">"domain_radius"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">domain_radius</span> <span class="k">if</span> <span class="n">domain_radius</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">domain_radius</span><span class="p">,</span>
+        <span class="s2">"nucleus_radius"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">nucleus_radius</span><span class="p">,</span>
+        <span class="s2">"z0"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">z0</span> <span class="k">if</span> <span class="n">z0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">z0</span><span class="p">,</span>
+        <span class="s2">"alpha0"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">alpha0</span><span class="p">,</span>
+        <span class="s2">"beta0"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">beta0</span><span class="p">,</span>
+        <span class="s2">"use_stochastic_model"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">use_stochastic_model</span><span class="p">,</span>
+        <span class="s2">"use_mcf_model"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">use_mcf_model</span><span class="p">,</span>
+        <span class="s2">"mcf_nucleus_mode"</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">mcf_nucleus_mode</span><span class="p">,</span>
+        <span class="s2">"integration_method"</span><span class="p">:</span> <span class="n">integration_method</span><span class="p">,</span>
+    <span class="p">}</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_compute_for_energy_let_pair</span><span class="p">(</span>
     <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
@@ -312,7 +360,7 @@
     <span class="n">let</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">atomic_number</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute specific energies for one (energy, LET) pair.</span>
 
 <span class="sd">    :param params: Flattened MKTableParameters dictionary.</span>
@@ -326,103 +374,118 @@
 
 <span class="sd">    :return: Dictionary of computed microdosimetric quantities.</span>
 <span class="sd">    :rtype: dict</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">track</span> <span class="o">=</span> <span class="n">ParticleTrack</span><span class="p">(</span>
-        <span class="n">model_name</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;model_name&quot;</span><span class="p">],</span>
-        <span class="n">core_radius_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;core_radius_type&quot;</span><span class="p">],</span>
+        <span class="n">model_name</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"model_name"</span><span class="p">],</span>
+        <span class="n">core_radius_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"core_radius_type"</span><span class="p">],</span>
         <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
         <span class="n">atomic_number</span><span class="o">=</span><span class="n">atomic_number</span><span class="p">,</span>
         <span class="n">let</span><span class="o">=</span><span class="n">let</span><span class="p">,</span>
-        <span class="n">base_points</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;base_points_r&quot;</span><span class="p">],</span>
+        <span class="n">base_points</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"base_points_r"</span><span class="p">],</span>
     <span class="p">)</span>
 
-    <span class="n">se_domain</span> <span class="o">=</span> <span class="n">SpecificEnergy</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">region_radius</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;domain_radius&quot;</span><span class="p">])</span>
+    <span class="n">se_domain</span> <span class="o">=</span> <span class="n">SpecificEnergy</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">region_radius</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"domain_radius"</span><span class="p">])</span>
 
     <span class="n">z_domain</span><span class="p">,</span> <span class="n">b_domain</span> <span class="o">=</span> <span class="n">se_domain</span><span class="o">.</span><span class="n">single_event_specific_energy</span><span class="p">(</span>
-        <span class="n">base_points_b</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;base_points_b&quot;</span><span class="p">],</span>
-        <span class="n">base_points_r</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;base_points_r&quot;</span><span class="p">]</span>
+        <span class="n">base_points_b</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"base_points_b"</span><span class="p">],</span>
+        <span class="n">base_points_r</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"base_points_r"</span><span class="p">]</span>
     <span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"use_mcf_model"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mcf_nucleus_mode"</span><span class="p">,</span> <span class="s2">"scaled"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"scaled"</span><span class="p">:</span>
+            <span class="n">z_nucleus</span> <span class="o">=</span> <span class="n">compute_scaled_nuclear_specific_energy</span><span class="p">(</span>
+                <span class="n">z_domain</span><span class="o">=</span><span class="n">z_domain</span><span class="p">,</span>
+                <span class="n">domain_radius</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"domain_radius"</span><span class="p">],</span>
+                <span class="n">nucleus_radius</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"nucleus_radius"</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mcf_nucleus_mode"</span><span class="p">,</span> <span class="s2">"scaled"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"integrated"</span><span class="p">:</span>
+            <span class="n">se_nucleus</span> <span class="o">=</span> <span class="n">SpecificEnergy</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">region_radius</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"nucleus_radius"</span><span class="p">])</span>
+            <span class="n">z_nucleus</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">se_nucleus</span><span class="o">.</span><span class="n">single_event_specific_energy</span><span class="p">(</span>
+                <span class="n">impact_parameters</span><span class="o">=</span><span class="n">b_domain</span><span class="p">,</span>
+                <span class="n">base_points_r</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"base_points_r"</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"mcf_nucleus_mode must be either 'scaled' or 'integrated'."</span>
+            <span class="p">)</span>
+
+        <span class="n">c</span> <span class="o">=</span> <span class="n">compute_mcf_correction_factor</span><span class="p">(</span>
+            <span class="n">z_domain</span><span class="o">=</span><span class="n">z_domain</span><span class="p">,</span>
+            <span class="n">z_nucleus</span><span class="o">=</span><span class="n">z_nucleus</span><span class="p">,</span>
+            <span class="n">alpha0</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"alpha0"</span><span class="p">],</span>
+            <span class="n">beta0</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"beta0"</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">c_bar</span><span class="p">,</span> <span class="n">z_bar_c</span> <span class="o">=</span> <span class="n">compute_mcf_averaged_quantities</span><span class="p">(</span>
+            <span class="n">z_domain</span><span class="o">=</span><span class="n">z_domain</span><span class="p">,</span>
+            <span class="n">b_array</span><span class="o">=</span><span class="n">b_domain</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span>
+            <span class="n">integration_method</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"integration_method"</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"c_bar"</span><span class="p">:</span> <span class="n">c_bar</span><span class="p">,</span>
+            <span class="s2">"z_bar_c"</span><span class="p">:</span> <span class="n">z_bar_c</span>
+        <span class="p">}</span>
+
     <span class="n">z_prime_domain</span> <span class="o">=</span> <span class="n">se_domain</span><span class="o">.</span><span class="n">saturation_corrected_single_event_specific_energy</span><span class="p">(</span>
-        <span class="n">z0</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;z0&quot;</span><span class="p">],</span> <span class="n">z_array</span><span class="o">=</span><span class="n">z_domain</span>
+        <span class="n">z0</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"z0"</span><span class="p">],</span> <span class="n">z_array</span><span class="o">=</span><span class="n">z_domain</span>
     <span class="p">)</span>
 
     <span class="n">z_bar_star_domain</span> <span class="o">=</span> <span class="n">se_domain</span><span class="o">.</span><span class="n">dose_averaged_specific_energy</span><span class="p">(</span>
         <span class="n">z_array</span><span class="o">=</span><span class="n">z_domain</span><span class="p">,</span>
         <span class="n">b_array</span><span class="o">=</span><span class="n">b_domain</span><span class="p">,</span>
         <span class="n">z_corrected</span><span class="o">=</span><span class="n">z_prime_domain</span><span class="p">,</span>
-        <span class="n">integration_method</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;integration_method&quot;</span><span class="p">]</span>
+        <span class="n">integration_method</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"integration_method"</span><span class="p">]</span>
     <span class="p">)</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;z_bar_star_domain&quot;</span><span class="p">:</span> <span class="n">z_bar_star_domain</span>
+        <span class="s2">"z_bar_star_domain"</span><span class="p">:</span> <span class="n">z_bar_star_domain</span>
     <span class="p">}</span>
 
-    <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="s2">&quot;use_stochastic_model&quot;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="s2">"use_stochastic_model"</span><span class="p">]:</span>
         <span class="n">z_bar_domain</span> <span class="o">=</span> <span class="n">se_domain</span><span class="o">.</span><span class="n">dose_averaged_specific_energy</span><span class="p">(</span>
             <span class="n">z_array</span><span class="o">=</span><span class="n">z_domain</span><span class="p">,</span>
             <span class="n">b_array</span><span class="o">=</span><span class="n">b_domain</span><span class="p">,</span>
-            <span class="n">integration_method</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;integration_method&quot;</span><span class="p">]</span>
+            <span class="n">integration_method</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"integration_method"</span><span class="p">]</span>
         <span class="p">)</span>
 
-        <span class="n">se_nucleus</span> <span class="o">=</span> <span class="n">SpecificEnergy</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">region_radius</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;nucleus_radius&quot;</span><span class="p">])</span>
+        <span class="n">se_nucleus</span> <span class="o">=</span> <span class="n">SpecificEnergy</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">region_radius</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"nucleus_radius"</span><span class="p">])</span>
 
         <span class="n">z_nucleus</span><span class="p">,</span> <span class="n">b_nucleus</span> <span class="o">=</span> <span class="n">se_nucleus</span><span class="o">.</span><span class="n">single_event_specific_energy</span><span class="p">(</span>
-            <span class="n">base_points_b</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;base_points_b&quot;</span><span class="p">],</span>
-            <span class="n">base_points_r</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;base_points_r&quot;</span><span class="p">]</span>
+            <span class="n">base_points_b</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"base_points_b"</span><span class="p">],</span>
+            <span class="n">base_points_r</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"base_points_r"</span><span class="p">]</span>
         <span class="p">)</span>
 
         <span class="n">z_bar_nucleus</span> <span class="o">=</span> <span class="n">se_nucleus</span><span class="o">.</span><span class="n">dose_averaged_specific_energy</span><span class="p">(</span>
             <span class="n">z_array</span><span class="o">=</span><span class="n">z_nucleus</span><span class="p">,</span>
             <span class="n">b_array</span><span class="o">=</span><span class="n">b_nucleus</span><span class="p">,</span>
-            <span class="n">integration_method</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;integration_method&quot;</span><span class="p">]</span>
+            <span class="n">integration_method</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">"integration_method"</span><span class="p">]</span>
         <span class="p">)</span>
 
         <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-            <span class="s2">&quot;z_bar_domain&quot;</span><span class="p">:</span> <span class="n">z_bar_domain</span><span class="p">,</span>
-            <span class="s2">&quot;z_bar_nucleus&quot;</span><span class="p">:</span> <span class="n">z_bar_nucleus</span>
+            <span class="s2">"z_bar_domain"</span><span class="p">:</span> <span class="n">z_bar_domain</span><span class="p">,</span>
+            <span class="s2">"z_bar_nucleus"</span><span class="p">:</span> <span class="n">z_bar_nucleus</span>
         <span class="p">})</span>
 
     <span class="k">return</span> <span class="n">result</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_osmk2023_corrected_parameters</span><span class="p">(</span><span class="n">mktable</span><span class="p">:</span> <span class="n">MKTable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute oxygen-effect–corrected domain radius and z₀ using the OSMK 2023 model.</span>
-
-<span class="sd">    :param mktable: MKTable instance containing OSMK parameters.</span>
-<span class="sd">    :type mktable: MKTable</span>
-
-<span class="sd">    :returns: Tuple with (corrected_domain_radius, corrected_z0).</span>
-<span class="sd">    :rtype: tuple[float, float]</span>
-
-<span class="sd">    :raises ValueError: If required OSMK parameters are missing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="n">p</span> <span class="o">=</span> <span class="n">mktable</span><span class="o">.</span><span class="n">params</span>
-
-    <span class="n">R</span> <span class="o">=</span> <span class="n">compute_relative_radioresistance</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">pO2</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">pO2</span><span class="p">,</span> <span class="n">K_mult</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">p</span><span class="o">.</span><span class="n">Rmax</span><span class="p">)</span>
-    <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span> <span class="o">=</span> <span class="n">compute_scaling_factors</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">f_rd_max</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">f_z0_max</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">Rmax</span><span class="p">)</span>
-
-    <span class="n">rd_eff</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">domain_radius</span> <span class="o">/</span> <span class="n">f_rd</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-    <span class="n">z0_eff</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">z0</span> <span class="o">*</span> <span class="n">f_z0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">rd_eff</span><span class="p">,</span> <span class="n">z0_eff</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_for_ion</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">MKTable</span><span class="p">,</span> <span class="n">ion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">number_of_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">integration_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trapz&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_for_ion</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">MKTable</span><span class="p">,</span> <span class="n">ion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">number_of_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">integration_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"trapz"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute all specific energies for a given ion in the table set.</span>
 
-<span class="sd">    :param ion: Ion identifier (e.g., &quot;C&quot;, &quot;Carbon&quot;, 6).</span>
+<span class="sd">    :param ion: Ion identifier (e.g., "C", "Carbon", 6).</span>
 <span class="sd">    :type ion: str</span>
 <span class="sd">    :param parallel: Whether to use parallel processing.</span>
 <span class="sd">    :type parallel: bool</span>
 <span class="sd">    :param number_of_workers: Optional user-defined number of workers.</span>
 <span class="sd">    :type number_of_workers: int or None</span>
-<span class="sd">    :param integration_method: Numerical integration method (&#39;trapz&#39;, &#39;simps&#39;, or &#39;quad&#39;).</span>
+<span class="sd">    :param integration_method: Numerical integration method ('trapz', 'simps', or 'quad').</span>
 <span class="sd">    :type integration_method: str</span>
 
 <span class="sd">    :returns: Tuple of ion name and list of computed data entries.</span>
 <span class="sd">    :rtype: tuple[str, list[dict]]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">sp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion</span><span class="p">)</span>
@@ -434,11 +497,21 @@
     
     <span class="c1"># Prepare oxygen-corrected geometry if requested</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">apply_oxygen_effect</span><span class="p">:</span>
-        <span class="n">rd_eff</span><span class="p">,</span> <span class="n">z0_eff</span> <span class="o">=</span> <span class="n">_get_osmk2023_corrected_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span> <span class="o">=</span> <span class="n">compute_osmk2023_radioresistance</span><span class="p">(</span>
+            <span class="n">K</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">pO2</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">pO2</span><span class="p">,</span>
+            <span class="n">Rmax</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">Rmax</span><span class="p">,</span>
+            <span class="n">f_rd_max</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">f_rd_max</span><span class="p">,</span>
+            <span class="n">f_z0_max</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">f_z0_max</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">rd_eff</span><span class="p">,</span> <span class="n">z0_eff</span> <span class="o">=</span> <span class="n">compute_osmk2023_effective_parameters</span><span class="p">(</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">domain_radius</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">z0</span><span class="p">,</span> <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span>
+        <span class="p">)</span>
         
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✔ Using OSMK2023-corrected values:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; - domain_radius: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">domain_radius</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">rd_eff</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; - z0: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">z0</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">z0_eff</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"✔ Using OSMK2023-corrected values:"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">" - domain_radius: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">domain_radius</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">rd_eff</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">" - z0: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">z0</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">z0_eff</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">rd_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">domain_radius</span>
         <span class="n">z0_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">z0</span>
@@ -446,45 +519,35 @@
     <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
         <span class="n">worker_count</span> <span class="o">=</span> <span class="n">optimal_worker_count</span><span class="p">(</span><span class="n">job_list</span><span class="p">,</span> <span class="n">user_requested</span><span class="o">=</span><span class="n">number_of_workers</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">worker_count</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-            <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
-                <span class="s2">&quot;core_radius_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">core_radius_type</span><span class="p">,</span>
-                <span class="s2">&quot;base_points_b&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">base_points_b</span><span class="p">,</span>
-                <span class="s2">&quot;base_points_r&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">base_points_r</span><span class="p">,</span>
-                <span class="s2">&quot;domain_radius&quot;</span><span class="p">:</span> <span class="n">rd_eff</span><span class="p">,</span>
-                <span class="s2">&quot;nucleus_radius&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">nucleus_radius</span><span class="p">,</span>
-                <span class="s2">&quot;z0&quot;</span><span class="p">:</span> <span class="n">z0_eff</span><span class="p">,</span>
-                <span class="s2">&quot;use_stochastic_model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">use_stochastic_model</span><span class="p">,</span>
-                <span class="s2">&quot;integration_method&quot;</span><span class="p">:</span> <span class="n">integration_method</span>
-            <span class="p">}</span>
+            <span class="n">params_dict</span> <span class="o">=</span> <span class="n">_build_worker_params</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">integration_method</span><span class="o">=</span><span class="n">integration_method</span><span class="p">,</span>
+                <span class="n">domain_radius</span><span class="o">=</span><span class="n">rd_eff</span><span class="p">,</span>
+                <span class="n">z0</span><span class="o">=</span><span class="n">z0_eff</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_for_energy_let_pair</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">)</span>
             <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span>
                 <span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_run_energy_let_task</span><span class="p">,</span> <span class="n">func</span><span class="p">),</span> <span class="n">job_list</span><span class="p">),</span>
                 <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">job_list</span><span class="p">),</span>
-                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">worker_count</span><span class="si">}</span><span class="s2"> workers] </span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">ion_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">atomic_number</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">mass_number</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
-                <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;energy&quot;</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">worker_count</span><span class="si">}</span><span class="s2"> workers] </span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">ion_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">atomic_number</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">mass_number</span><span class="si">}</span><span class="s2">)"</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="s2">"energy"</span>
             <span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">job_list</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">ion_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">atomic_number</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">mass_number</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;energy&quot;</span><span class="p">):</span>
-            <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
-                <span class="s2">&quot;core_radius_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">core_radius_type</span><span class="p">,</span>
-                <span class="s2">&quot;base_points_b&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">base_points_b</span><span class="p">,</span>
-                <span class="s2">&quot;base_points_r&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">base_points_r</span><span class="p">,</span>
-                <span class="s2">&quot;domain_radius&quot;</span><span class="p">:</span> <span class="n">rd_eff</span><span class="p">,</span>
-                <span class="s2">&quot;nucleus_radius&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">nucleus_radius</span><span class="p">,</span>
-                <span class="s2">&quot;z0&quot;</span><span class="p">:</span> <span class="n">z0_eff</span><span class="p">,</span>
-                <span class="s2">&quot;use_stochastic_model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">use_stochastic_model</span><span class="p">,</span>
-                <span class="s2">&quot;integration_method&quot;</span><span class="p">:</span> <span class="n">integration_method</span>
-            <span class="p">}</span>
+        <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">job_list</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">ion_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">atomic_number</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">mass_number</span><span class="si">}</span><span class="s2">)"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"energy"</span><span class="p">):</span>
+            <span class="n">params_dict</span> <span class="o">=</span> <span class="n">_build_worker_params</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">integration_method</span><span class="o">=</span><span class="n">integration_method</span><span class="p">,</span>
+                <span class="n">domain_radius</span><span class="o">=</span><span class="n">rd_eff</span><span class="p">,</span>
+                <span class="n">z0</span><span class="o">=</span><span class="n">z0_eff</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_for_energy_let_pair</span><span class="p">(</span><span class="n">params_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">job</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">job_list</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
         <span class="n">E</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">job</span>
-        <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">E</span><span class="p">,</span> <span class="s2">&quot;let&quot;</span><span class="p">:</span> <span class="n">L</span><span class="p">})</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"energy"</span><span class="p">:</span> <span class="n">E</span><span class="p">,</span> <span class="s2">"let"</span><span class="p">:</span> <span class="n">L</span><span class="p">})</span>
 
     <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  ... completed in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">  ... completed in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ion</span><span class="p">,</span> <span class="n">results</span>
 
 <div class="viewcode-block" id="compute">
@@ -495,15 +558,15 @@
     <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">number_of_workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">integration_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trapz&quot;</span>
+    <span class="n">integration_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"trapz"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute per-ion microdosimetric tables using MKM or SMK model.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute per-ion microdosimetric tables using MKM, SMK, or MCF-MKM.</span>
 
 <span class="sd">    For each ion:</span>
 <span class="sd">      - Retrieves energy–LET grid</span>
 <span class="sd">      - Computes specific energy and dose-averaged quantities</span>
-<span class="sd">      - Applies saturation correction and optional OSMK</span>
+<span class="sd">      - Applies model-specific averaging, saturation correction, and optional OSMK</span>
 <span class="sd">      - Aggregates into a structured table</span>
 
 <span class="sd">    :param self: MKTable instance.</span>
@@ -516,14 +579,14 @@
 <span class="sd">    :type parallel: bool</span>
 <span class="sd">    :param number_of_workers: Optional user-defined number of workers.</span>
 <span class="sd">    :type number_of_workers: int or None</span>
-<span class="sd">    :param integration_method: Integration scheme (&#39;trapz&#39;, &#39;simps&#39;, &#39;quad&#39;).</span>
+<span class="sd">    :param integration_method: Integration scheme ('trapz', 'simps', 'quad').</span>
 <span class="sd">    :type integration_method: str</span>
 
 <span class="sd">    :raises RuntimeError: If MKTable is not initialized.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;MKTable is not properly initialized.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"MKTable is not properly initialized."</span><span class="p">)</span>
 
     <span class="n">ions</span> <span class="o">=</span> <span class="n">ions</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">get_available_ions</span><span class="p">()</span>
     <span class="n">ions</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">ion</span><span class="p">)</span> <span class="k">for</span> <span class="n">ion</span> <span class="ow">in</span> <span class="n">ions</span><span class="p">]</span>
@@ -534,17 +597,18 @@
 
     <span class="n">original_params</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
 
-    <span class="n">z0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">z0</span> <span class="ow">or</span> <span class="n">SpecificEnergy</span><span class="o">.</span><span class="n">compute_saturation_parameter</span><span class="p">(</span>
-        <span class="n">domain_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">domain_radius</span><span class="p">,</span>
-        <span class="n">nucleus_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">nucleus_radius</span><span class="p">,</span>
-        <span class="n">beta0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span>
-    <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">z0</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">z0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">use_mcf_model</span><span class="p">:</span>
+        <span class="n">z0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">z0</span> <span class="ow">or</span> <span class="n">SpecificEnergy</span><span class="o">.</span><span class="n">compute_saturation_parameter</span><span class="p">(</span>
+            <span class="n">domain_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">domain_radius</span><span class="p">,</span>
+            <span class="n">nucleus_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">nucleus_radius</span><span class="p">,</span>
+            <span class="n">beta0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">z0</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">z0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_parameters</span><span class="p">(</span><span class="n">original_params</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Starting table computation in </span><span class="si">{}</span><span class="s2"> mode ...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;parallel&quot;</span> <span class="k">if</span> <span class="n">parallel</span> <span class="k">else</span> <span class="s2">&quot;serial&quot;</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Ions to be computed: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ions</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Starting table computation in </span><span class="si">{}</span><span class="s2"> mode ..."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">"parallel"</span> <span class="k">if</span> <span class="n">parallel</span> <span class="k">else</span> <span class="s2">"serial"</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Ions to be computed: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ions</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">overall_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">ion</span> <span class="ow">in</span> <span class="n">ions</span><span class="p">:</span>
@@ -557,36 +621,44 @@
         <span class="n">sp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion_key</span><span class="p">)</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span>
-                <span class="s2">&quot;let&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;let&quot;</span><span class="p">],</span>
-                <span class="s2">&quot;z_bar_star_domain&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;z_bar_star_domain&quot;</span><span class="p">),</span>
-                <span class="s2">&quot;z_bar_domain&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;z_bar_domain&quot;</span><span class="p">),</span>
-                <span class="s2">&quot;z_bar_nucleus&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;z_bar_nucleus&quot;</span><span class="p">)</span>
-            <span class="p">}</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">use_mcf_model</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"energy"</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"energy"</span><span class="p">],</span>
+                    <span class="s2">"let"</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"let"</span><span class="p">],</span>
+                    <span class="s2">"c_bar"</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"c_bar"</span><span class="p">),</span>
+                    <span class="s2">"z_bar_c"</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"z_bar_c"</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"energy"</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"energy"</span><span class="p">],</span>
+                    <span class="s2">"let"</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"let"</span><span class="p">],</span>
+                    <span class="s2">"z_bar_star_domain"</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"z_bar_star_domain"</span><span class="p">),</span>
+                    <span class="s2">"z_bar_domain"</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"z_bar_domain"</span><span class="p">),</span>
+                    <span class="s2">"z_bar_nucleus"</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"z_bar_nucleus"</span><span class="p">)</span>
+                <span class="p">}</span>
             <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;energy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">sp_metadata</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-        <span class="n">sp_metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">sp_metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;let&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">sp_metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">sp_metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"let"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="n">enriched_results</span><span class="p">[</span><span class="n">ion_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">),</span>
-            <span class="s2">&quot;stopping_power_info&quot;</span><span class="p">:</span> <span class="n">sp_metadata</span><span class="p">,</span>
-            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">df</span>
+            <span class="s2">"params"</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">),</span>
+            <span class="s2">"stopping_power_info"</span><span class="p">:</span> <span class="n">sp_metadata</span><span class="p">,</span>
+            <span class="s2">"data"</span><span class="p">:</span> <span class="n">df</span>
         <span class="p">}</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">... finalizing results and updating ...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">... finalizing results and updating ..."</span><span class="p">)</span>
     <span class="n">sorted_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
         <span class="n">enriched_results</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
-        <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">enriched_results</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">&quot;stopping_power_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;atomic_number&quot;</span><span class="p">)</span>
+        <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">enriched_results</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">"stopping_power_info"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"atomic_number"</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">enriched_results</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">sorted_keys</span><span class="p">}</span>
 
     <span class="n">total_elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">overall_start</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">... done. Total elapsed time: </span><span class="si">{</span><span class="n">total_elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">... done. Total elapsed time: </span><span class="si">{</span><span class="n">total_elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds."</span><span class="p">)</span></div>
 
 
 <span class="n">MKTable</span><span class="o">.</span><span class="n">compute</span> <span class="o">=</span> <span class="n">compute</span>

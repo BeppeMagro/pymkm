@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="pymkm.mktable" href="pymkm.mktable.html"><link rel="prev" title="pymkm.io.stopping_power" href="pymkm.io.stopping_power.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.io.table_set - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -291,11 +291,11 @@ each representing LET vs. energy data for a different ion in liquid water.</p>
 <p>Used throughout pyMKM to provide LET data to physical and biological models.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.io.table_set</span><span class="w"> </span><span class="kn">import</span> <span class="n">StoppingPowerTableSet</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">StoppingPowerTableSet</span><span class="o">.</span><span class="n">from_default_source</span><span class="p">(</span><span class="s2">&quot;mstar_3_12&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">StoppingPowerTableSet</span><span class="o">.</span><span class="n">from_default_source</span><span class="p">(</span><span class="s2">"mstar_3_12"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_available_ions</span><span class="p">())</span>
-<span class="go">[&#39;Beryllium&#39;, &#39;Boron&#39;, &#39;Carbon&#39;, &#39;Fluorine&#39;, &#39;Helium&#39;, &#39;Hydrogen&#39;,</span>
-<span class="go"> &#39;Lithium&#39;, &#39;Neon&#39;, &#39;Nitrogen&#39;, &#39;Oxygen&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Carbon&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">['Beryllium', 'Boron', 'Carbon', 'Fluorine', 'Helium', 'Hydrogen',</span>
+<span class="go"> 'Lithium', 'Neon', 'Nitrogen', 'Oxygen']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"Carbon"</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -367,8 +367,8 @@ Each table is a <a class="reference internal" href="pymkm.io.stopping_power.html
 stopping power tables. Each table dictionary must be a valid input for <a class="reference internal" href="pymkm.io.stopping_power.html#pymkm.io.stopping_power.StoppingPowerTable.from_dict" title="pymkm.io.stopping_power.StoppingPowerTable.from_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_dict()</span></code></a>.</p>
 <p><strong>Expected dictionary format</strong>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;Hydrogen&quot;</span><span class="p">:</span> <span class="p">{},</span>
-    <span class="s2">&quot;Helium&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">"Hydrogen"</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">"Helium"</span><span class="p">:</span> <span class="p">{},</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>

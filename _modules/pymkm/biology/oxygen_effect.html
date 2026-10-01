@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.biology.oxygen_effect - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -268,150 +268,342 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.biology.oxygen_effect</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Oxygen effect modeling (OSMK 2021 and 2023) for microdosimetry.</span>
 
-<span class="sd">This module implements functions to compute:</span>
+<span class="sd">This module centralizes the model-specific oxygen calculations used by pyMKM:</span>
 
-<span class="sd">- Relative radioresistance :func:`compute_relative_radioresistance`</span>
-<span class="sd">- OSMK 2023 scaling factors :func:`compute_scaling_factors`</span>
-<span class="sd">- Oxygen-corrected α and β LQ parameters for hypoxia</span>
+<span class="sd">- relative radioresistance;</span>
+<span class="sd">- OSMK 2021 and OSMK 2023 radioresistance formulations;</span>
+<span class="sd">- OSMK 2023 scaling of microdosimetric parameters;</span>
+<span class="sd">- oxygen-corrected linear-quadratic coefficients.</span>
 
-<span class="sd">It supports both OSMK 2021 (γ, zR, Rm formulation) and OSMK 2023 (scaling model)</span>
-<span class="sd">based on microdosimetric specific energies and a parameter container.</span>
+<span class="sd">The core model functions expose explicit biological parameters. Compatibility</span>
+<span class="sd">wrappers accepting a parameter container are retained for the public API used</span>
+<span class="sd">by pyMKM 1.0.x.</span>
+<span class="sd">"""</span>
 
-<span class="sd">Intended for use during SMK post-processing when `apply_oxygen_effect=True`.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="n">Numeric</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+
 
 <div class="viewcode-block" id="compute_relative_radioresistance">
 <a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_relative_radioresistance">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">compute_relative_radioresistance</span><span class="p">(</span><span class="n">K</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pO2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">K_mult</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the relative radioresistance R based on oxygen tension and model-dependent scaling.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_relative_radioresistance</span><span class="p">(</span>
+    <span class="n">K</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">pO2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">K_mult</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute relative radioresistance from oxygen tension and a model term.</span>
 
-<span class="sd">    This function is used in both OSMK 2021 and OSMK 2023 models.</span>
-<span class="sd">    </span>
-<span class="sd">    :param K: Oxygen pressure [mmHg] at which R = (1 + Rmax)/2.</span>
+<span class="sd">    :param K: Oxygen pressure [mmHg] at which the radioresistance transition is centered.</span>
 <span class="sd">    :param pO2: Partial pressure of oxygen [mmHg].</span>
-<span class="sd">    :param K_mult: Model-specific multiplicative term for the denominator.</span>
-<span class="sd">    :returns: Relative radioresistance values (R).</span>
-<span class="sd">    :rtype: np.ndarray</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :param K_mult: Model-specific multiplicative term in the denominator.</span>
+<span class="sd">    :return: Relative radioresistance ``R``.</span>
+<span class="sd">    """</span>
     <span class="n">denominator</span> <span class="o">=</span> <span class="n">pO2</span> <span class="o">+</span> <span class="n">K</span> <span class="o">*</span> <span class="n">K_mult</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">pO2</span> <span class="o">+</span> <span class="n">K</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span></div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_scaling_factor_component</span><span class="p">(</span><span class="n">R</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">f_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Rmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Internal helper to compute a scaling factor (e.g., for rd or z0) based on R.</span>
-
-<span class="sd">    :param R: Relative radioresistance.</span>
-<span class="sd">    :param f_max: Maximum scaling factor at full hypoxia (pO2 = 0).</span>
-<span class="sd">    :param Rmax: Maximum radioresistance at pO2 = 0.</span>
-<span class="sd">    :returns: Scaling factor array for the given quantity.</span>
-<span class="sd">    :rtype: np.ndarray</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_scaling_factor_component</span><span class="p">(</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">f_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">Rmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Compute one OSMK 2023 scaling-factor component from ``R``."""</span>
     <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">R</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">f_max</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Rmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="compute_scaling_factors">
 <a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_scaling_factors">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_scaling_factors</span><span class="p">(</span>
-    <span class="n">R</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">f_rd_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f_z0_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Rmax</span><span class="p">:</span> <span class="nb">float</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute scaling factors for domain radius and z0 (OSMK 2023).</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">f_rd_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">f_z0_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">Rmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Numeric</span><span class="p">,</span> <span class="n">Numeric</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute OSMK 2023 scaling factors for domain radius and ``z0``.</span>
 
 <span class="sd">    :param R: Relative radioresistance.</span>
-<span class="sd">    :param f_rd_max: Max scaling factor for domain radius at pO2 = 0.</span>
-<span class="sd">    :param f_z0_max: Max scaling factor for z0 at pO2 = 0.</span>
-<span class="sd">    :param Rmax: Maximum radioresistance at pO2 = 0.</span>
-<span class="sd">    :returns: Tuple of (f_rd, f_z0) scaling factors.</span>
-<span class="sd">    :rtype: tuple[np.ndarray, np.ndarray]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :param f_rd_max: Maximum domain-radius scaling factor at full hypoxia.</span>
+<span class="sd">    :param f_z0_max: Maximum saturation-parameter scaling factor at full hypoxia.</span>
+<span class="sd">    :param Rmax: Maximum radioresistance at ``pO2 = 0``.</span>
+<span class="sd">    :return: Tuple ``(f_rd, f_z0)``.</span>
+<span class="sd">    """</span>
     <span class="n">f_rd</span> <span class="o">=</span> <span class="n">_compute_scaling_factor_component</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">f_rd_max</span><span class="p">,</span> <span class="n">Rmax</span><span class="p">)</span>
     <span class="n">f_z0</span> <span class="o">=</span> <span class="n">_compute_scaling_factor_component</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">f_z0_max</span><span class="p">,</span> <span class="n">Rmax</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
     <span class="k">return</span> <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span></div>
 
 
 
+<div class="viewcode-block" id="compute_osmk2021_radioresistance">
+<a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2021_radioresistance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_osmk2021_radioresistance</span><span class="p">(</span>
+    <span class="n">z_bar_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">K</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">pO2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">zR</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">Rm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute relative radioresistance according to OSMK 2021.</span>
+
+<span class="sd">    :param z_bar_domain: Dose-mean domain specific energy [Gy].</span>
+<span class="sd">    :param K: Oxygen pressure parameter [mmHg].</span>
+<span class="sd">    :param pO2: Oxygen partial pressure [mmHg].</span>
+<span class="sd">    :param zR: Radiation-quality oxygen parameter [Gy].</span>
+<span class="sd">    :param gamma: Exponent of the OSMK 2021 radiation-quality term.</span>
+<span class="sd">    :param Rm: Minimum value of the radiation-quality-dependent maximum radioresistance.</span>
+<span class="sd">    :return: Relative radioresistance ``R``.</span>
+<span class="sd">    """</span>
+    <span class="n">z_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">z_bar_domain</span> <span class="o">/</span> <span class="n">zR</span><span class="p">)</span> <span class="o">**</span> <span class="n">gamma</span>
+    <span class="n">K_mult</span> <span class="o">=</span> <span class="p">(</span><span class="n">z_ratio</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">z_ratio</span> <span class="o">+</span> <span class="n">Rm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">compute_relative_radioresistance</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">pO2</span><span class="o">=</span><span class="n">pO2</span><span class="p">,</span> <span class="n">K_mult</span><span class="o">=</span><span class="n">K_mult</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_osmk2023_radioresistance">
+<a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2023_radioresistance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_osmk2023_radioresistance</span><span class="p">(</span>
+    <span class="n">K</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">pO2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">Rmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">f_rd_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">f_z0_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Numeric</span><span class="p">,</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">Numeric</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute OSMK 2023 radioresistance and microdosimetric scaling factors.</span>
+
+<span class="sd">    :param K: Oxygen pressure parameter [mmHg].</span>
+<span class="sd">    :param pO2: Oxygen partial pressure [mmHg].</span>
+<span class="sd">    :param Rmax: Maximum radioresistance at ``pO2 = 0``.</span>
+<span class="sd">    :param f_rd_max: Maximum domain-radius scaling factor at full hypoxia.</span>
+<span class="sd">    :param f_z0_max: Maximum saturation-parameter scaling factor at full hypoxia.</span>
+<span class="sd">    :return: Tuple ``(R, f_rd, f_z0)``.</span>
+<span class="sd">    """</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">compute_relative_radioresistance</span><span class="p">(</span>
+        <span class="n">K</span><span class="o">=</span><span class="n">K</span><span class="p">,</span>
+        <span class="n">pO2</span><span class="o">=</span><span class="n">pO2</span><span class="p">,</span>
+        <span class="n">K_mult</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">Rmax</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span> <span class="o">=</span> <span class="n">compute_scaling_factors</span><span class="p">(</span>
+        <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span>
+        <span class="n">f_rd_max</span><span class="o">=</span><span class="n">f_rd_max</span><span class="p">,</span>
+        <span class="n">f_z0_max</span><span class="o">=</span><span class="n">f_z0_max</span><span class="p">,</span>
+        <span class="n">Rmax</span><span class="o">=</span><span class="n">Rmax</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span><span class="p">,</span> <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span></div>
+
+
+
+<div class="viewcode-block" id="compute_osmk2023_effective_parameters">
+<a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2023_effective_parameters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_osmk2023_effective_parameters</span><span class="p">(</span>
+    <span class="n">domain_radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">z0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">f_rd</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">f_z0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Apply OSMK 2023 scaling to the microdosimetric parameters.</span>
+
+<span class="sd">    The shared numerical precision is three decimal places for the effective</span>
+<span class="sd">    domain radius and two decimal places for the effective saturation parameter.</span>
+
+<span class="sd">    :param domain_radius: Baseline domain radius [um].</span>
+<span class="sd">    :param z0: Baseline saturation parameter [Gy].</span>
+<span class="sd">    :param f_rd: OSMK 2023 domain-radius scaling factor.</span>
+<span class="sd">    :param f_z0: OSMK 2023 saturation-parameter scaling factor.</span>
+<span class="sd">    :return: Tuple ``(effective_domain_radius, effective_z0)``.</span>
+<span class="sd">    """</span>
+    <span class="n">effective_domain_radius</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">domain_radius</span> <span class="o">/</span> <span class="n">f_rd</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">effective_z0</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">z0</span> <span class="o">*</span> <span class="n">f_z0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">effective_domain_radius</span><span class="p">,</span> <span class="n">effective_z0</span></div>
+
+
+
 <div class="viewcode-block" id="compute_osmk_radioresistance">
 <a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_radioresistance">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_osmk_radioresistance</span><span class="p">(</span>
-    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">z_bar_domain</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">params</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute relative radioresistance R using the OSMK model.</span>
+    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">z_bar_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Numeric</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Numeric</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Numeric</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compatibility dispatcher for OSMK 2021/2023 radioresistance.</span>
 
-<span class="sd">    Supports both OSMK 2021 and OSMK 2023. Also computes scaling factors</span>
-<span class="sd">    (f_rd, f_z0) for OSMK 2023 if requested.</span>
+<span class="sd">    This retains the pyMKM 1.0.x container-based API. New internal code uses</span>
+<span class="sd">    :func:`compute_osmk2021_radioresistance` and</span>
+<span class="sd">    :func:`compute_osmk2023_radioresistance` directly.</span>
 
-<span class="sd">    :param version: OSMK model version (&#39;2021&#39; or &#39;2023&#39;).</span>
-<span class="sd">    :param z_bar_domain: Dose-mean specific energy of the domain.</span>
-<span class="sd">    :param params: Parameter object with required attributes.</span>
-<span class="sd">    :returns: Tuple (R, f_rd, f_z0). f_rd and f_z0 are None for version &#39;2021&#39;.</span>
-<span class="sd">    :rtype: tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]</span>
+<span class="sd">    :param version: OSMK model version (``'2021'`` or ``'2023'``).</span>
+<span class="sd">    :param z_bar_domain: Dose-mean domain specific energy [Gy].</span>
+<span class="sd">    :param params: Parameter object with the attributes required by the selected version.</span>
+<span class="sd">    :return: Tuple ``(R, f_rd, f_z0)``; the scaling factors are ``None`` for OSMK 2021.</span>
 <span class="sd">    :raises ValueError: If the version is unsupported.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;2021&quot;</span><span class="p">:</span>
-        <span class="n">zR</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">zR</span>
-        <span class="n">gamma</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">gamma</span>
-        <span class="n">Rm</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">Rm</span>
-        <span class="n">z_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">z_bar_domain</span> <span class="o">/</span> <span class="n">zR</span><span class="p">)</span> <span class="o">**</span> <span class="n">gamma</span>
-        <span class="n">K_mult</span> <span class="o">=</span> <span class="p">(</span><span class="n">z_ratio</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">z_ratio</span> <span class="o">+</span> <span class="n">Rm</span><span class="p">)</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="n">compute_relative_radioresistance</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">pO2</span><span class="p">,</span> <span class="n">K_mult</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">"2021"</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">compute_osmk2021_radioresistance</span><span class="p">(</span>
+            <span class="n">z_bar_domain</span><span class="o">=</span><span class="n">z_bar_domain</span><span class="p">,</span>
+            <span class="n">K</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">pO2</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">pO2</span><span class="p">,</span>
+            <span class="n">zR</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">zR</span><span class="p">,</span>
+            <span class="n">gamma</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span>
+            <span class="n">Rm</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">Rm</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">R</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
-    <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;2023&quot;</span><span class="p">:</span>
-        <span class="n">Rmax</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">Rmax</span>
-        <span class="n">K_mult</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">Rmax</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="n">compute_relative_radioresistance</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">pO2</span><span class="p">,</span> <span class="n">K_mult</span><span class="p">)</span>
-        <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span> <span class="o">=</span> <span class="n">compute_scaling_factors</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">f_rd_max</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">f_z0_max</span><span class="p">,</span> <span class="n">Rmax</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">R</span><span class="p">,</span> <span class="n">f_rd</span><span class="p">,</span> <span class="n">f_z0</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">"2023"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">compute_osmk2023_radioresistance</span><span class="p">(</span>
+            <span class="n">K</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">pO2</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">pO2</span><span class="p">,</span>
+            <span class="n">Rmax</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">Rmax</span><span class="p">,</span>
+            <span class="n">f_rd_max</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">f_rd_max</span><span class="p">,</span>
+            <span class="n">f_z0_max</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">f_z0_max</span><span class="p">,</span>
+        <span class="p">)</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported OSMK version: </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported OSMK version: </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_osmk_alpha">
+<a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_alpha">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_osmk_alpha</span><span class="p">(</span>
+    <span class="n">z_bar_star_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">alphaL</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">alphaS</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">beta0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Compute the oxygen-corrected OSMK linear LQ coefficient."""</span>
+    <span class="k">return</span> <span class="n">alphaL</span> <span class="o">+</span> <span class="p">(</span><span class="n">alphaS</span> <span class="o">/</span> <span class="n">R</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">beta0</span> <span class="o">*</span> <span class="n">z_bar_star_domain</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="compute_osmk_beta">
+<a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_beta">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_osmk_beta</span><span class="p">(</span>
+    <span class="n">z_bar_star_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">z_bar_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">beta0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Compute the oxygen-corrected OSMK quadratic LQ coefficient."""</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">z_bar_star_domain</span> <span class="o">/</span> <span class="n">z_bar_domain</span><span class="p">)</span> <span class="o">*</span> <span class="n">beta0</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="apply_oxygen_correction_alpha">
 <a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.apply_oxygen_correction_alpha">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">apply_oxygen_correction_alpha</span><span class="p">(</span><span class="n">z_bar_star_domain</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute oxygen-corrected alpha (LQ model) using the OSMK model.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_oxygen_correction_alpha</span><span class="p">(</span>
+    <span class="n">z_bar_star_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compatibility wrapper for the pyMKM 1.0.x container-based alpha API.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">compute_osmk_alpha</span><span class="p">(</span>
+        <span class="n">z_bar_star_domain</span><span class="o">=</span><span class="n">z_bar_star_domain</span><span class="p">,</span>
+        <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span>
+        <span class="n">alphaL</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">alphaL</span><span class="p">,</span>
+        <span class="n">alphaS</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">alphaS</span><span class="p">,</span>
+        <span class="n">beta0</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
-<span class="sd">    :param z_bar_star_domain: Saturation-corrected specific energy.</span>
-<span class="sd">    :param R: Relative radioresistance.</span>
-<span class="sd">    :param params: Object with attributes: alphaL, alphaS, beta0.</span>
-<span class="sd">    :returns: Oxygen-corrected alpha values.</span>
-<span class="sd">    :rtype: np.ndarray</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">alphaL</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">alphaL</span>
-    <span class="n">alphaS</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">alphaS</span>
-    <span class="n">beta0</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">beta0</span>
-    
-    <span class="k">return</span> <span class="n">alphaL</span> <span class="o">+</span> <span class="p">(</span><span class="n">alphaS</span> <span class="o">/</span> <span class="n">R</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">beta0</span> <span class="o">*</span> <span class="n">z_bar_star_domain</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="apply_oxygen_correction_beta">
 <a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.apply_oxygen_correction_beta">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">apply_oxygen_correction_beta</span><span class="p">(</span><span class="n">z_bar_star_domain</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">z_bar_domain</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute oxygen-corrected beta (LQ model) using the OSMK model.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_oxygen_correction_beta</span><span class="p">(</span>
+    <span class="n">z_bar_star_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">z_bar_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compatibility wrapper for the pyMKM 1.0.x container-based beta API.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">compute_osmk_beta</span><span class="p">(</span>
+        <span class="n">z_bar_star_domain</span><span class="o">=</span><span class="n">z_bar_star_domain</span><span class="p">,</span>
+        <span class="n">z_bar_domain</span><span class="o">=</span><span class="n">z_bar_domain</span><span class="p">,</span>
+        <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span>
+        <span class="n">beta0</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
-<span class="sd">    :param z_bar_star_domain: Saturation-corrected specific energy (Gy).</span>
-<span class="sd">    :param z_bar_domain: Dose-mean specific energy (Gy).</span>
+
+
+<div class="viewcode-block" id="compute_osmk_lq_coefficients">
+<a class="viewcode-back" href="../../../pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_lq_coefficients">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_osmk_lq_coefficients</span><span class="p">(</span>
+    <span class="n">z_bar_star_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">z_bar_domain</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">alphaL</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">alphaS</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">beta0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Numeric</span><span class="p">,</span> <span class="n">Numeric</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute oxygen-corrected OSMK linear-quadratic coefficients.</span>
+
+<span class="sd">    The preferred API passes ``alphaL``, ``alphaS`` and ``beta0`` explicitly.</span>
+<span class="sd">    For backward compatibility, a pyMKM 1.0.x-style ``params`` object may be</span>
+<span class="sd">    supplied instead. The two forms cannot be mixed.</span>
+
+<span class="sd">    :param z_bar_star_domain: Saturation-corrected dose-mean domain specific energy [Gy].</span>
+<span class="sd">    :param z_bar_domain: Uncorrected dose-mean domain specific energy [Gy].</span>
 <span class="sd">    :param R: Relative radioresistance.</span>
-<span class="sd">    :param params: Object with attribute beta0.</span>
-<span class="sd">    :returns: Oxygen-corrected beta values.</span>
-<span class="sd">    :rtype: np.ndarray</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">beta0</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">beta0</span>
-    
-    <span class="k">return</span> <span class="p">(</span><span class="n">z_bar_star_domain</span> <span class="o">/</span> <span class="n">z_bar_domain</span><span class="p">)</span> <span class="o">*</span> <span class="n">beta0</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+<span class="sd">    :param params: Optional compatibility parameter container.</span>
+<span class="sd">    :param alphaL: Linear coefficient for lethal lesions [Gy^-1].</span>
+<span class="sd">    :param alphaS: Linear coefficient for sublethal lesions [Gy^-1].</span>
+<span class="sd">    :param beta0: Low-LET quadratic LQ coefficient [Gy^-2].</span>
+<span class="sd">    :return: Tuple ``(alpha_OSMK, beta_OSMK)``.</span>
+<span class="sd">    :raises ValueError: If explicit parameters are incomplete or mixed with ``params``.</span>
+<span class="sd">    """</span>
+    <span class="n">explicit_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">alphaL</span><span class="p">,</span> <span class="n">alphaS</span><span class="p">,</span> <span class="n">beta0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">explicit_values</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"Provide either params or explicit alphaL/alphaS/beta0 values, not both."</span>
+            <span class="p">)</span>
+        <span class="n">alphaL</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">alphaL</span>
+        <span class="n">alphaS</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">alphaS</span>
+        <span class="n">beta0</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">beta0</span>
+    <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">explicit_values</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"alphaL, alphaS, and beta0 must all be provided when params is omitted."</span>
+        <span class="p">)</span>
+
+    <span class="n">z_bar_domain_safe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z_bar_domain</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span>
+        <span class="n">z_bar_domain</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">alpha_osmk</span> <span class="o">=</span> <span class="n">compute_osmk_alpha</span><span class="p">(</span>
+        <span class="n">z_bar_star_domain</span><span class="o">=</span><span class="n">z_bar_star_domain</span><span class="p">,</span>
+        <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span>
+        <span class="n">alphaL</span><span class="o">=</span><span class="n">alphaL</span><span class="p">,</span>
+        <span class="n">alphaS</span><span class="o">=</span><span class="n">alphaS</span><span class="p">,</span>
+        <span class="n">beta0</span><span class="o">=</span><span class="n">beta0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">beta_osmk</span> <span class="o">=</span> <span class="n">compute_osmk_beta</span><span class="p">(</span>
+        <span class="n">z_bar_star_domain</span><span class="o">=</span><span class="n">z_bar_star_domain</span><span class="p">,</span>
+        <span class="n">z_bar_domain</span><span class="o">=</span><span class="n">z_bar_domain_safe</span><span class="p">,</span>
+        <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span>
+        <span class="n">beta0</span><span class="o">=</span><span class="n">beta0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">alpha_osmk</span><span class="p">,</span> <span class="n">beta_osmk</span></div>
 
 </pre></div>
         </article>

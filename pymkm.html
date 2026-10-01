@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="pymkm.biology" href="pymkm.biology.html"><link rel="prev" title="Welcome to pyMKM’s documentation!" href="index.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -312,6 +312,12 @@ microdosimetry, and radiobiology modeling.</p>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.biology.oxygen_effect.html">pymkm.biology.oxygen_effect</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.apply_oxygen_correction_alpha"><code class="docutils literal notranslate"><span class="pre">apply_oxygen_correction_alpha()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.apply_oxygen_correction_beta"><code class="docutils literal notranslate"><span class="pre">apply_oxygen_correction_beta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2021_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_osmk2021_radioresistance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2023_effective_parameters"><code class="docutils literal notranslate"><span class="pre">compute_osmk2023_effective_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2023_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_osmk2023_radioresistance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_alpha"><code class="docutils literal notranslate"><span class="pre">compute_osmk_alpha()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_beta"><code class="docutils literal notranslate"><span class="pre">compute_osmk_beta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_lq_coefficients"><code class="docutils literal notranslate"><span class="pre">compute_osmk_lq_coefficients()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_osmk_radioresistance()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_relative_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_relative_radioresistance()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_scaling_factors"><code class="docutils literal notranslate"><span class="pre">compute_scaling_factors()</span></code></a></li>
@@ -415,6 +421,7 @@ microdosimetry, and radiobiology modeling.</p>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters"><code class="docutils literal notranslate"><span class="pre">MKTableParameters</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.K"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.K</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.Rmax"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.Rmax</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.alpha0"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.alpha0</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.apply_oxygen_effect"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.apply_oxygen_effect</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.base_points_b"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.base_points_b</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.base_points_r"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.base_points_r</span></code></a></li>
@@ -424,9 +431,11 @@ microdosimetry, and radiobiology modeling.</p>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.f_rd_max"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.f_rd_max</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.f_z0_max"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.f_z0_max</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.from_dict"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.from_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.mcf_nucleus_mode"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.mcf_nucleus_mode</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.model_name"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.model_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.nucleus_radius"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.nucleus_radius</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.pO2"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.pO2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.use_mcf_model"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.use_mcf_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.use_stochastic_model"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.use_stochastic_model</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTableParameters.z0"><code class="docutils literal notranslate"><span class="pre">MKTableParameters.z0</span></code></a></li>
 </ul>

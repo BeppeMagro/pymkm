@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.io.stopping_power - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -268,7 +268,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.io.stopping_power</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Representation of stopping power data for individual ions.</span>
 
 <span class="sd">This module defines the :class:`StoppingPowerTable`, which stores and validates</span>
@@ -288,13 +288,13 @@
 <span class="sd">--------</span>
 
 <span class="sd">&gt;&gt;&gt; from pymkm.io.stopping_power import StoppingPowerTable</span>
-<span class="sd">&gt;&gt;&gt; spt = StoppingPowerTable.from_txt(&quot;defaults/mstar_3_12/Z06_A12_Carbon.txt&quot;)</span>
+<span class="sd">&gt;&gt;&gt; spt = StoppingPowerTable.from_txt("defaults/mstar_3_12/Z06_A12_Carbon.txt")</span>
 <span class="sd">&gt;&gt;&gt; spt.ion_symbol</span>
-<span class="sd">&#39;C&#39;</span>
+<span class="sd">'C'</span>
 <span class="sd">&gt;&gt;&gt; spt.energy[:3]</span>
 <span class="sd">array([1.0, 2.0, 3.0])</span>
 <span class="sd">&gt;&gt;&gt; spt.plot(show=False)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -307,45 +307,45 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.utils.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interpolator</span>
 
 <span class="c1"># Always show warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;always&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"always"</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StoppingPowerTable">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StoppingPowerTable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class for representing and handling stopping power (LET) data for ions in liquid water.</span>
 <span class="sd">    </span>
 <span class="sd">    Provides utilities for data validation, plotting, serialization, and interpolation.</span>
 <span class="sd">    :attr REQUIRED_HEADER_KEYS: Required header keys for parsing stopping power tables.</span>
 <span class="sd">    :attr REQUIRED_DICT_KEYS: Required dictionary keys for internal representation.</span>
 <span class="sd">    :attr DEFAULT_TARGET: Default target material (``WATER_LIQUID``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     
-    <span class="n">REQUIRED_HEADER_KEYS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Ion&quot;</span><span class="p">,</span> <span class="s2">&quot;AtomicNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;MassNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;SourceProgram&quot;</span><span class="p">,</span> <span class="s2">&quot;IonizationPotential&quot;</span><span class="p">,</span> <span class="s2">&quot;Target&quot;</span><span class="p">]</span>
-    <span class="n">REQUIRED_DICT_KEYS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ion_symbol&quot;</span><span class="p">,</span> <span class="s2">&quot;atomic_number&quot;</span><span class="p">,</span> <span class="s2">&quot;mass_number&quot;</span><span class="p">,</span> <span class="s2">&quot;source_program&quot;</span><span class="p">,</span> <span class="s2">&quot;ionization_potential&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
-    <span class="n">DEFAULT_TARGET</span> <span class="o">=</span> <span class="s2">&quot;WATER_LIQUID&quot;</span> 
+    <span class="n">REQUIRED_HEADER_KEYS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Ion"</span><span class="p">,</span> <span class="s2">"AtomicNumber"</span><span class="p">,</span> <span class="s2">"MassNumber"</span><span class="p">,</span> <span class="s2">"SourceProgram"</span><span class="p">,</span> <span class="s2">"IonizationPotential"</span><span class="p">,</span> <span class="s2">"Target"</span><span class="p">]</span>
+    <span class="n">REQUIRED_DICT_KEYS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ion_symbol"</span><span class="p">,</span> <span class="s2">"atomic_number"</span><span class="p">,</span> <span class="s2">"mass_number"</span><span class="p">,</span> <span class="s2">"source_program"</span><span class="p">,</span> <span class="s2">"ionization_potential"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
+    <span class="n">DEFAULT_TARGET</span> <span class="o">=</span> <span class="s2">"WATER_LIQUID"</span> 
 
 <div class="viewcode-block" id="StoppingPowerTable.get_lookup_table">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable.get_lookup_table">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_lookup_table</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Retrieve the ion properties lookup table used to resolve ion metadata.</span>
 <span class="sd">    </span>
-<span class="sd">        The table maps element names (e.g., &quot;Carbon&quot;) to their symbol, atomic number,</span>
+<span class="sd">        The table maps element names (e.g., "Carbon") to their symbol, atomic number,</span>
 <span class="sd">        mass number, and display color. Based on IUPAC reference data from:</span>
 <span class="sd">        https://ciaaw.org/atomic-weights.htm</span>
 <span class="sd">    </span>
 <span class="sd">        :returns: A dictionary with element names as keys and their properties as nested dictionaries.</span>
 <span class="sd">        :rtype: dict[str, dict[str, int]]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">load_lookup_table</span><span class="p">()</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">energy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">let</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">mass_number</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">source_program</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">ionization_potential</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize a StoppingPowerTable for a given ion.</span>
 <span class="sd">    </span>
 <span class="sd">        :param ion_input: Ion identifier (element name, symbol, or atomic number).</span>
@@ -363,38 +363,38 @@
 <span class="sd">    </span>
 <span class="sd">        :raises TypeError: If ion_input is not a valid type.</span>
 <span class="sd">        :raises ValueError: If ion cannot be resolved in the lookup table.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">lookup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lookup_table</span><span class="p">()</span>
 
-        <span class="c1"># Try matching a full element name (e.g., &quot;Carbon&quot;)</span>
+        <span class="c1"># Try matching a full element name (e.g., "Carbon")</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ion_input</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ion_input</span> <span class="ow">in</span> <span class="n">lookup</span><span class="p">:</span>
             <span class="n">ion_data</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">ion_input</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span> <span class="o">=</span> <span class="n">ion_data</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span> <span class="o">=</span> <span class="n">ion_data</span><span class="p">[</span><span class="s2">"symbol"</span><span class="p">]</span>
         
-        <span class="c1"># Try matching an element symbol (e.g., &quot;C&quot;)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ion_input</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ion_input</span> <span class="ow">in</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">values</span><span class="p">()}:</span>
+        <span class="c1"># Try matching an element symbol (e.g., "C")</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ion_input</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ion_input</span> <span class="ow">in</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s2">"symbol"</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">values</span><span class="p">()}:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span> <span class="o">=</span> <span class="n">ion_input</span>
         
-        <span class="c1"># Try matching an atomic number (e.g., 6 or &quot;6&quot;)</span>
+        <span class="c1"># Try matching an atomic number (e.g., 6 or "6")</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ion_input</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
             <span class="n">atomic_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span>
             <span class="c1"># Look up the first element that matches the given atomic number</span>
-            <span class="n">match</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;atomic_number&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">atomic_number</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="s2">"symbol"</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">"atomic_number"</span><span class="p">]</span> <span class="o">==</span> <span class="n">atomic_number</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span> <span class="o">=</span> <span class="n">match</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No ion found with atomic number </span><span class="si">{</span><span class="n">atomic_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No ion found with atomic number </span><span class="si">{</span><span class="n">atomic_number</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
         <span class="c1"># If none of the above matches, raise an error</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown ion identifier: </span><span class="si">{</span><span class="n">ion_input</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown ion identifier: </span><span class="si">{</span><span class="n">ion_input</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Retrieve the corresponding record key.</span>
-        <span class="n">reverse</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">reverse</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s2">"symbol"</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="n">record_key</span> <span class="o">=</span> <span class="n">reverse</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">atomic_number</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">record_key</span><span class="p">][</span><span class="s1">&#39;atomic_number&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mass_number</span> <span class="o">=</span> <span class="n">mass_number</span> <span class="ow">or</span> <span class="n">lookup</span><span class="p">[</span><span class="n">record_key</span><span class="p">][</span><span class="s1">&#39;mass_number&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">record_key</span><span class="p">][</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomic_number</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">record_key</span><span class="p">][</span><span class="s1">'atomic_number'</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass_number</span> <span class="o">=</span> <span class="n">mass_number</span> <span class="ow">or</span> <span class="n">lookup</span><span class="p">[</span><span class="n">record_key</span><span class="p">][</span><span class="s1">'mass_number'</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">record_key</span><span class="p">][</span><span class="s1">'color'</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">let</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">let</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source_program</span> <span class="o">=</span> <span class="n">source_program</span>
@@ -405,42 +405,42 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ion_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">         Get the ion symbol (e.g., &quot;C&quot; for carbon).</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">         Get the ion symbol (e.g., "C" for carbon).</span>
 <span class="sd">        </span>
 <span class="sd">         :returns: Ion symbol string.</span>
 <span class="sd">         :rtype: str</span>
-<span class="sd">         &quot;&quot;&quot;</span>
+<span class="sd">         """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">energy_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Access the energy array (grid).</span>
 <span class="sd">        </span>
 <span class="sd">        :returns: Energy values.</span>
 <span class="sd">        :rtype: np.ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stopping_power</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Access the LET (stopping power) array.</span>
 <span class="sd">        </span>
 <span class="sd">        :returns: LET values.</span>
 <span class="sd">        :rtype: np.ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform internal consistency checks on the input data.</span>
 <span class="sd">    </span>
 <span class="sd">        Validates that:</span>
 <span class="sd">          - Energy and LET arrays have identical shape.</span>
 <span class="sd">          - At least a minimum number of points are provided </span>
-<span class="sd">            (150 by default, unless source is &#39;mstar_3_12&#39;).</span>
+<span class="sd">            (150 by default, unless source is 'mstar_3_12').</span>
 <span class="sd">          - Energy values are finite, non-NaN, strictly increasing,</span>
 <span class="sd">            and (ideally) within the validated energy range (0.1–1000 MeV/u).</span>
 <span class="sd">            Values outside this range trigger a strong visible warning.</span>
@@ -448,62 +448,62 @@
 <span class="sd">        :raises ValueError: If shapes mismatch, insufficient points, non-finite values,</span>
 <span class="sd">                            or non-monotonic energy sequence.</span>
 <span class="sd">        :warns UserWarning: If energy values are outside the validated range.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Shape mismatch: energy </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, LET </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Shape mismatch: energy </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, LET </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
     
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Energy and LET arrays must contain only finite values.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Energy and LET arrays must contain only finite values."</span><span class="p">)</span>
     
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">150</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_program</span> <span class="o">!=</span> <span class="s2">&quot;mstar_3_12&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">150</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_program</span> <span class="o">!=</span> <span class="s2">"mstar_3_12"</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Insufficient data points: got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span><span class="si">}</span><span class="s2">, need at least 150.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Insufficient data points: got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span><span class="si">}</span><span class="s2">, need at least 150."</span>
             <span class="p">)</span>
     
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Energy values must be strictly increasing with no duplicates.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Energy values must be strictly increasing with no duplicates."</span><span class="p">)</span>
     
         <span class="c1"># Energy range check (validated domain of the package)</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">):</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;</span><span class="se">\n\033</span><span class="s2">[93m&quot;</span>  <span class="c1"># bright yellow</span>
-                <span class="o">+</span> <span class="s2">&quot;═&quot;</span> <span class="o">*</span> <span class="mi">72</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;⚠️  WARNING on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_name</span><span class="si">}</span><span class="s2">: Energy values outside validated range (0.1–1000 MeV/u)</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;    Found range: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> – </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MeV/u</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;    Results may be unreliable outside this domain.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;═&quot;</span> <span class="o">*</span> <span class="mi">72</span>
-                <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m</span><span class="se">\n</span><span class="s2">&quot;</span>  <span class="c1"># reset</span>
+                <span class="s2">"</span><span class="se">\n\033</span><span class="s2">[93m"</span>  <span class="c1"># bright yellow</span>
+                <span class="o">+</span> <span class="s2">"═"</span> <span class="o">*</span> <span class="mi">72</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">"⚠️  WARNING on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_name</span><span class="si">}</span><span class="s2">: Energy values outside validated range (0.1–1000 MeV/u)</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">"    Found range: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> – </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MeV/u</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="s2">"    Results may be unreliable outside this domain.</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="o">+</span> <span class="s2">"═"</span> <span class="o">*</span> <span class="mi">72</span>
+                <span class="o">+</span> <span class="s2">"</span><span class="se">\033</span><span class="s2">[0m</span><span class="se">\n</span><span class="s2">"</span>  <span class="c1"># reset</span>
             <span class="p">)</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StoppingPowerTable.to_dict">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable.to_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Serialize the object to a dictionary.</span>
 <span class="sd">    </span>
 <span class="sd">        :returns: Dictionary containing ion metadata and LET table.</span>
 <span class="sd">        :rtype: dict</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;ion_symbol&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span><span class="p">,</span>
-            <span class="s2">&quot;mass_number&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass_number</span><span class="p">,</span>
-            <span class="s2">&quot;atomic_number&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_number</span><span class="p">,</span>
-            <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-            <span class="s2">&quot;let&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-            <span class="s2">&quot;source_program&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_program</span><span class="p">,</span>
-            <span class="s2">&quot;ionization_potential&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ionization_potential</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">DEFAULT_TARGET</span>
+            <span class="s2">"ion_symbol"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span><span class="p">,</span>
+            <span class="s2">"mass_number"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass_number</span><span class="p">,</span>
+            <span class="s2">"atomic_number"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_number</span><span class="p">,</span>
+            <span class="s2">"energy"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">"let"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">"source_program"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_program</span><span class="p">,</span>
+            <span class="s2">"ionization_potential"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ionization_potential</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">DEFAULT_TARGET</span>
         <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTable.from_dict">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable.from_dict">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTable&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTable"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a :class:`StoppingPowerTable` instance from a serialized dictionary.</span>
 
 <span class="sd">        The input dictionary must contain at least the required fields</span>
@@ -512,12 +512,12 @@
 <span class="sd">        **Expected dictionary format**::</span>
 
 <span class="sd">            {</span>
-<span class="sd">                &quot;ion_symbol&quot;: H,                    # str, symbol of the ion</span>
-<span class="sd">                &quot;energy&quot;: [...],                    # list/array of float, energy values (MeV/u)</span>
-<span class="sd">                &quot;let&quot;: [...],                       # list/array of float, corresponding stopping powers (MeV/cm)</span>
-<span class="sd">                &quot;mass_number&quot;: 1,                   # int, mass number of the ion</span>
-<span class="sd">                &quot;source_program&quot;: fluka_2020_0      # str, program used to generate data</span>
-<span class="sd">                &quot;ionization_potential&quot;: 75.0        # float, ionization potential (eV)</span>
+<span class="sd">                "ion_symbol": H,                    # str, symbol of the ion</span>
+<span class="sd">                "energy": [...],                    # list/array of float, energy values (MeV/u)</span>
+<span class="sd">                "let": [...],                       # list/array of float, corresponding stopping powers (MeV/cm)</span>
+<span class="sd">                "mass_number": 1,                   # int, mass number of the ion</span>
+<span class="sd">                "source_program": fluka_2020_0      # str, program used to generate data</span>
+<span class="sd">                "ionization_potential": 75.0        # float, ionization potential (eV)</span>
 <span class="sd">            }</span>
 
 <span class="sd">        :param data: Dictionary containing serialized table data.</span>
@@ -527,18 +527,18 @@
 <span class="sd">        :rtype: StoppingPowerTable</span>
 
 <span class="sd">        :raises ValueError: If required fields are missing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">REQUIRED_DICT_KEYS</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing required field(s) in dictionary: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required field(s) in dictionary: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     
         <span class="k">return</span> <span class="n">StoppingPowerTable</span><span class="p">(</span>
-            <span class="n">ion_input</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;ion_symbol&quot;</span><span class="p">],</span>
-            <span class="n">energy</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]),</span>
-            <span class="n">let</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;let&quot;</span><span class="p">]),</span>
-            <span class="n">mass_number</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_number&quot;</span><span class="p">),</span>
-            <span class="n">source_program</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_program&quot;</span><span class="p">),</span>
-            <span class="n">ionization_potential</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ionization_potential&quot;</span><span class="p">)</span>
+            <span class="n">ion_input</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">"ion_symbol"</span><span class="p">],</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"energy"</span><span class="p">]),</span>
+            <span class="n">let</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"let"</span><span class="p">]),</span>
+            <span class="n">mass_number</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mass_number"</span><span class="p">),</span>
+            <span class="n">source_program</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"source_program"</span><span class="p">),</span>
+            <span class="n">ionization_potential</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ionization_potential"</span><span class="p">)</span>
         <span class="p">)</span></div>
 
 
@@ -550,7 +550,7 @@
         <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Plot stopping power (LET) as a function of energy.</span>
 <span class="sd">    </span>
 <span class="sd">        :param label: Optional label for the plot legend.</span>
@@ -559,22 +559,22 @@
 <span class="sd">        :type show: bool</span>
 <span class="sd">        :param ax: Matplotlib Axes object to draw on. If None, a new figure is created.</span>
 <span class="sd">        :type ax: Optional[matplotlib.axes.Axes]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Create figure/axes if not provided</span>
         <span class="n">created_fig</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span><span class="si">}</span><span class="s1">: Stopping Power vs Energy&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span><span class="si">}</span><span class="s1">: Stopping Power vs Energy'</span><span class="p">)</span>
             <span class="n">created_fig</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Stopping Power vs Energy&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Stopping Power vs Energy'</span><span class="p">)</span>
 
         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">ion_symbol</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Energy [MeV/u]&#39;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Stopping Power [MeV/cm]&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">'log'</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Energy [MeV/u]'</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'Stopping Power [MeV/cm]'</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
@@ -586,16 +586,16 @@
 <div class="viewcode-block" id="StoppingPowerTable.resample">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable.resample">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Resample the LET curve onto a new energy grid using log-log interpolation.</span>
 <span class="sd">    </span>
 <span class="sd">        :param new_grid: The target energy grid (must be strictly increasing).</span>
 <span class="sd">        :type new_grid: np.ndarray</span>
 <span class="sd">    </span>
 <span class="sd">        :raises ValueError: If the new grid is not strictly increasing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">new_grid</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;New energy grid must be strictly increasing.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"New energy grid must be strictly increasing."</span><span class="p">)</span>
         <span class="n">log_energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
         <span class="n">log_let</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="p">)</span>
         <span class="n">log_interp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">new_grid</span><span class="p">),</span> <span class="n">log_energy</span><span class="p">,</span> <span class="n">log_let</span><span class="p">)</span>
@@ -606,7 +606,7 @@
 <div class="viewcode-block" id="StoppingPowerTable.interpolate">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable.interpolate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">let</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">loglog</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Interpolate LET or energy values using internal data.</span>
 <span class="sd">    </span>
 <span class="sd">        Delegates to `Interpolator` and supports log-log interpolation.</span>
@@ -620,7 +620,7 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: Interpolated LETs or a dict of energies for each LET.</span>
 <span class="sd">        :rtype: np.ndarray or dict[float, np.ndarray]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">interpolator</span> <span class="o">=</span> <span class="n">Interpolator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">let</span><span class="p">,</span> <span class="n">loglog</span><span class="o">=</span><span class="n">loglog</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">let</span><span class="o">=</span><span class="n">let</span><span class="p">)</span></div>
 
@@ -628,8 +628,8 @@
 <div class="viewcode-block" id="StoppingPowerTable.from_txt">
 <a class="viewcode-back" href="../../../pymkm.io.stopping_power.html#pymkm.io.StoppingPowerTable.from_txt">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_txt</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTable&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_txt</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTable"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a :class:`StoppingPowerTable` from a .txt file containing header and data.</span>
 
 <span class="sd">        The input file must contain a header with required fields and a data section</span>
@@ -655,38 +655,38 @@
 <span class="sd">        :rtype: StoppingPowerTable</span>
 <span class="sd">        </span>
 <span class="sd">        :raises ValueError: If required header keys or element definitions are missing or inconsistent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
 
-        <span class="n">header</span> <span class="o">=</span> <span class="p">{</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                  <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="s1">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">}</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="p">{</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'='</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'='</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                  <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="s1">'='</span> <span class="ow">in</span> <span class="n">line</span><span class="p">}</span>
         
         <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">REQUIRED_HEADER_KEYS</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing required header field(s): </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing required header field(s): </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             
-        <span class="k">if</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">DEFAULT_TARGET</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported target: </span><span class="si">{</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;Target&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">. Only </span><span class="si">{</span><span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">DEFAULT_TARGET</span><span class="si">}</span><span class="s2"> is supported.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">header</span><span class="p">[</span><span class="s2">"Target"</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">DEFAULT_TARGET</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported target: </span><span class="si">{</span><span class="n">header</span><span class="p">[</span><span class="s1">'Target'</span><span class="p">]</span><span class="si">}</span><span class="s2">. Only </span><span class="si">{</span><span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">DEFAULT_TARGET</span><span class="si">}</span><span class="s2"> is supported."</span><span class="p">)</span>
 
-        <span class="n">ion_symbol</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Ion&#39;</span><span class="p">)</span>
-        <span class="n">atomic_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AtomicNumber&#39;</span><span class="p">))</span>
-        <span class="n">mass_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MassNumber&#39;</span><span class="p">))</span>
-        <span class="n">source_program</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SourceProgram&#39;</span><span class="p">)</span>
-        <span class="n">ionization_potential</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;IonizationPotential&quot;</span><span class="p">])</span>
+        <span class="n">ion_symbol</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'Ion'</span><span class="p">)</span>
+        <span class="n">atomic_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'AtomicNumber'</span><span class="p">))</span>
+        <span class="n">mass_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'MassNumber'</span><span class="p">))</span>
+        <span class="n">source_program</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'SourceProgram'</span><span class="p">)</span>
+        <span class="n">ionization_potential</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s2">"IonizationPotential"</span><span class="p">])</span>
 
         <span class="n">lookup</span> <span class="o">=</span> <span class="n">load_lookup_table</span><span class="p">()</span>
-        <span class="n">reverse</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;symbol&#39;</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">reverse</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s1">'symbol'</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">if</span> <span class="n">ion_symbol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reverse</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ion symbol &#39;</span><span class="si">{</span><span class="n">ion_symbol</span><span class="si">}</span><span class="s2">&#39; is not recognized.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Ion symbol '</span><span class="si">{</span><span class="n">ion_symbol</span><span class="si">}</span><span class="s2">' is not recognized."</span><span class="p">)</span>
 
-        <span class="n">expected_atomic_number</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">reverse</span><span class="p">[</span><span class="n">ion_symbol</span><span class="p">]][</span><span class="s1">&#39;atomic_number&#39;</span><span class="p">]</span>
-        <span class="n">expected_mass_number</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">reverse</span><span class="p">[</span><span class="n">ion_symbol</span><span class="p">]][</span><span class="s1">&#39;mass_number&#39;</span><span class="p">]</span>
+        <span class="n">expected_atomic_number</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">reverse</span><span class="p">[</span><span class="n">ion_symbol</span><span class="p">]][</span><span class="s1">'atomic_number'</span><span class="p">]</span>
+        <span class="n">expected_mass_number</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">reverse</span><span class="p">[</span><span class="n">ion_symbol</span><span class="p">]][</span><span class="s1">'mass_number'</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">atomic_number</span> <span class="o">!=</span> <span class="n">expected_atomic_number</span> <span class="ow">or</span> <span class="n">mass_number</span> <span class="o">!=</span> <span class="n">expected_mass_number</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mismatch in atomic or mass number for ion &#39;</span><span class="si">{</span><span class="n">ion_symbol</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mismatch in atomic or mass number for ion '</span><span class="si">{</span><span class="n">ion_symbol</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
 
-        <span class="n">data_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\s*\d&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)]</span>
+        <span class="n">data_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">'^\s*\d'</span><span class="p">,</span> <span class="n">line</span><span class="p">)]</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data_lines</span><span class="p">])</span>
         <span class="n">energy</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">let</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>

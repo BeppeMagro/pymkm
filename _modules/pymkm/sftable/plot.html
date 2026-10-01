@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.sftable.plot - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -268,7 +268,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.sftable.plot</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Plotting utilities for survival fraction (SF) curves.</span>
 
 <span class="sd">This module defines :meth:`SFTable.plot`, which visualizes survival fraction curves</span>
@@ -276,21 +276,21 @@
 
 <span class="sd">Plots are displayed as semilogarithmic survival vs. dose curves. The method also</span>
 <span class="sd">supports filtering by LET and displaying model parameters as annotations.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-    <span class="s2">&quot;axes.linewidth&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-    <span class="s2">&quot;axes.labelsize&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.labelsize&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.labelsize&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.major.width&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.major.width&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.major.size&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.major.size&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="s2">&quot;legend.fontsize&quot;</span><span class="p">:</span> <span class="mi">14</span>
+    <span class="s2">"axes.linewidth"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="s2">"axes.labelsize"</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="s2">"xtick.labelsize"</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">"ytick.labelsize"</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">"xtick.color"</span><span class="p">:</span> <span class="s2">"black"</span><span class="p">,</span>
+    <span class="s2">"ytick.color"</span><span class="p">:</span> <span class="s2">"black"</span><span class="p">,</span>
+    <span class="s2">"xtick.major.width"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="s2">"ytick.major.width"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="s2">"xtick.major.size"</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">"ytick.major.size"</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">"legend.fontsize"</span><span class="p">:</span> <span class="mi">14</span>
 <span class="p">})</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SFTable</span>
@@ -304,7 +304,7 @@
          <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
          <span class="n">show</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Plot survival fraction curves stored in ``self.table``.</span>
 
 <span class="sd">    :param verbose: If True, displays model parameters on the plot.</span>
@@ -317,35 +317,35 @@
 <span class="sd">    :type show: Optional[bool]</span>
 
 <span class="sd">    :raises ValueError: If no results are available or no match is found for the specified LET.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No survival data available. Run &#39;compute()&#39; first.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No survival data available. Run 'compute()' first."</span><span class="p">)</span>
 
     <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span>
     <span class="n">tolerance</span> <span class="o">=</span> <span class="mf">1e-3</span>
     <span class="k">if</span> <span class="n">let</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">results_to_plot</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;let&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">999</span><span class="p">)</span> <span class="o">-</span> <span class="n">let</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolerance</span>
+            <span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"params"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"let"</span><span class="p">,</span> <span class="o">-</span><span class="mi">999</span><span class="p">)</span> <span class="o">-</span> <span class="n">let</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolerance</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">results_to_plot</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No results found for LET = </span><span class="si">{</span><span class="n">let</span><span class="si">}</span><span class="s2"> MeV/cm.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No results found for LET = </span><span class="si">{</span><span class="n">let</span><span class="si">}</span><span class="s2"> MeV/cm."</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">results_to_plot</span> <span class="o">=</span> <span class="n">results</span>
 
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results_to_plot</span><span class="p">):</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">calc_info</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calculation_info&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">)</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"params"</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">calc_info</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"calculation_info"</span><span class="p">,</span> <span class="s2">"N/A"</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\u26a0\ufe0f</span><span class="s2"> No data in result </span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\u26a0\ufe0f</span><span class="s2"> No data in result </span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="n">ion</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ion&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">)</span>
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">)</span>
-        <span class="n">let_val</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;let&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">)</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">)</span>
+        <span class="n">ion</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ion"</span><span class="p">,</span> <span class="s2">"N/A"</span><span class="p">)</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"N/A"</span><span class="p">)</span>
+        <span class="n">let_val</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"let"</span><span class="p">,</span> <span class="s2">"N/A"</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="s2">"N/A"</span><span class="p">)</span>
 
         <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">mktable</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion</span><span class="p">)</span><span class="o">.</span><span class="n">color</span>
 
@@ -355,39 +355,39 @@
             <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
             <span class="n">created_fig</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;dose&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;survival_fraction&quot;</span><span class="p">],</span>
-                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ion</span><span class="si">}</span><span class="s2"> | E=</span><span class="si">{</span><span class="n">energy</span><span class="si">}</span><span class="s2"> MeV/u&quot;</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"dose"</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">"survival_fraction"</span><span class="p">],</span>
+                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">ion</span><span class="si">}</span><span class="s2"> | E=</span><span class="si">{</span><span class="n">energy</span><span class="si">}</span><span class="s2"> MeV/u"</span><span class="p">,</span>
                  <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Dose [Gy]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Survival fraction&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Survival Curve</span><span class="se">\n</span><span class="s2">LET = </span><span class="si">{</span><span class="n">let_val</span><span class="si">}</span><span class="s2"> MeV/cm | Model: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Dose [Gy]"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Survival fraction"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Survival Curve</span><span class="se">\n</span><span class="s2">LET = </span><span class="si">{</span><span class="n">let_val</span><span class="si">}</span><span class="s2"> MeV/cm | Model: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">alpha0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alpha0</span>
             <span class="n">beta0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span>
-            <span class="n">osmk_info</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-            <span class="n">osmk_version</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;osmk_version&quot;</span><span class="p">)</span>
+            <span class="n">osmk_info</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="n">osmk_version</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"osmk_version"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">osmk_version</span><span class="p">:</span>
                 <span class="n">pO2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">pO2</span>
-                <span class="n">osmk_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">OSMK: </span><span class="si">{</span><span class="n">osmk_version</span><span class="si">}</span><span class="s2">, pO₂: </span><span class="si">{</span><span class="n">pO2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> mmHg&quot;</span>
+                <span class="n">osmk_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">OSMK: </span><span class="si">{</span><span class="n">osmk_version</span><span class="si">}</span><span class="s2">, pO₂: </span><span class="si">{</span><span class="n">pO2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> mmHg"</span>
         
             <span class="n">info_text</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Model: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;α₀: </span><span class="si">{</span><span class="n">alpha0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Gy⁻¹</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;β₀: </span><span class="si">{</span><span class="n">beta0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Gy⁻²</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Calculation: </span><span class="si">{</span><span class="n">calc_info</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">osmk_info</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Model: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"α₀: </span><span class="si">{</span><span class="n">alpha0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Gy⁻¹</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"β₀: </span><span class="si">{</span><span class="n">beta0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Gy⁻²</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"Calculation: </span><span class="si">{</span><span class="n">calc_info</span><span class="si">}</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">osmk_info</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
             <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">info_text</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
-                    <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
-                    <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">))</span>
+                    <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">'bottom'</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">'left'</span><span class="p">,</span>
+                    <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span> <span class="n">boxstyle</span><span class="o">=</span><span class="s1">'round'</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">show</span> <span class="ow">and</span> <span class="n">created_fig</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>

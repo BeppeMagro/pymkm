@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.mktable.plot - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -268,53 +268,87 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.mktable.plot</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Plotting utilities for MKTable results.</span>
 
-<span class="sd">This module defines the `plot()` method for the MKTable class, which allows visualization</span>
-<span class="sd">of microdosimetric quantities such as z̄*, z̄_d, and z̄_n as functions of energy or LET</span>
-<span class="sd">for different ions.</span>
-
-<span class="sd">Plots include optional display of model configuration and geometry.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module defines the :meth:`MKTable.plot` method for visualizing model-specific</span>
+<span class="sd">microdosimetric quantities as functions of energy or LET. Supported outputs include</span>
+<span class="sd">MKM/SMK specific-energy quantities and MCF-MKM dose-averaged correction quantities.</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-    <span class="s2">&quot;axes.linewidth&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-    <span class="s2">&quot;axes.labelsize&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.labelsize&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.labelsize&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.major.width&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.major.width&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-    <span class="s2">&quot;xtick.major.size&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="s2">&quot;ytick.major.size&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="s2">&quot;legend.fontsize&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
-    <span class="s2">&quot;axes.titlesize&quot;</span><span class="p">:</span> <span class="mi">12</span>
-<span class="p">})</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">MKTable</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_validate_plot_columns</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Validate that x and y are valid MKTable data columns.</span>
-<span class="sd">    </span>
-<span class="sd">    :param x: Name of the x-axis variable (&#39;energy&#39; or &#39;let&#39;).</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="s2">"axes.linewidth"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="s2">"axes.labelsize"</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="s2">"xtick.labelsize"</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">"ytick.labelsize"</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">"xtick.color"</span><span class="p">:</span> <span class="s2">"black"</span><span class="p">,</span>
+    <span class="s2">"ytick.color"</span><span class="p">:</span> <span class="s2">"black"</span><span class="p">,</span>
+    <span class="s2">"xtick.major.width"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="s2">"ytick.major.width"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="s2">"xtick.major.size"</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">"ytick.major.size"</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">"legend.fontsize"</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s2">"axes.titlesize"</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+<span class="p">})</span>
+
+
+<span class="n">_MODEL_Y_COLUMNS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"classic"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"z_bar_star_domain"</span><span class="p">},</span>
+    <span class="s2">"stochastic"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"z_bar_star_domain"</span><span class="p">,</span> <span class="s2">"z_bar_domain"</span><span class="p">,</span> <span class="s2">"z_bar_nucleus"</span><span class="p">},</span>
+    <span class="s2">"mcf"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"c_bar"</span><span class="p">,</span> <span class="s2">"z_bar_c"</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">_Y_LABELS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"z_bar_star_domain"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"$\bar</span><span class="si">{z}</span><span class="s2">^{*}$ [Gy]"</span><span class="p">,</span>
+    <span class="s2">"z_bar_domain"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"$\bar</span><span class="si">{z}</span><span class="s2">_d$ [Gy]"</span><span class="p">,</span>
+    <span class="s2">"z_bar_nucleus"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"$\bar</span><span class="si">{z}</span><span class="s2">_n$ [Gy]"</span><span class="p">,</span>
+    <span class="s2">"c_bar"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"$\bar</span><span class="si">{c}</span><span class="s2">$ [-]"</span><span class="p">,</span>
+    <span class="s2">"z_bar_c"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"$\bar</span><span class="si">{z}</span><span class="s2">^{(c)}$ [Gy]"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_y_column</span><span class="p">(</span><span class="n">model_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the default y-axis quantity for the active model."""</span>
+    <span class="k">return</span> <span class="s2">"c_bar"</span> <span class="k">if</span> <span class="n">model_version</span> <span class="o">==</span> <span class="s2">"mcf"</span> <span class="k">else</span> <span class="s2">"z_bar_star_domain"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_plot_columns</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Validate plot-axis columns for the active MKTable model.</span>
+
+<span class="sd">    :param x: Name of the x-axis variable ('energy' or 'let').</span>
 <span class="sd">    :type x: str</span>
-<span class="sd">    :param y: Name of the y-axis variable (&#39;z_bar_star_domain&#39;, &#39;z_bar_domain&#39;, or &#39;z_bar_nucleus&#39;).</span>
+<span class="sd">    :param y: Name of the y-axis variable.</span>
 <span class="sd">    :type y: str</span>
-<span class="sd">    </span>
-<span class="sd">    :raises ValueError: If x or y are not among the allowed options.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">allowed_x</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;let&quot;</span><span class="p">}</span>
-    <span class="n">allowed_y</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;z_bar_star_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;z_bar_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;z_bar_nucleus&quot;</span><span class="p">}</span>
+<span class="sd">    :param model_version: Active model ('classic', 'stochastic', or 'mcf').</span>
+<span class="sd">    :type model_version: str</span>
+
+<span class="sd">    :raises ValueError: If x, y, or model_version is invalid.</span>
+<span class="sd">    """</span>
+    <span class="n">allowed_x</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"energy"</span><span class="p">,</span> <span class="s2">"let"</span><span class="p">}</span>
     <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_x</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid x-axis: &#39;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&#39;. Allowed values are: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed_x</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid x-axis: '</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">'. Allowed values are: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed_x</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">model_version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_MODEL_Y_COLUMNS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Unsupported MKTable model version: '</span><span class="si">{</span><span class="n">model_version</span><span class="si">}</span><span class="s2">'. "</span>
+            <span class="sa">f</span><span class="s2">"Allowed values are: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_MODEL_Y_COLUMNS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+
+    <span class="n">allowed_y</span> <span class="o">=</span> <span class="n">_MODEL_Y_COLUMNS</span><span class="p">[</span><span class="n">model_version</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_y</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid y-axis: &#39;</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&#39;. Allowed values are: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed_y</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Invalid y-axis: '</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">' for model '</span><span class="si">{</span><span class="n">model_version</span><span class="si">}</span><span class="s2">'. "</span>
+            <span class="sa">f</span><span class="s2">"Allowed values are: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed_y</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
 
 
 <div class="viewcode-block" id="plot">
@@ -323,49 +357,53 @@
     <span class="bp">self</span><span class="p">:</span> <span class="n">MKTable</span><span class="p">,</span>
     <span class="n">ions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">x</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;energy&quot;</span><span class="p">,</span>
-    <span class="n">y</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;z_bar_star_domain&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"energy"</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Plot microdosimetric quantities from the MKTable.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Plot model-specific quantities from the MKTable.</span>
+
+<span class="sd">    For classic MKM, the available y quantity is ``z_bar_star_domain``.</span>
+<span class="sd">    For stochastic SMK, ``z_bar_domain`` and ``z_bar_nucleus`` are additionally</span>
+<span class="sd">    available. For MCF-MKM, the available quantities are ``c_bar`` and ``z_bar_c``.</span>
+
+<span class="sd">    If ``y`` is omitted, the default is ``z_bar_star_domain`` for MKM/SMK and</span>
+<span class="sd">    ``c_bar`` for MCF-MKM.</span>
 
 <span class="sd">    :param ions: List of ions to plot. If None, all computed ions are used.</span>
 <span class="sd">    :type ions: list[str or int], optional</span>
-<span class="sd">    :param x: x-axis variable (&#39;energy&#39; or &#39;let&#39;).</span>
+<span class="sd">    :param x: x-axis variable ('energy' or 'let').</span>
 <span class="sd">    :type x: str</span>
-<span class="sd">    :param y: y-axis variable (&#39;z_bar_star_domain&#39;, &#39;z_bar_domain&#39;, &#39;z_bar_nucleus&#39;).</span>
-<span class="sd">    :type y: str</span>
+<span class="sd">    :param y: Model-specific y-axis variable. If None, uses the model default.</span>
+<span class="sd">    :type y: str, optional</span>
 <span class="sd">    :param verbose: Show model configuration in the plot.</span>
 <span class="sd">    :type verbose: bool</span>
 <span class="sd">    :param ax: Matplotlib Axes object to draw on. If None, a new figure is created.</span>
 <span class="sd">    :type ax: Optional[matplotlib.axes.Axes]</span>
 <span class="sd">    :param show: If True, displays the plot. Set False when embedding or scripting.</span>
 <span class="sd">    :type show: Optional[bool]</span>
-<span class="sd">    :param title: If True, displays includes a verbose title to the plot.</span>
+<span class="sd">    :param title: If True, displays a title with stopping-power and track-model information.</span>
 <span class="sd">    :type title: Optional[bool]</span>
 
 <span class="sd">    :raises RuntimeError: If table is empty.</span>
-<span class="sd">    :raises ValueError: If x or y are invalid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :raises ValueError: If x or y are invalid for the active model.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No computed results found. Run `compute()` before plotting.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"No computed results found. Run `compute()` before plotting."</span><span class="p">)</span>
+
+    <span class="n">model_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_version</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">_default_y_column</span><span class="p">(</span><span class="n">model_version</span><span class="p">)</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">y</span>
+    <span class="n">_validate_plot_columns</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">model_version</span><span class="p">)</span>
 
     <span class="n">ions</span> <span class="o">=</span> <span class="n">ions</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">get_available_ions</span><span class="p">()</span>
     <span class="n">ions</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">ion</span><span class="p">)</span> <span class="k">for</span> <span class="n">ion</span> <span class="ow">in</span> <span class="n">ions</span><span class="p">]</span>
-    <span class="n">_validate_plot_columns</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
-    <span class="n">x_label_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="s2">&quot;Energy [MeV/u]&quot;</span><span class="p">,</span> <span class="s2">&quot;let&quot;</span><span class="p">:</span> <span class="s2">&quot;LET [MeV/cm]&quot;</span><span class="p">}</span>
-    <span class="n">y_label_map</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;z_bar_star_domain&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;$\bar</span><span class="si">{z}</span><span class="s2">^{*}$ [Gy]&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;z_bar_domain&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;$\bar</span><span class="si">{z}</span><span class="s2">_d$ [Gy]&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;z_bar_nucleus&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;$\bar</span><span class="si">{z}</span><span class="s2">_n$ [Gy]&quot;</span>
-    <span class="p">}</span>
+    <span class="n">x_label_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="s2">"Energy [MeV/u]"</span><span class="p">,</span> <span class="s2">"let"</span><span class="p">:</span> <span class="s2">"LET [MeV/cm]"</span><span class="p">}</span>
 
-    <span class="c1"># Create figure/axes if not provided</span>
     <span class="n">created_fig</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
@@ -373,7 +411,7 @@
 
     <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
     <span class="k">for</span> <span class="n">ion</span> <span class="ow">in</span> <span class="n">ions</span><span class="p">:</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">ion</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">ion</span><span class="p">][</span><span class="s2">"data"</span><span class="p">]</span>
         <span class="n">x_vals</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="n">y_vals</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="n">x_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_vals</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
@@ -381,43 +419,65 @@
         <span class="n">y_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_max</span><span class="p">,</span> <span class="n">y_vals</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 
     <span class="k">for</span> <span class="n">ion</span> <span class="ow">in</span> <span class="n">ions</span><span class="p">:</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">ion</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">ion</span><span class="p">][</span><span class="s2">"data"</span><span class="p">]</span>
         <span class="n">ion_symbol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion</span><span class="p">)</span><span class="o">.</span><span class="n">ion_symbol</span>
         <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion</span><span class="p">)</span><span class="o">.</span><span class="n">color</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">ion_symbol</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
-    <span class="n">plot_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Source: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">source_info</span><span class="si">}</span><span class="s2">, Track model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> (Core: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">core_radius_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label_map</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">_Y_LABELS</span><span class="p">[</span><span class="n">y</span><span class="p">])</span>
 
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()))</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y_label_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()))</span>
     <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
-        <span class="n">plot_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Source: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">source_info</span><span class="si">}</span><span class="s2">, Track model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> (Core: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">core_radius_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="n">plot_title</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Source: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_table_set</span><span class="o">.</span><span class="n">source_info</span><span class="si">}</span><span class="s2">, "</span>
+            <span class="sa">f</span><span class="s2">"Track model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> (Core: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">core_radius_type</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">plot_title</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;energy&quot;</span> <span class="k">else</span> <span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">"energy"</span> <span class="k">else</span> <span class="s2">"linear"</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">*</span> <span class="mf">1.05</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">"both"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="n">param_dict</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
         <span class="n">main_parameters</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$r_d$&quot;</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;domain_radius&quot;</span><span class="p">],</span> <span class="s2">&quot;μm&quot;</span><span class="p">),</span>
-            <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$R_n$&quot;</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;nucleus_radius&quot;</span><span class="p">],</span> <span class="s2">&quot;μm&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="sa">r</span><span class="s2">"$r_d$"</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">"domain_radius"</span><span class="p">],</span> <span class="s2">"μm"</span><span class="p">),</span>
+            <span class="p">(</span><span class="sa">r</span><span class="s2">"$R_n$"</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">"nucleus_radius"</span><span class="p">],</span> <span class="s2">"μm"</span><span class="p">),</span>
         <span class="p">]</span>
-        <span class="k">if</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;z0&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">main_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">r</span><span class="s2">&quot;$z_0$&quot;</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;z0&quot;</span><span class="p">],</span> <span class="s2">&quot;Gy&quot;</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;beta0&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">main_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">r</span><span class="s2">&quot;$\beta_0$&quot;</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;beta0&quot;</span><span class="p">],</span> <span class="s2">&quot;Gy⁻²&quot;</span><span class="p">))</span>
 
-        <span class="n">info_lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">main_parameters</span>
+        <span class="k">if</span> <span class="n">model_version</span> <span class="o">==</span> <span class="s2">"mcf"</span><span class="p">:</span>
+            <span class="n">main_parameters</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+                <span class="p">(</span><span class="sa">r</span><span class="s2">"$\alpha_0$"</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">"alpha0"</span><span class="p">],</span> <span class="s2">"Gy⁻¹"</span><span class="p">),</span>
+                <span class="p">(</span><span class="sa">r</span><span class="s2">"$\beta_0$"</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">"beta0"</span><span class="p">],</span> <span class="s2">"Gy⁻²"</span><span class="p">),</span>
+            <span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"z0"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">main_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">r</span><span class="s2">"$z_0$"</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">"z0"</span><span class="p">],</span> <span class="s2">"Gy"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"beta0"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">main_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">r</span><span class="s2">"$\beta_0$"</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">"beta0"</span><span class="p">],</span> <span class="s2">"Gy⁻²"</span><span class="p">))</span>
+
+        <span class="n">info_lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"Model: </span><span class="si">{</span><span class="n">model_version</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">main_parameters</span>
         <span class="p">]</span>
-        <span class="n">info_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info_lines</span><span class="p">)</span>
+        <span class="n">info_text</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info_lines</span><span class="p">)</span>
 
-        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">info_text</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
-                <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
-                <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="mf">0.05</span><span class="p">,</span>
+            <span class="mf">0.05</span><span class="p">,</span>
+            <span class="n">info_text</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+            <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+            <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">"bottom"</span><span class="p">,</span>
+            <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">facecolor</span><span class="o">=</span><span class="s2">"white"</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
+                <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span>
+                <span class="n">boxstyle</span><span class="o">=</span><span class="s2">"round"</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">show</span> <span class="ow">and</span> <span class="n">created_fig</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>

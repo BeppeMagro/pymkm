@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.sftable.core - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -268,18 +268,18 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.sftable.core</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Core classes for survival fraction (SF) table generation.</span>
 
 <span class="sd">This module defines:</span>
 
 <span class="sd">- :class:`SFTableParameters`: A dataclass storing all parameters required to compute</span>
-<span class="sd">  survival fraction curves using MKM, SMK, or OSMK models.</span>
+<span class="sd">  survival fraction curves using MKM, SMK, OSMK, or MCF-MKM models.</span>
 <span class="sd">- :class:`SFTable`: A computation manager that integrates MKTable results with</span>
 <span class="sd">  biological model parameters to produce survival fraction outputs.</span>
 
-<span class="sd">The module supports OSMK 2021 and OSMK 2023 models.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The module supports OSMK 2021 and OSMK 2023 models, as well as MCF-MKM survival calculations based on precomputed MCF quantities from MKTable.</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
@@ -293,16 +293,16 @@
 <a class="viewcode-back" href="../../../pymkm.sftable.core.html#pymkm.sftable.SFTableParameters">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SFTableParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Configuration container for computing survival fraction (SF) curves using MKM, SMK, or OSMK models.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Configuration container for computing survival fraction (SF) curves using MKM, SMK, OSMK, or MCF-MKM models.</span>
 
 <span class="sd">    :param mktable: Precomputed MKTable containing specific energy values.</span>
 <span class="sd">    :type mktable: pymkm.mktable.core.MKTable</span>
 
-<span class="sd">    :param alpha0: Total linear coefficient α₀ in the LQ model [Gy⁻¹]. Required unless both `alphaL` and `alphaS` are provided.</span>
+<span class="sd">    :param alpha0: Total linear coefficient α₀ in the LQ model [Gy⁻¹]. Required for normoxic MKM/SMK survival calculations. For OSMK, at least two of `alpha0`, `alphaL`, and `alphaS` are required. For MCF-MKM, if omitted, it is retrieved from `mktable.params` and must match the value used to generate the MKTable.</span>
 <span class="sd">    :type alpha0: Optional[float]</span>
 
-<span class="sd">    :param beta0: Quadratic coefficient β₀ in the LQ model [Gy⁻²]. If not provided, it is retrieved from `mktable.parameters`.</span>
+<span class="sd">    :param beta0: Quadratic coefficient β₀ in the LQ model [Gy⁻²]. If not provided, it is retrieved from `mktable.params`.</span>
 <span class="sd">    :type beta0: Optional[float]</span>
 
 <span class="sd">    :param dose_grid: Dose grid [Gy] over which to compute survival fractions. Defaults to np.arange(0, 15.5, 0.5).</span>
@@ -338,7 +338,7 @@
 <span class="sd">    :param pO2: Oxygen partial pressure [mmHg] at which to evaluate the oxygen effect.</span>
 <span class="sd">        Enables OSMK mode if set.</span>
 <span class="sd">    :type pO2: Optional[float]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">mktable</span><span class="p">:</span> <span class="n">MKTable</span>
     <span class="n">alpha0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -358,19 +358,21 @@
     <span class="n">pO2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mmHg</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Validate parameter consistency and derive missing values if necessary.</span>
 <span class="sd">        </span>
 <span class="sd">        - Ensures `mktable` is an instance of MKTable.</span>
 <span class="sd">        - Checks and fills in missing `beta0` from the MKTable.</span>
+<span class="sd">        - For MCF-MKM, checks and fills in missing `alpha0` from the MKTable.</span>
+<span class="sd">        - Requires `alpha0` for normoxic MKM/SMK survival calculations.</span>
 <span class="sd">        - Enforces consistency between `alpha0`, `alphaL`, and `alphaS` when pO2 is set.</span>
 <span class="sd">        - Prevents mixing of OSMK 2021 and OSMK 2023 parameter sets.</span>
 <span class="sd">        </span>
 <span class="sd">        :raises TypeError: If `mktable` is not a MKTable instance.</span>
 <span class="sd">        :raises ValueError: If required parameters are missing or inconsistent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mktable</span><span class="p">,</span> <span class="n">MKTable</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;mktable must be an instance of MKTable&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"mktable must be an instance of MKTable"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dose_grid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dose_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dose_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -380,21 +382,44 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">beta_from_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">beta0</span> <span class="o">=</span> <span class="n">beta_from_table</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;beta0 not provided, using value from MKTable.params.&quot;</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"beta0 not provided, using value from MKTable.params."</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;beta0 must be provided either explicitly or via MKTable.params.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"beta0 must be provided either explicitly or via MKTable.params."</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">beta_from_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">beta_from_table</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Mismatch between provided beta0 (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">beta0</span><span class="si">}</span><span class="s2">) and MKTable.params.beta0 (</span><span class="si">{</span><span class="n">beta_from_table</span><span class="si">}</span><span class="s2">).&quot;</span>
+                <span class="sa">f</span><span class="s2">"Mismatch between provided beta0 (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">beta0</span><span class="si">}</span><span class="s2">) and MKTable.params.beta0 (</span><span class="si">{</span><span class="n">beta_from_table</span><span class="si">}</span><span class="s2">)."</span>
             <span class="p">)</span>
     
+        <span class="c1"># === Validate alpha0 for MCF-MKM ===</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mktable</span><span class="o">.</span><span class="n">model_version</span> <span class="o">==</span> <span class="s2">"mcf"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pO2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"OSMK oxygen-effect parameters are not supported for MCF-MKM."</span><span class="p">)</span>
+
+            <span class="n">alpha_from_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mktable</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alpha0</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">alpha_from_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">alpha0</span> <span class="o">=</span> <span class="n">alpha_from_table</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"alpha0 not provided, using value from MKTable.params."</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"alpha0 must be provided either explicitly or via MKTable.params for MCF-MKM."</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">alpha_from_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">alpha_from_table</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Mismatch between provided alpha0 (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha0</span><span class="si">}</span><span class="s2">) and MKTable.params.alpha0 (</span><span class="si">{</span><span class="n">alpha_from_table</span><span class="si">}</span><span class="s2">)."</span>
+                <span class="p">)</span>
+
+        <span class="c1"># === Require alpha0 for normoxic MKM/SMK ===</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mktable</span><span class="o">.</span><span class="n">model_version</span> <span class="o">!=</span> <span class="s2">"mcf"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pO2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"alpha0 must be provided for normoxic MKM/SMK survival calculations."</span>
+            <span class="p">)</span>
+
         <span class="c1"># === Handle alpha0, alphaL, alphaS consistency only if OSMK is requested ===</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pO2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">alphaL</span><span class="p">,</span> <span class="n">alphaS</span><span class="p">,</span> <span class="n">alpha0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphaL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphaS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha0</span>
             <span class="n">n_provided</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">alpha0</span><span class="p">,</span> <span class="n">alphaL</span><span class="p">,</span> <span class="n">alphaS</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="n">n_provided</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;For OSMK (pO2 specified), at least two of alpha0, alphaL, and alphaS must be provided.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"For OSMK (pO2 specified), at least two of alpha0, alphaL, and alphaS must be provided."</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">alpha0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">alpha0</span> <span class="o">=</span> <span class="n">alphaL</span> <span class="o">+</span> <span class="n">alphaS</span>
@@ -404,20 +429,20 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">alphaS</span> <span class="o">=</span> <span class="n">alpha0</span> <span class="o">-</span> <span class="n">alphaL</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">alphaL</span> <span class="o">+</span> <span class="n">alphaS</span><span class="p">,</span> <span class="n">alpha0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent values for OSMK: alpha0=</span><span class="si">{</span><span class="n">alpha0</span><span class="si">}</span><span class="s2">, alphaL + alphaS = </span><span class="si">{</span><span class="n">alphaL</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">alphaS</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent values for OSMK: alpha0=</span><span class="si">{</span><span class="n">alpha0</span><span class="si">}</span><span class="s2">, alphaL + alphaS = </span><span class="si">{</span><span class="n">alphaL</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">alphaS</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># === Ensure exclusivity between OSMK 2021 and 2023 parameter sets ===</span>
             <span class="n">has_osmk2021</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rm</span><span class="p">))</span>
             <span class="n">has_osmk2023</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_rd_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_z0_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rmax</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">has_osmk2021</span> <span class="ow">and</span> <span class="n">has_osmk2023</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot mix OSMK 2021 (zR, γ, Rm) and OSMK 2023 (f_rd_max, f_z0_max, Rmax) parameters.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot mix OSMK 2021 (zR, γ, Rm) and OSMK 2023 (f_rd_max, f_z0_max, Rmax) parameters."</span><span class="p">)</span>
                 
                 
 <div class="viewcode-block" id="SFTableParameters.from_dict">
 <a class="viewcode-back" href="../../../pymkm.sftable.core.html#pymkm.sftable.SFTableParameters.from_dict">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SFTableParameters&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SFTableParameters"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create an SFTableParameters instance from a dictionary.</span>
 <span class="sd">    </span>
 <span class="sd">        Unrecognized keys in the dictionary will trigger a warning.</span>
@@ -429,14 +454,14 @@
 <span class="sd">        :rtype: SFTableParameters</span>
 <span class="sd">    </span>
 <span class="sd">        :raises ValueError: If unknown keys are present in the configuration dictionary.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">valid_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__dataclass_fields__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">incoming_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">extra_keys</span> <span class="o">=</span> <span class="n">incoming_keys</span> <span class="o">-</span> <span class="n">valid_keys</span>
 
         <span class="k">if</span> <span class="n">extra_keys</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unrecognized keys in SFTableParameters config: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">extra_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Unrecognized keys in SFTableParameters config: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">extra_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span></div>
@@ -448,12 +473,12 @@
 <a class="viewcode-back" href="../../../pymkm.sftable.core.html#pymkm.sftable.SFTable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SFTable</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">SFTableParameters</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the SFTable with a set of biological and model parameters.</span>
 <span class="sd">        </span>
 <span class="sd">        :param parameters: An SFTableParameters instance containing model and oxygen settings.</span>
 <span class="sd">        :type parameters: SFTableParameters</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -463,68 +488,68 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">alpha0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alpha0</span>
         <span class="n">beta0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;SFTable | α_0 = </span><span class="si">{</span><span class="n">alpha0</span><span class="si">}</span><span class="s2">, β_0 = </span><span class="si">{</span><span class="n">beta0</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;SFTable | α_0 = </span><span class="si">{</span><span class="n">alpha0</span><span class="si">}</span><span class="s2">, β_0 = </span><span class="si">{</span><span class="n">beta0</span><span class="si">}</span><span class="s2">&gt;"</span>
 
 <div class="viewcode-block" id="SFTable.summary">
 <a class="viewcode-back" href="../../../pymkm.sftable.core.html#pymkm.sftable.SFTable.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Print a detailed summary of the current survival model configuration.</span>
 <span class="sd">        </span>
 <span class="sd">        Displays LQ parameters and OSMK-related settings if applicable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">SFTable Configuration&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">SFTable Configuration"</span><span class="p">)</span>
         <span class="n">table</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span><span class="s2">&quot;</span><span class="se">\u03b1</span><span class="s2">_0 [Gy^-1]&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alpha0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alpha0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;</span><span class="se">\u03b2</span><span class="s2">_0 [Gy^-2]&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"</span><span class="se">\u03b1</span><span class="s2">_0 [Gy^-1]"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alpha0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alpha0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"</span><span class="se">\u03b2</span><span class="s2">_0 [Gy^-2]"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">beta0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
         <span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">pO2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">table</span> <span class="o">+=</span> <span class="p">[</span>
-                <span class="p">(</span><span class="s2">&quot;pO2 [mmHg]&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">pO2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;α_L [Gy^-1]&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaL</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaL</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;α_S [Gy^-1]&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaS</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;zR (2021) [Gy]&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">zR</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">zR</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;γ (2021)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">gamma</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">gamma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;Rm (2021)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rm</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;f_rd_max (2023)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_rd_max</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_rd_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;f_z0_max (2023)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_z0_max</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_z0_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;Rmax (2023)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rmax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;None&quot;</span><span class="p">)</span>
+                <span class="p">(</span><span class="s2">"pO2 [mmHg]"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">pO2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"α_L [Gy^-1]"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaL</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaL</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"α_S [Gy^-1]"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaS</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">alphaS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"zR (2021) [Gy]"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">zR</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">zR</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"γ (2021)"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">gamma</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">gamma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"Rm (2021)"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rm</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"f_rd_max (2023)"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_rd_max</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_rd_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"f_z0_max (2023)"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_z0_max</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">f_z0_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"Rmax (2023)"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rmax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">Rmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"None"</span><span class="p">)</span>
             <span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Parameter&quot;</span><span class="p">,</span> <span class="s2">&quot;Value&quot;</span><span class="p">],</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;fancy_grid&quot;</span><span class="p">))</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">[</span><span class="s2">"Parameter"</span><span class="p">,</span> <span class="s2">"Value"</span><span class="p">],</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">"fancy_grid"</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="SFTable.display">
 <a class="viewcode-back" href="../../../pymkm.sftable.core.html#pymkm.sftable.SFTable.display">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Display the computed survival fraction results in a tabular format.</span>
 <span class="sd">        </span>
-<span class="sd">        :param results: List of dictionaries with keys &#39;params&#39;, &#39;calculation_info&#39;, and &#39;data&#39;.</span>
+<span class="sd">        :param results: List of dictionaries with keys 'params', 'calculation_info', and 'data'.</span>
 <span class="sd">        :type results: list[dict]</span>
 <span class="sd">        </span>
 <span class="sd">        :raises ValueError: If no results are provided.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No results to display. Please run &#39;compute()&#39; first.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No results to display. Please run 'compute()' first."</span><span class="p">)</span>
     
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">📈 Survival Fraction Results:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">📈 Survival Fraction Results:"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
-            <span class="n">params</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="n">calc_info</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calculation_info&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">)</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"params"</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">calc_info</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"calculation_info"</span><span class="p">,</span> <span class="s2">"N/A"</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data"</span><span class="p">)</span>
     
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">🔹 Result </span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">headers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Parameter&quot;</span><span class="p">,</span> <span class="s2">&quot;Value&quot;</span><span class="p">],</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Calculation Info: </span><span class="si">{</span><span class="n">calc_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">🔹 Result </span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">headers</span><span class="o">=</span><span class="p">[</span><span class="s2">"Parameter"</span><span class="p">,</span> <span class="s2">"Value"</span><span class="p">],</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">"grid"</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Calculation Info: </span><span class="si">{</span><span class="n">calc_info</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     
             <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Data Table:&quot;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;fancy_grid&quot;</span><span class="p">,</span> <span class="n">showindex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Data Table:"</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="s2">"keys"</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">"fancy_grid"</span><span class="p">,</span> <span class="n">showindex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No data found in this result.&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span></div>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"No data found in this result."</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

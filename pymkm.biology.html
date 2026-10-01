@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="pymkm.biology.oxygen_effect" href="pymkm.biology.oxygen_effect.html"><link rel="prev" title="pymkm" href="pymkm.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.biology - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -276,20 +276,28 @@
         <article role="main" id="furo-main-content">
           <section id="module-pymkm.biology">
 <span id="pymkm-biology"></span><h1>pymkm.biology<a class="headerlink" href="#module-pymkm.biology" title="Link to this heading">¶</a></h1>
-<p>Biological effect models and oxygen correction tools.</p>
+<p>Biological effect models and correction tools.</p>
 <p>This subpackage contains functions and models used to compute
-biologically relevant quantities such as relative radioresistance
-under hypoxic conditions (OSMK 2021/2023) and corrections to
-linear–quadratic model parameters (α, β) in the presence of oxygen.</p>
+biologically relevant quantities, including oxygen-effect corrections
+for OSMK models and quantities required by the Mayo Clinic Florida
+Microdosimetric Kinetic Model (MCF-MKM).</p>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">¶</a></h2>
 <ul class="simple">
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">mkm_model</span></code>:
+Provides utilities for computing the MKM and SMK linear-quadratic
+coefficients from dose-averaged microdosimetric quantities.</p></li>
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">oxygen_effect</span></code>:
 Provides utilities for computing relative radioresistance (R),
 OSMK 2023 scaling factors (f_rd, f_z0), and oxygen-corrected α and β.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">mcf_model</span></code>:
+Provides utilities for computing the MCF-MKM non-Poisson correction
+factor, the scaled single-event specific energy of the nucleus, the
+dose-averaged quantities c_bar and z_bar_c, and the resulting
+MCF-MKM linear-quadratic coefficients.</p></li>
 </ul>
-<p>These functions are typically used during post-processing of MKTable results
-when the oxygen effect correction is enabled.</p>
+<p>These functions are used by higher-level pyMKM components when the
+corresponding biological model or correction is enabled.</p>
 </section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
@@ -298,6 +306,12 @@ when the oxygen effect correction is enabled.</p>
 <li class="toctree-l1"><a class="reference internal" href="pymkm.biology.oxygen_effect.html">pymkm.biology.oxygen_effect</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.apply_oxygen_correction_alpha"><code class="docutils literal notranslate"><span class="pre">apply_oxygen_correction_alpha()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.apply_oxygen_correction_beta"><code class="docutils literal notranslate"><span class="pre">apply_oxygen_correction_beta()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2021_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_osmk2021_radioresistance()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2023_effective_parameters"><code class="docutils literal notranslate"><span class="pre">compute_osmk2023_effective_parameters()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk2023_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_osmk2023_radioresistance()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_alpha"><code class="docutils literal notranslate"><span class="pre">compute_osmk_alpha()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_beta"><code class="docutils literal notranslate"><span class="pre">compute_osmk_beta()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_lq_coefficients"><code class="docutils literal notranslate"><span class="pre">compute_osmk_lq_coefficients()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_osmk_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_osmk_radioresistance()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_relative_radioresistance"><code class="docutils literal notranslate"><span class="pre">compute_relative_radioresistance()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.biology.oxygen_effect.html#pymkm.biology.oxygen_effect.compute_scaling_factors"><code class="docutils literal notranslate"><span class="pre">compute_scaling_factors()</span></code></a></li>

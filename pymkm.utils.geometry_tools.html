@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="pymkm.utils.interpolation" href="pymkm.utils.interpolation.html"><link rel="prev" title="pymkm.utils" href="pymkm.utils.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.utils.geometry_tools - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -311,6 +311,32 @@ located at a center-to-center distance <cite>d</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pymkm.utils.geometry_tools.GeometryTools.calculate_squared_radius_ratio">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_squared_radius_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numerator_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">denominator_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/pymkm/utils/geometry_tools.html#GeometryTools.calculate_squared_radius_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.utils.geometry_tools.GeometryTools.calculate_squared_radius_ratio" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the squared ratio between two strictly positive radii.</p>
+<p>This helper centralizes geometric radius scaling used across pyMKM,
+including nucleus-to-domain scaling in the MKM saturation parameter
+and domain-to-nucleus scaling in the MCF-MKM formulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>numerator_radius</strong> (<em>float</em>) – Radius used in the numerator.</p></li>
+<li><p><strong>denominator_radius</strong> (<em>float</em>) – Radius used in the denominator.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Squared radius ratio <code class="docutils literal notranslate"><span class="pre">(numerator_radius</span> <span class="pre">/</span> <span class="pre">denominator_radius)^2</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If either radius is not strictly positive.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pymkm.utils.geometry_tools.GeometryTools.determine_sampling_points">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">determine_sampling_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">150</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="_modules/pymkm/utils/geometry_tools.html#GeometryTools.determine_sampling_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.utils.geometry_tools.GeometryTools.determine_sampling_points" title="Link to this definition">¶</a></dt>
 <dd><p>Determine the number of sampling points based on energy and target radius.</p>
@@ -421,6 +447,7 @@ Requires both energy and radius_max to be specified.</p>
 <li><a class="reference internal" href="#">pymkm.utils.geometry_tools</a><ul>
 <li><a class="reference internal" href="#pymkm.utils.geometry_tools.GeometryTools"><code class="docutils literal notranslate"><span class="pre">GeometryTools</span></code></a><ul>
 <li><a class="reference internal" href="#pymkm.utils.geometry_tools.GeometryTools.calculate_intersection_area"><code class="docutils literal notranslate"><span class="pre">GeometryTools.calculate_intersection_area()</span></code></a></li>
+<li><a class="reference internal" href="#pymkm.utils.geometry_tools.GeometryTools.calculate_squared_radius_ratio"><code class="docutils literal notranslate"><span class="pre">GeometryTools.calculate_squared_radius_ratio()</span></code></a></li>
 <li><a class="reference internal" href="#pymkm.utils.geometry_tools.GeometryTools.determine_sampling_points"><code class="docutils literal notranslate"><span class="pre">GeometryTools.determine_sampling_points()</span></code></a></li>
 <li><a class="reference internal" href="#pymkm.utils.geometry_tools.GeometryTools.generate_default_radii"><code class="docutils literal notranslate"><span class="pre">GeometryTools.generate_default_radii()</span></code></a></li>
 </ul>

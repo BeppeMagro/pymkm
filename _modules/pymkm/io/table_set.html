@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>pymkm.io.table_set - pyMKM documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -268,7 +268,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.io.table_set</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Management of multiple ion stopping power tables.</span>
 
 <span class="sd">This module defines the :class:`StoppingPowerTableSet`, a high-level container</span>
@@ -289,12 +289,12 @@
 <span class="sd">--------</span>
 
 <span class="sd">&gt;&gt;&gt; from pymkm.io.table_set import StoppingPowerTableSet</span>
-<span class="sd">&gt;&gt;&gt; s = StoppingPowerTableSet.from_default_source(&quot;mstar_3_12&quot;)</span>
+<span class="sd">&gt;&gt;&gt; s = StoppingPowerTableSet.from_default_source("mstar_3_12")</span>
 <span class="sd">&gt;&gt;&gt; sorted(s.get_available_ions())</span>
-<span class="sd">[&#39;Beryllium&#39;, &#39;Boron&#39;, &#39;Carbon&#39;, &#39;Fluorine&#39;, &#39;Helium&#39;, &#39;Hydrogen&#39;,</span>
-<span class="sd"> &#39;Lithium&#39;, &#39;Neon&#39;, &#39;Nitrogen&#39;, &#39;Oxygen&#39;]</span>
-<span class="sd">&gt;&gt;&gt; s.get(&quot;Carbon&quot;).plot(show=False)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">['Beryllium', 'Boron', 'Carbon', 'Fluorine', 'Helium', 'Hydrogen',</span>
+<span class="sd"> 'Lithium', 'Neon', 'Nitrogen', 'Oxygen']</span>
+<span class="sd">&gt;&gt;&gt; s.get("Carbon").plot(show=False)</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -309,32 +309,32 @@
 <div class="viewcode-block" id="StoppingPowerTableSet">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StoppingPowerTableSet</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A container for managing multiple StoppingPowerTable instances.</span>
 
 <span class="sd">    Provides unified access to stopping power curves for multiple ions, identified</span>
 <span class="sd">    by name, symbol, or atomic number. Supports serialization, resampling, filtering,</span>
 <span class="sd">    and plotting.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize an empty StoppingPowerTableSet.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">StoppingPowerTable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Track origin</span>
 
 <div class="viewcode-block" id="StoppingPowerTableSet.add">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.add">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">StoppingPowerTable</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add a stopping power table to the set.</span>
 <span class="sd">        </span>
 <span class="sd">        :param ion_input: Ion identifier (name, symbol, or atomic number).</span>
 <span class="sd">        :type ion_input: str</span>
 <span class="sd">        :param table: Instance of :class:`~pymkm.io.stopping_power.StoppingPowerTable` to add.</span>
 <span class="sd">        :type table: pymkm.io.stopping_power.StoppingPowerTable</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span></div>
 
@@ -342,12 +342,12 @@
 <div class="viewcode-block" id="StoppingPowerTableSet.remove">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.remove">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remove a table by ion identifier.</span>
 <span class="sd">        </span>
 <span class="sd">        :param ion_input: Ion name, symbol, or atomic number.</span>
 <span class="sd">        :type ion_input: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
@@ -355,7 +355,7 @@
 <div class="viewcode-block" id="StoppingPowerTableSet.get">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.get">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StoppingPowerTable</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Retrieve a table by ion identifier.</span>
 <span class="sd">    </span>
 <span class="sd">        :param ion_input: Ion name, symbol, or atomic number.</span>
@@ -363,7 +363,7 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: Corresponding :class:`~pymkm.io.stopping_power.StoppingPowerTable` or None.</span>
 <span class="sd">        :rtype: pymkm.io.stopping_power.StoppingPowerTable or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
 
@@ -374,7 +374,7 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StoppingPowerTable</span><span class="p">:</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No table found for ion: </span><span class="si">{</span><span class="n">ion_input</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No table found for ion: </span><span class="si">{</span><span class="n">ion_input</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">table</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -404,45 +404,45 @@
 <div class="viewcode-block" id="StoppingPowerTableSet.to_dict">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.to_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Serialize all tables to a dictionary.</span>
 <span class="sd">        </span>
 <span class="sd">        :returns: Dictionary of ion names to serialized data.</span>
 <span class="sd">        :rtype: dict[str, dict]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.to_json">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.to_json">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Serialize the set to a JSON string.</span>
 <span class="sd">        </span>
 <span class="sd">        :returns: JSON-formatted string.</span>
 <span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.save">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.save">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save the table set to a JSON file.</span>
 <span class="sd">        </span>
 <span class="sd">        :param filepath: Output file path.</span>
 <span class="sd">        :type filepath: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.from_dict">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.from_dict">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTableSet"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a :class:`StoppingPowerTableSet` set from a dictionary. </span>
 
 <span class="sd">        The input dictionary must map ion names to serialized </span>
@@ -451,8 +451,8 @@
 <span class="sd">        **Expected dictionary format**::</span>
 
 <span class="sd">            {</span>
-<span class="sd">                &quot;Hydrogen&quot;: {},</span>
-<span class="sd">                &quot;Helium&quot;: {},</span>
+<span class="sd">                "Hydrogen": {},</span>
+<span class="sd">                "Helium": {},</span>
 <span class="sd">                ...</span>
 <span class="sd">            }</span>
 
@@ -463,7 +463,7 @@
 <span class="sd">        :rtype: StoppingPowerTableSet</span>
 <span class="sd">        </span>
 <span class="sd">        :raises ValueError: If tables have inconsistent source program or ionization potential.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
         <span class="n">reference_program</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">reference_ipot</span> <span class="o">=</span> <span class="kc">None</span>
@@ -475,19 +475,19 @@
                 <span class="n">reference_ipot</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">source_program</span> <span class="o">!=</span> <span class="n">reference_program</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent source_program in table &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: expected &#39;</span><span class="si">{</span><span class="n">reference_program</span><span class="si">}</span><span class="s2">&#39;, got &#39;</span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">source_program</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent source_program in table '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">': expected '</span><span class="si">{</span><span class="n">reference_program</span><span class="si">}</span><span class="s2">', got '</span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">source_program</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span> <span class="o">!=</span> <span class="n">reference_ipot</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent ionization_potential in table &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: expected </span><span class="si">{</span><span class="n">reference_ipot</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent ionization_potential in table '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">': expected </span><span class="si">{</span><span class="n">reference_ipot</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">instance</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
-        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="s2">&quot;dict&quot;</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="s2">"dict"</span>
         <span class="k">return</span> <span class="n">instance</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.from_json">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.from_json">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTableSet"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a :class:`StoppingPowerTableSet` from a JSON string.</span>
 
 <span class="sd">        The JSON must represent a dictionary mapping ion names to</span>
@@ -499,18 +499,18 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: Deserialized :class:`StoppingPowerTableSet`.</span>
 <span class="sd">        :rtype: StoppingPowerTableSet</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
+<span class="sd">        """</span>        
         <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="s2">"json"</span>
         <span class="k">return</span> <span class="n">instance</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.load">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.load">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTableSet"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load a table set from a JSON file.</span>
 <span class="sd">        </span>
 <span class="sd">        :param filepath: Path to JSON file.</span>
@@ -518,19 +518,19 @@
 <span class="sd">        </span>
 <span class="sd">        :returns: Loaded StoppingPowerTableSet.</span>
 <span class="sd">        :rtype: StoppingPowerTableSet</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;loaded:</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"loaded:</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">return</span> <span class="n">instance</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.from_directory">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.from_directory">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_directory</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_directory</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTableSet"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load :class:`StoppingPowerTable` instances from `.txt` files in a directory.</span>
 
 <span class="sd">        Each file must follow the format described in</span>
@@ -541,13 +541,13 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: StoppingPowerTableSet with all successfully loaded tables.</span>
 <span class="sd">        :rtype: StoppingPowerTableSet</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
         <span class="n">reference_program</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">reference_ipot</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.txt&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".txt"</span><span class="p">):</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">table</span> <span class="o">=</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">from_txt</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -556,24 +556,24 @@
                         <span class="n">reference_ipot</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">source_program</span> <span class="o">!=</span> <span class="n">reference_program</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent source_program in file &#39;</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&#39;: expected &#39;</span><span class="si">{</span><span class="n">reference_program</span><span class="si">}</span><span class="s2">&#39;, got &#39;</span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">source_program</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent source_program in file '</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">': expected '</span><span class="si">{</span><span class="n">reference_program</span><span class="si">}</span><span class="s2">', got '</span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">source_program</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span> <span class="o">!=</span> <span class="n">reference_ipot</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent ionization_potential in file &#39;</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&#39;: expected </span><span class="si">{</span><span class="n">reference_ipot</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent ionization_potential in file '</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">': expected </span><span class="si">{</span><span class="n">reference_ipot</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">ionization_potential</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
                     <span class="n">key</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">ion_name</span><span class="p">)</span>
                     <span class="n">instance</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Failed to load </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;directory:</span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Warning: Failed to load </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"directory:</span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">return</span> <span class="n">instance</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.from_default_source">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.from_default_source">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_default_source</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Load tables from a default internal source (e.g., &quot;mstar_3_12&quot;).</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_default_source</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTableSet"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Load tables from a default internal source (e.g., "mstar_3_12").</span>
 <span class="sd">        </span>
 <span class="sd">        :param source: Name of the predefined source directory.</span>
 <span class="sd">        :type source: str</span>
@@ -582,7 +582,7 @@
 <span class="sd">        :rtype: StoppingPowerTableSet</span>
 <span class="sd">        </span>
 <span class="sd">        :raises RuntimeError: If any file cannot be loaded.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">list_available_defaults</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
@@ -591,14 +591,14 @@
                 <span class="n">key</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">ion_name</span><span class="p">)</span>
                 <span class="n">instance</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;default:</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">source_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"default:</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">return</span> <span class="n">instance</span></div>
 
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_to_fullname</span><span class="p">(</span><span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert ion identifier to full element name.</span>
 <span class="sd">    </span>
 <span class="sd">        Supports input as name, symbol, or atomic number.</span>
@@ -608,7 +608,7 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: Full name of the ion.</span>
 <span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">lookup</span> <span class="o">=</span> <span class="n">StoppingPowerTable</span><span class="o">.</span><span class="n">get_lookup_table</span><span class="p">()</span>
     
         <span class="c1"># Already a full name</span>
@@ -616,7 +616,7 @@
             <span class="k">return</span> <span class="n">ion_input</span>
     
         <span class="c1"># Reverse mapping: symbol -&gt; full name</span>
-        <span class="n">reverse</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">reverse</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s2">"symbol"</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">if</span> <span class="n">ion_input</span> <span class="ow">in</span> <span class="n">reverse</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">reverse</span><span class="p">[</span><span class="n">ion_input</span><span class="p">]</span>
     
@@ -624,7 +624,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;atomic_number&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">z</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">"atomic_number"</span><span class="p">]</span> <span class="o">==</span> <span class="n">z</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">name</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">pass</span>  <span class="c1"># fallback below if not an integer</span>
@@ -635,19 +635,19 @@
 <div class="viewcode-block" id="StoppingPowerTableSet.get_available_ions">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.get_available_ions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_available_ions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the list of ion names present in the set.</span>
 <span class="sd">        </span>
 <span class="sd">        :returns: List of ion names.</span>
 <span class="sd">        :rtype: list[str]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.filter_by_ions">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.filter_by_ions">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">filter_by_ions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;StoppingPowerTableSet&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter_by_ions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"StoppingPowerTableSet"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a subset containing only the specified ions.</span>
 <span class="sd">        Each table is a :class:`~pymkm.io.stopping_power.StoppingPowerTable` instance.</span>
 <span class="sd">        </span>
@@ -656,7 +656,7 @@
 <span class="sd">        </span>
 <span class="sd">        :returns: New StoppingPowerTableSet with selected ions.</span>
 <span class="sd">        :rtype: StoppingPowerTableSet</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">subset</span> <span class="o">=</span> <span class="n">StoppingPowerTableSet</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">ion</span> <span class="ow">in</span> <span class="n">ion_inputs</span><span class="p">:</span>
             <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_to_fullname</span><span class="p">(</span><span class="n">ion</span><span class="p">)</span>
@@ -669,7 +669,7 @@
 <div class="viewcode-block" id="StoppingPowerTableSet.get_energy_grid">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.get_energy_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_energy_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the energy grid for a given ion.</span>
 <span class="sd">    </span>
 <span class="sd">        :param ion_input: Ion identifier.</span>
@@ -677,14 +677,14 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: Energy array.</span>
 <span class="sd">        :rtype: np.ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span><span class="o">.</span><span class="n">energy_grid</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.get_stopping_power">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.get_stopping_power">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_stopping_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ion_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the stopping power values for a given ion.</span>
 <span class="sd">    </span>
 <span class="sd">        :param ion_input: Ion identifier.</span>
@@ -692,19 +692,19 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: LET array.</span>
 <span class="sd">        :rtype: np.ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ion_input</span><span class="p">)</span><span class="o">.</span><span class="n">stopping_power</span></div>
 
 
 <div class="viewcode-block" id="StoppingPowerTableSet.get_common_energy_range">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.get_common_energy_range">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_common_energy_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the overlapping energy range across all tables.</span>
 <span class="sd">        </span>
 <span class="sd">        :returns: [min, max] energy range, or None if no common range exists.</span>
 <span class="sd">        :rtype: list[float] or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="n">mins</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">energy_grid</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
@@ -717,14 +717,14 @@
 <div class="viewcode-block" id="StoppingPowerTableSet.resample_all">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.resample_all">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Resample the LET curves of all tables onto a new energy grid.</span>
 <span class="sd">        </span>
 <span class="sd">        :param new_grid: Strictly increasing energy grid in MeV/u.</span>
 <span class="sd">        :type new_grid: np.ndarray</span>
 <span class="sd">        </span>
 <span class="sd">        :raises ValueError: If the grid is not strictly increasing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">t</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">new_grid</span><span class="p">)</span></div>
 
@@ -732,7 +732,7 @@
 <div class="viewcode-block" id="StoppingPowerTableSet.interpolate_all">
 <a class="viewcode-back" href="../../../pymkm.io.table_set.html#pymkm.io.StoppingPowerTableSet.interpolate_all">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">loglog</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Interpolate LET values at given energies for all tables.</span>
 <span class="sd">    </span>
 <span class="sd">        :param energy: Energy values at which to interpolate.</span>
@@ -742,7 +742,7 @@
 <span class="sd">    </span>
 <span class="sd">        :returns: Dictionary mapping ion names to interpolated LET arrays.</span>
 <span class="sd">        :rtype: dict[str, np.ndarray]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">ion</span><span class="p">:</span> <span class="n">table</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">loglog</span><span class="o">=</span><span class="n">loglog</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">ion</span><span class="p">,</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -757,7 +757,7 @@
              <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
              <span class="n">single_plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Plot stopping power curves for one or more ions.</span>
 <span class="sd">    </span>
 <span class="sd">        :param ions: List of ion identifiers to plot. If None, all are plotted.</span>
@@ -768,7 +768,7 @@
 <span class="sd">        :type ax: Optional[matplotlib.axes.Axes]</span>
 <span class="sd">        :param single_plot: If True, plot all ions on one figure; otherwise, one figure per ion.</span>
 <span class="sd">        :type single_plot: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ions_to_plot</span> <span class="o">=</span> <span class="n">ions</span> <span class="k">if</span> <span class="n">ions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>    
 
         <span class="k">if</span> <span class="n">single_plot</span><span class="p">:</span>
@@ -784,9 +784,9 @@
                 <span class="k">if</span> <span class="n">table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">table</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">ion</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Energy [MeV/u]&quot;</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Stopping Power [MeV/cm]&quot;</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Energy [MeV/u]"</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Stopping Power [MeV/cm]"</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">show</span> <span class="ow">and</span> <span class="n">created_fig</span><span class="p">:</span>
