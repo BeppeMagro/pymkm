@@ -27,7 +27,7 @@ def test_integrate_1d_trapz_falls_back_for_older_numpy(monkeypatch):
         return 0.456
 
     monkeypatch.delattr(np, "trapezoid", raising=False)
-    monkeypatch.setattr(np, "trapz", fake_trapz)
+    monkeypatch.setattr(np, "trapz", fake_trapz, raising=False)
     assert integrate_1d(y, x, method="trapz") == pytest.approx(0.456)
 
 def test_integrate_1d_simps():
