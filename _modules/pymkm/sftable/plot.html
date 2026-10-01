@@ -273,13 +273,13 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.sftable.plot</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Plotting utilities for survival fraction (SF) curves.</span>
+<span class="sd">Plotting utilities for survival-fraction (SF) curves.</span>
 
-<span class="sd">This module defines :meth:`SFTable.plot`, which visualizes survival fraction curves</span>
-<span class="sd">computed using MKM, SMK, or OSMK models for one or more ions.</span>
+<span class="sd">This module defines :meth:`SFTable.plot`, which visualizes survival curves</span>
+<span class="sd">computed with MKM, SMK, OSMK, or MCF-MKM for one or more ions.</span>
 
-<span class="sd">Plots are displayed as semilogarithmic survival vs. dose curves. The method also</span>
-<span class="sd">supports filtering by LET and displaying model parameters as annotations.</span>
+<span class="sd">Curves are displayed as semilogarithmic survival versus dose plots. The method</span>
+<span class="sd">supports LET filtering and optional annotation of the active model parameters.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>

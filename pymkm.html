@@ -280,31 +280,34 @@
         <article role="main" id="furo-main-content">
           <section id="pymkm-package">
 <h1>pymkm package<a class="headerlink" href="#pymkm-package" title="Link to this heading">¶</a></h1>
-<p>pyMKM: Microdosimetric modeling toolkit for ion beam radiotherapy.</p>
+<p>pyMKM: microdosimetric modeling toolkit for ion-beam radiotherapy.</p>
 <p>pyMKM provides tools to compute microdosimetric and radiobiological quantities
-based on ion-specific LET data and linear-quadratic (LQ) survival models.
-It supports:</p>
+from ion-specific stopping-power/LET data and linear-quadratic (LQ) survival
+models. It supports:</p>
 <ul class="simple">
-<li><p>Radial dose modeling using Scholz-Kraft and Kiefer-Chatterjee formalisms</p></li>
-<li><p>Specific energy and saturation-corrected z̄ calculations</p></li>
-<li><p>Microdosimetric Kinetic Model (MKM), Stochastic MKM (SMK), and OSMK 2021/2023</p></li>
-<li><p>Pre-bundled stopping power datasets (MSTAR, Geant4, FLUKA)</p></li>
-<li><p>Survival fraction table generation and visualization</p></li>
-<li><p>Full support for oxygen-effect modeling</p></li>
+<li><p>radial dose modeling using Scholz-Kraft, Elsaesser-Scholz, Friedrich, and
+Kiefer-Chatterjee track-structure formalisms;</p></li>
+<li><p>single-event and dose-averaged specific-energy calculations;</p></li>
+<li><p>the classical Microdosimetric Kinetic Model (MKM);</p></li>
+<li><p>the stochastic MKM (SMK) and oxygen-modified SMK formulations (OSMK 2021/2023);</p></li>
+<li><p>the Mayo Clinic Florida MKM (MCF-MKM), including its impact-parameter-dependent
+non-Poisson correction;</p></li>
+<li><p>bundled stopping-power datasets (MSTAR, Geant4, and FLUKA);</p></li>
+<li><p>microdosimetric-table and survival-fraction generation, visualization, and export.</p></li>
 </ul>
 <section id="main-subpackages">
 <h2>Main subpackages<a class="headerlink" href="#main-subpackages" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><a class="reference internal" href="pymkm.io.html#module-pymkm.io" title="pymkm.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.io</span></code></a>: Data loading and parsing of stopping power tables.</p></li>
-<li><p><a class="reference internal" href="pymkm.data.html#module-pymkm.data" title="pymkm.data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.data</span></code></a>: Bundled LET datasets and element metadata.</p></li>
-<li><p><a class="reference internal" href="pymkm.physics.html#module-pymkm.physics" title="pymkm.physics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.physics</span></code></a>: Core models for track structure and specific energy.</p></li>
-<li><p><a class="reference internal" href="pymkm.mktable.html#module-pymkm.mktable" title="pymkm.mktable"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.mktable</span></code></a>: LET-to-z̄ computation for MKM/SMK/OSMK tables.</p></li>
-<li><p><a class="reference internal" href="pymkm.sftable.html#module-pymkm.sftable" title="pymkm.sftable"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.sftable</span></code></a>: LQ model application and survival fraction calculations.</p></li>
-<li><p><a class="reference internal" href="pymkm.biology.html#module-pymkm.biology" title="pymkm.biology"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.biology</span></code></a>: Oxygen-effect models and radiobiological corrections.</p></li>
-<li><p><a class="reference internal" href="pymkm.utils.html#module-pymkm.utils" title="pymkm.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.utils</span></code></a>: Utilities for interpolation, geometry, and parallelism.</p></li>
+<li><p><a class="reference internal" href="pymkm.io.html#module-pymkm.io" title="pymkm.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.io</span></code></a>: stopping-power data loading, parsing, and table collections.</p></li>
+<li><p><a class="reference internal" href="pymkm.data.html#module-pymkm.data" title="pymkm.data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.data</span></code></a>: bundled stopping-power datasets and element metadata.</p></li>
+<li><p><a class="reference internal" href="pymkm.physics.html#module-pymkm.physics" title="pymkm.physics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.physics</span></code></a>: track-structure and specific-energy calculations.</p></li>
+<li><p><a class="reference internal" href="pymkm.biology.html#module-pymkm.biology" title="pymkm.biology"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.biology</span></code></a>: MKM/SMK, OSMK, and MCF-MKM biological model utilities.</p></li>
+<li><p><a class="reference internal" href="pymkm.mktable.html#module-pymkm.mktable" title="pymkm.mktable"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.mktable</span></code></a>: generation of MKM, SMK, OSMK, and MCF-MKM tables.</p></li>
+<li><p><a class="reference internal" href="pymkm.sftable.html#module-pymkm.sftable" title="pymkm.sftable"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.sftable</span></code></a>: survival-fraction calculations from microdosimetric inputs.</p></li>
+<li><p><a class="reference internal" href="pymkm.utils.html#module-pymkm.utils" title="pymkm.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pymkm.utils</span></code></a>: numerical integration, interpolation, geometry, and parallelism.</p></li>
 </ul>
-<p>pyMKM is intended for researchers and clinicians working in particle therapy,
-microdosimetry, and radiobiology modeling.</p>
+<p>pyMKM is intended for research applications in particle therapy,
+microdosimetry, and radiobiological modeling.</p>
 </section>
 <section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
@@ -421,8 +424,8 @@ microdosimetry, and radiobiology modeling.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="pymkm.mktable.html">pymkm.mktable package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pymkm.mktable.html#supported-table-modes">Supported table modes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.mktable.html#modules">Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pymkm.mktable.html#usage">Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTable"><code class="docutils literal notranslate"><span class="pre">MKTable</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTable.compute"><code class="docutils literal notranslate"><span class="pre">MKTable.compute()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.mktable.html#pymkm.mktable.MKTable.display"><code class="docutils literal notranslate"><span class="pre">MKTable.display()</span></code></a></li>
@@ -504,7 +507,6 @@ microdosimetry, and radiobiology modeling.</p>
 <li class="toctree-l1"><a class="reference internal" href="pymkm.sftable.html">pymkm.sftable package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.sftable.html#models-supported">Models supported</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.sftable.html#modules">Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pymkm.sftable.html#usage">Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pymkm.sftable.html#pymkm.sftable.SFTable"><code class="docutils literal notranslate"><span class="pre">SFTable</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.sftable.html#pymkm.sftable.SFTable.compute"><code class="docutils literal notranslate"><span class="pre">SFTable.compute()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymkm.sftable.html#pymkm.sftable.SFTable.display"><code class="docutils literal notranslate"><span class="pre">SFTable.display()</span></code></a></li>

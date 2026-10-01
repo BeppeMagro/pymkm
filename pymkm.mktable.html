@@ -280,60 +280,58 @@
         <article role="main" id="furo-main-content">
           <section id="module-pymkm.mktable">
 <span id="pymkm-mktable-package"></span><h1>pymkm.mktable package<a class="headerlink" href="#module-pymkm.mktable" title="Link to this heading">¶</a></h1>
-<p>Tools for generating microdosimetric model tables (MKTable).</p>
-<p>This subpackage provides all components to compute, analyze, and export
-dose-averaged specific energy quantities used in the Microdosimetric Kinetic Model (MKM),
-its stochastic extension (SMK), and the oxygen-enhanced variant as described by Inaniwa &amp; Kanematsu, (JRR, 2023).</p>
-<p>The typical workflow includes:
-- configuration of model and geometry parameters
-- per-ion table computation from LET data
-- saturation correction and optional hypoxia adjustment
-- interactive visualization and export to clinical-compatible formats</p>
-<p>Each computed result is stored in the <cite>self.table</cite> dictionary with the structure:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MKTable</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"C"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>                   <span class="c1"># Input model parameters</span>
-        <span class="s2">"stopping_power_info"</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>     <span class="c1"># Metadata (LET, Z, A, source...)</span>
-        <span class="s2">"data"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span>            <span class="c1"># Main output table</span>
-            <span class="p">{</span>
-                <span class="s2">"energy"</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>            <span class="c1"># [MeV/u]</span>
-                <span class="s2">"let"</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>               <span class="c1"># [MeV/cm]</span>
-                <span class="s2">"z_bar_star_domain"</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="c1"># [Gy]</span>
-                <span class="s2">"z_bar_domain"</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>      <span class="c1"># [Gy] (SMK only)</span>
-                <span class="s2">"z_bar_nucleus"</span><span class="p">:</span> <span class="o">...</span>      <span class="c1"># [Gy] (SMK only)</span>
-            <span class="p">},</span>
-            <span class="o">...</span>
-        <span class="p">])</span>
-    <span class="p">},</span>
-    <span class="o">...</span>
-<span class="p">}</span>
+<p>Microdosimetric table generation for MKM, SMK, OSMK, and MCF-MKM.</p>
+<p>This subpackage provides the high-level <a class="reference internal" href="#pymkm.mktable.MKTable" title="pymkm.mktable.MKTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTable</span></code></a> interface used to
+compute, inspect, plot, serialize, and export model-specific microdosimetric
+quantities from stopping-power/LET data.</p>
+<section id="supported-table-modes">
+<h2>Supported table modes<a class="headerlink" href="#supported-table-modes" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>MKM (classic)</strong>: saturation-corrected dose-averaged domain specific energy.</p></li>
+<li><p><strong>SMK (stochastic)</strong>: domain, saturation-corrected domain, and nucleus
+dose-averaged specific energies.</p></li>
+<li><p><strong>OSMK 2023</strong>: oxygen-dependent scaling of the SMK geometry/parameters when
+enabled in <a class="reference internal" href="#pymkm.mktable.MKTableParameters" title="pymkm.mktable.MKTableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTableParameters</span></code></a>.</p></li>
+<li><p><strong>MCF-MKM</strong>: dose-averaged non-Poisson correction quantities <code class="docutils literal notranslate"><span class="pre">c_bar</span></code> and
+<code class="docutils literal notranslate"><span class="pre">z_bar_c</span></code> computed from impact-parameter-dependent specific energies.</p></li>
+</ul>
+<p>For MCF-MKM, <code class="docutils literal notranslate"><span class="pre">mcf_nucleus_mode=&quot;scaled&quot;</span></code> is the default and follows the
+original single-lineal-energy scaling between domain and nucleus. The
+<code class="docutils literal notranslate"><span class="pre">&quot;integrated&quot;</span></code> mode is also available as an alternative calculation in which
+nuclear specific energy is integrated explicitly on the same impact-parameter
+grid.</p>
+<p>Each computed ion entry is stored in <code class="docutils literal notranslate"><span class="pre">MKTable.table</span></code> together with the model
+parameters and stopping-power metadata. The data columns depend on the active
+model, for example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>MKM:     energy, let, z_bar_star_domain
+SMK:     energy, let, z_bar_star_domain, z_bar_domain, z_bar_nucleus
+MCF-MKM: energy, let, c_bar, z_bar_c
 </pre></div>
 </div>
+</section>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">core</span></code>:
-Defines <a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTableParameters" title="pymkm.mktable.core.MKTableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTableParameters</span></code></a> and <a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTable" title="pymkm.mktable.core.MKTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTable</span></code></a>,
-which manage configuration, geometry, stopping power sets, and result storage.</p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">compute</span></code>:
-Implements <a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTable.compute" title="pymkm.mktable.core.MKTable.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code></a>, the numerical engine that builds
-microdosimetric tables from energy–LET inputs.</p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">plot</span></code>:
-Adds <a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTable.plot" title="pymkm.mktable.core.MKTable.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>, enabling multi-ion plots of
-dose-averaged specific energy quantities vs. energy or LET.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">core</span></code>: defines <a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTableParameters" title="pymkm.mktable.core.MKTableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTableParameters</span></code></a> and
+<a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTable" title="pymkm.mktable.core.MKTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTable</span></code></a>.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">compute</span></code>: numerical engine for per-ion table generation.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">plot</span></code>: plotting utilities for model-specific table quantities.</p></li>
 </ul>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
-<p>This subpackage is the main high-level interface to pyMKM.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.mktable</span><span class="w"> </span><span class="kn">import</span> <span class="n">MKTable</span><span class="p">,</span> <span class="n">MKTableParameters</span>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm</span><span class="w"> </span><span class="kn">import</span> <span class="n">MKTable</span><span class="p">,</span> <span class="n">MKTableParameters</span><span class="p">,</span> <span class="n">StoppingPowerTableSet</span>
 
-<span class="n">params</span> <span class="o">=</span> <span class="n">MKTableParameters</span><span class="p">(</span><span class="n">domain_radius</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">nucleus_radius</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-<span class="n">mktable</span> <span class="o">=</span> <span class="n">MKTable</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-<span class="n">mktable</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-<span class="n">mktable</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="n">mktable</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-<span class="n">mktable</span><span class="o">.</span><span class="n">write_txt</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">ions</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">]</span>  <span class="c1"># carbon</span>
+<span class="n">sp</span> <span class="o">=</span> <span class="n">StoppingPowerTableSet</span><span class="o">.</span><span class="n">from_default_source</span><span class="p">(</span><span class="s2">"fluka_2020_0"</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by_ions</span><span class="p">(</span><span class="n">ions</span><span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">MKTableParameters</span><span class="p">(</span>
+    <span class="n">domain_radius</span><span class="o">=</span><span class="mf">0.32</span><span class="p">,</span>
+    <span class="n">nucleus_radius</span><span class="o">=</span><span class="mf">3.9</span><span class="p">,</span>
+    <span class="n">beta0</span><span class="o">=</span><span class="mf">0.0615</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">MKTable</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">sp_table_set</span><span class="o">=</span><span class="n">sp</span><span class="p">)</span>
+<span class="n">table</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">ions</span><span class="o">=</span><span class="n">ions</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">table</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ions</span><span class="o">=</span><span class="n">ions</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">"energy"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">"z_bar_star_domain"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -341,9 +339,9 @@ dose-averaged specific energy quantities vs. energy or LET.</p></li>
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.mktable.</span></span><span class="sig-name descname"><span class="pre">MKTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTableParameters" title="pymkm.mktable.core.MKTableParameters"><span class="pre">MKTableParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_table_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.io.table_set.html#pymkm.io.table_set.StoppingPowerTableSet" title="pymkm.io.table_set.StoppingPowerTableSet"><span class="pre">StoppingPowerTableSet</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/mktable/core.html#MKTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.mktable.MKTable" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Main handler for microdosimetric table generation using MKM or SMK.</p>
-<p>This class manages the physical model, geometry, table computation,
-result storage, and export functionalities.</p>
+<p>Main handler for MKM, SMK, OSMK, and MCF-MKM table generation.</p>
+<p>This class manages model configuration, geometry, stopping-power data,
+numerical computation, result storage, plotting, serialization, and export.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.mktable.MKTable.compute">
 <span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'trapz'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pymkm.mktable.MKTable.compute" title="Link to this definition">¶</a></dt>
@@ -840,8 +838,8 @@ needed to generate microdosimetric tables using MKM, SMK, or MCF-MKM.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">pymkm.mktable package</a><ul>
+<li><a class="reference internal" href="#supported-table-modes">Supported table modes</a></li>
 <li><a class="reference internal" href="#modules">Modules</a></li>
-<li><a class="reference internal" href="#usage">Usage</a></li>
 <li><a class="reference internal" href="#pymkm.mktable.MKTable"><code class="docutils literal notranslate"><span class="pre">MKTable</span></code></a><ul>
 <li><a class="reference internal" href="#pymkm.mktable.MKTable.compute"><code class="docutils literal notranslate"><span class="pre">MKTable.compute()</span></code></a></li>
 <li><a class="reference internal" href="#pymkm.mktable.MKTable.display"><code class="docutils literal notranslate"><span class="pre">MKTable.display()</span></code></a></li>

@@ -280,63 +280,45 @@
         <article role="main" id="furo-main-content">
           <section id="module-pymkm.sftable">
 <span id="pymkm-sftable-package"></span><h1>pymkm.sftable package<a class="headerlink" href="#module-pymkm.sftable" title="Link to this heading">¶</a></h1>
-<p>Survival fraction table generation for MKM, SMK, and OSMK models.</p>
-<p>This subpackage provides tools for computing and visualizing survival fraction (SF)
-curves based on microdosimetric quantities from an MKTable.</p>
-<p>After running <cite>compute()</cite>, the results are stored in <cite>self.table</cite> as a list of result dictionaries:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SFTable</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"ion"</span><span class="p">:</span> <span class="s2">"12C"</span><span class="p">,</span>
-            <span class="s2">"energy"</span><span class="p">:</span> <span class="mf">160.0</span><span class="p">,</span>
-            <span class="s2">"let"</span><span class="p">:</span> <span class="mf">28.3</span><span class="p">,</span>
-            <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"stochastic"</span><span class="p">,</span>
-            <span class="s2">"osmk_version"</span><span class="p">:</span> <span class="s2">"2023"</span>
-        <span class="p">},</span>
-        <span class="s2">"calculation_info"</span><span class="p">:</span> <span class="s2">"computed"</span><span class="p">,</span>
-        <span class="s2">"data"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-            <span class="s2">"dose"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                 <span class="c1"># [Gy]</span>
-            <span class="s2">"survival_fraction"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>     <span class="c1"># dimensionless</span>
-        <span class="p">})</span>
-    <span class="p">},</span>
-    <span class="o">...</span>
-<span class="p">]</span>
-</pre></div>
-</div>
+<p>Survival-fraction table generation for MKM, SMK, OSMK, and MCF-MKM.</p>
+<p>This subpackage computes and visualizes survival-fraction (SF) curves from an
+associated <a class="reference internal" href="pymkm.mktable.core.html#pymkm.mktable.core.MKTable" title="pymkm.mktable.core.MKTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">MKTable</span></code></a> and biological LQ parameters.
+The selected survival model is normally inferred from the MKTable configuration
+and can also be supplied explicitly to <a class="reference internal" href="#pymkm.sftable.SFTable.compute" title="pymkm.sftable.SFTable.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SFTable.compute()</span></code></a>.</p>
 <section id="models-supported">
 <h2>Models supported<a class="headerlink" href="#models-supported" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><strong>MKM (classic)</strong>: Linear-quadratic model with saturation correction.</p></li>
-<li><p><strong>SMK (stochastic)</strong>: Extension of MKM using dose-averaged microdosimetric inputs.</p></li>
-<li><dl class="simple">
-<dt><strong>OSMK (oxygen-aware SMK)</strong>: Includes hypoxia corrections using 2021 or 2023 formulations</dt><dd><p>by Inaniwa et al., (Phys. Med. Biol., 2021) and Inaniwa &amp; Kanematsu, (JRR, 2023).</p>
-</dd>
-</dl>
-</li>
+<li><p><strong>MKM (classic)</strong>: linear-quadratic survival using the saturation-corrected
+MKM microdosimetric quantity.</p></li>
+<li><p><strong>SMK (stochastic)</strong>: stochastic MKM survival using domain and nucleus
+dose-averaged specific energies.</p></li>
+<li><p><strong>OSMK 2021/2023</strong>: oxygen-modified SMK survival with the corresponding
+hypoxia parameterization.</p></li>
+<li><p><strong>MCF-MKM</strong>: linear-quadratic survival reconstructed from the precomputed
+MCF quantities <code class="docutils literal notranslate"><span class="pre">c_bar</span></code> and <code class="docutils literal notranslate"><span class="pre">z_bar_c</span></code>.</p></li>
 </ul>
+<p>MCF-MKM and OSMK are mutually exclusive in the current implementation; oxygen
+corrections are applied only to stochastic/SMK calculations.</p>
 </section>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">core</span></code>:
-Defines <a class="reference internal" href="pymkm.sftable.core.html#pymkm.sftable.core.SFTableParameters" title="pymkm.sftable.core.SFTableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SFTableParameters</span></code></a> and <a class="reference internal" href="pymkm.sftable.core.html#pymkm.sftable.core.SFTable" title="pymkm.sftable.core.SFTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SFTable</span></code></a>
-for configuring and managing SF table generation.</p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">compute</span></code>:
-Provides <a class="reference internal" href="pymkm.sftable.compute.html#pymkm.sftable.compute.compute" title="pymkm.sftable.compute.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code></a>, the main routine for calculating survival curves
-from LET and energy data.</p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">plot</span></code>:
-Contains plotting utilities for visualizing survival curves across doses, energies, or ions.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">core</span></code>: defines <a class="reference internal" href="pymkm.sftable.core.html#pymkm.sftable.core.SFTableParameters" title="pymkm.sftable.core.SFTableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SFTableParameters</span></code></a> and
+<a class="reference internal" href="pymkm.sftable.core.html#pymkm.sftable.core.SFTable" title="pymkm.sftable.core.SFTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SFTable</span></code></a>.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">compute</span></code>: survival-curve computation for the supported model modes.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">plot</span></code>: visualization of stored survival curves.</p></li>
 </ul>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
-<p>The <cite>sftable</cite> module is typically used after computing an MKTable:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.sftable.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SFTableParameters</span><span class="p">,</span> <span class="n">SFTable</span>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm</span><span class="w"> </span><span class="kn">import</span> <span class="n">SFTable</span><span class="p">,</span> <span class="n">SFTableParameters</span>
 
-<span class="n">params</span> <span class="o">=</span> <span class="n">SFTableParameters</span><span class="p">(</span><span class="n">mktable</span><span class="o">=</span><span class="n">mktable</span><span class="p">,</span> <span class="n">alpha0</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-<span class="n">sftable</span> <span class="o">=</span> <span class="n">SFTable</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-<span class="n">sftable</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">ion</span><span class="o">=</span><span class="s2">"C"</span><span class="p">)</span>
-<span class="n">sftable</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">sf_params</span> <span class="o">=</span> <span class="n">SFTableParameters</span><span class="p">(</span>
+    <span class="n">mktable</span><span class="o">=</span><span class="n">mktable</span><span class="p">,</span>
+    <span class="n">alpha0</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">beta0</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">sf_table</span> <span class="o">=</span> <span class="n">SFTable</span><span class="p">(</span><span class="n">sf_params</span><span class="p">)</span>
+<span class="n">sf_table</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">ion</span><span class="o">=</span><span class="s2">"C"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"classic"</span><span class="p">)</span>
+<span class="n">sf_table</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -636,7 +618,6 @@ Enables OSMK mode if set.</p></li>
 <li><a class="reference internal" href="#">pymkm.sftable package</a><ul>
 <li><a class="reference internal" href="#models-supported">Models supported</a></li>
 <li><a class="reference internal" href="#modules">Modules</a></li>
-<li><a class="reference internal" href="#usage">Usage</a></li>
 <li><a class="reference internal" href="#pymkm.sftable.SFTable"><code class="docutils literal notranslate"><span class="pre">SFTable</span></code></a><ul>
 <li><a class="reference internal" href="#pymkm.sftable.SFTable.compute"><code class="docutils literal notranslate"><span class="pre">SFTable.compute()</span></code></a></li>
 <li><a class="reference internal" href="#pymkm.sftable.SFTable.display"><code class="docutils literal notranslate"><span class="pre">SFTable.display()</span></code></a></li>

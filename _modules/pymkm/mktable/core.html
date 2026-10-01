@@ -385,10 +385,10 @@
 <a class="viewcode-back" href="../../../pymkm.mktable.core.html#pymkm.mktable.MKTable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MKTable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Main handler for microdosimetric table generation using MKM or SMK.</span>
-<span class="sd">    </span>
-<span class="sd">    This class manages the physical model, geometry, table computation,</span>
-<span class="sd">    result storage, and export functionalities.</span>
+<span class="sd">    Main handler for MKM, SMK, OSMK, and MCF-MKM table generation.</span>
+
+<span class="sd">    This class manages model configuration, geometry, stopping-power data,</span>
+<span class="sd">    numerical computation, result storage, plotting, serialization, and export.</span>
 <span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"&lt;MKTable model=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_version</span><span class="si">}</span><span class="s2">, r_d=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">domain_radius</span><span class="si">}</span><span class="s2">, "</span>
@@ -653,9 +653,10 @@
 <span class="sd">        Perform internal consistency checks on MKTableParameters.</span>
 <span class="sd">        </span>
 <span class="sd">        Validates:</span>
-<span class="sd">        - Presence of either z₀ or β₀ depending on MKM/SMK usage</span>
-<span class="sd">        - Correct handling of z₀ and β₀ interaction</span>
-<span class="sd">        - Presence of OSMK parameters if oxygen effect correction is enabled</span>
+<span class="sd">        - Model-specific requirements for MKM, SMK, and MCF-MKM</span>
+<span class="sd">        - Correct handling of z₀, α₀, and β₀ for the selected model</span>
+<span class="sd">        - Mutual exclusivity of MCF-MKM and stochastic/oxygen-effect modes</span>
+<span class="sd">        - Presence of OSMK parameters if oxygen-effect correction is enabled</span>
 <span class="sd">        </span>
 <span class="sd">        :raises ValueError: If critical parameters are missing or incompatible.</span>
 <span class="sd">        :raises Warning: If redundant or conflicting values are detected (e.g., both z₀ and β₀).</span>

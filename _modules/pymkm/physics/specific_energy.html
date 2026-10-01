@@ -273,39 +273,32 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for pymkm.physics.specific_energy</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Computation of specific energy quantities for MKM and SMK models.</span>
+<span class="sd">Specific-energy calculations used by MKM, SMK, and MCF-MKM.</span>
 
-<span class="sd">This module defines the :class:`SpecificEnergy` to compute:</span>
-<span class="sd">- Single-event specific energy z₁(b)</span>
-<span class="sd">- Saturation-corrected z′₁(b) using z₀ (square-root or quadratic)</span>
-<span class="sd">- Dose-averaged values (z̄, z̄′)</span>
+<span class="sd">This module defines :class:`SpecificEnergy`, which computes single-event</span>
+<span class="sd">specific energy as a function of impact parameter and the dose-averaged</span>
+<span class="sd">quantities required by the different MKM formulations. It also provides the</span>
+<span class="sd">saturation corrections used by classical MKM and SMK.</span>
 
-<span class="sd">The sensitive region is modeled as a water cylinder perpendicular to the ion path.</span>
-<span class="sd">Radial dose profiles are integrated using impact parameter b to match MKM/SMK formalisms.</span>
+<span class="sd">The sensitive region is modeled as a water cylinder whose axis is parallel to</span>
+<span class="sd">the ion trajectory. Radial dose profiles are integrated in impact-parameter</span>
+<span class="sd">space. The same single-event machinery is reused by MCF-MKM for domain and,</span>
+<span class="sd">when requested, explicitly integrated nucleus specific energies.</span>
 
 <span class="sd">Example usage::</span>
 
-<span class="sd">    from pymkm.physics.particle_track import ParticleTrack</span>
-<span class="sd">    from pymkm.dosimetry.specific_energy import SpecificEnergy</span>
+<span class="sd">    from pymkm.physics import ParticleTrack, SpecificEnergy</span>
 
-<span class="sd">    # Load or generate a ParticleTrack instance</span>
-<span class="sd">    track = ParticleTrack(...)  # contains D(r) and penumbra radius</span>
+<span class="sd">    track = ParticleTrack(</span>
+<span class="sd">        model_name="Kiefer-Chatterjee",</span>
+<span class="sd">        energy=100.0,</span>
+<span class="sd">        atomic_number=6,</span>
+<span class="sd">        let=1000.0,</span>
+<span class="sd">    )</span>
+<span class="sd">    specific_energy = SpecificEnergy(track, region_radius=0.5)</span>
 
-<span class="sd">    # Define geometry</span>
-<span class="sd">    region_radius = 0.5  # in micrometers</span>
-<span class="sd">    sz = SpecificEnergy(track, region_radius)</span>
-
-<span class="sd">    # Compute single-event specific energy z1(b)</span>
-<span class="sd">    z1_array, b_array = sz.single_event_specific_energy()</span>
-
-<span class="sd">    # Compute saturation parameter z0 from beta0</span>
-<span class="sd">    z0 = sz.compute_saturation_parameter(domain_radius=0.5, nucleus_radius=3.0, beta0=0.05)</span>
-
-<span class="sd">    # Apply saturation correction</span>
-<span class="sd">    z1_prime_array = sz.saturation_corrected_single_event_specific_energy(z0, z1_array)</span>
-
-<span class="sd">    # Compute dose-averaged specific energy (corrected)</span>
-<span class="sd">    z_prime_bar = sz.dose_averaged_specific_energy(z1_array, b_array, z1_prime_array, model="square_root")</span>
+<span class="sd">    z1, b = specific_energy.single_event_specific_energy()</span>
+<span class="sd">    z_bar = specific_energy.dose_averaged_specific_energy(z1, b)</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
@@ -324,8 +317,10 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute microdosimetric specific energy quantities from a single ion track.</span>
 <span class="sd">    </span>
-<span class="sd">    Supports MKM/SMK calculations of z₁(b), z′₁(b), z₀, and dose-averaged values.</span>
-<span class="sd">    The sensitive region is modeled as a cylinder perpendicular to the particle track.</span>
+<span class="sd">    Supports the single-event and dose-averaged specific-energy calculations</span>
+<span class="sd">    used by MKM, SMK, and MCF-MKM, together with the saturation quantities</span>
+<span class="sd">    required by MKM/SMK. The sensitive region is modeled as a cylinder whose</span>
+<span class="sd">    axis is parallel to the particle track.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>

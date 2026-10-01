@@ -281,19 +281,17 @@
           <section id="module-pymkm.physics">
 <span id="pymkm-physics-package"></span><h1>pymkm.physics package<a class="headerlink" href="#module-pymkm.physics" title="Link to this heading">¶</a></h1>
 <p>Physics models and computational core for pyMKM.</p>
-<p>This subpackage contains the physical and mathematical implementations required
-to compute microdosimetric quantities for the Microdosimetric Kinetic Model (MKM)
-and its stochastic extensions.</p>
+<p>This subpackage contains the track-structure and specific-energy machinery used
+by the classical MKM, stochastic MKM (SMK), and MCF-MKM calculations.</p>
 <section id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">particle_track</span></code>:
-Implements <a class="reference internal" href="pymkm.physics.particle_track.html#pymkm.physics.particle_track.ParticleTrack" title="pymkm.physics.particle_track.ParticleTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParticleTrack</span></code></a>, a model for radial
-dose distributions around ion tracks using the Scholz-Kraft and Kiefer-Chatterjee formalisms.</p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">specific_energy</span></code>:
-Provides the <a class="reference internal" href="pymkm.physics.specific_energy.html#pymkm.physics.specific_energy.SpecificEnergy" title="pymkm.physics.specific_energy.SpecificEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpecificEnergy</span></code></a> class to compute
-microdosimetric specific energy quantities, including single-event saturation-corrected
-values, and dose-averaged specific energy.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">particle_track</span></code>: implements
+<a class="reference internal" href="pymkm.physics.particle_track.html#pymkm.physics.particle_track.ParticleTrack" title="pymkm.physics.particle_track.ParticleTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParticleTrack</span></code></a> for analytical radial
+dose distributions using the supported track-structure models.</p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">specific_energy</span></code>: provides
+<a class="reference internal" href="pymkm.physics.specific_energy.html#pymkm.physics.specific_energy.SpecificEnergy" title="pymkm.physics.specific_energy.SpecificEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpecificEnergy</span></code></a> for single-event and
+dose-averaged specific-energy calculations in cylindrical sensitive regions.</p></li>
 </ul>
 </section>
 <dl class="py class">
@@ -332,8 +330,10 @@ If None, a default grid is generated from energy and penumbra radius.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.physics.</span></span><span class="sig-name descname"><span class="pre">SpecificEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.physics.particle_track.html#pymkm.physics.particle_track.ParticleTrack" title="pymkm.physics.particle_track.ParticleTrack"><span class="pre">ParticleTrack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.SpecificEnergy" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Compute microdosimetric specific energy quantities from a single ion track.</p>
-<p>Supports MKM/SMK calculations of z₁(b), z′₁(b), z₀, and dose-averaged values.
-The sensitive region is modeled as a cylinder perpendicular to the particle track.</p>
+<p>Supports the single-event and dose-averaged specific-energy calculations
+used by MKM, SMK, and MCF-MKM, together with the saturation quantities
+required by MKM/SMK. The sensitive region is modeled as a cylinder whose
+axis is parallel to the particle track.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.physics.SpecificEnergy.compute_saturation_parameter">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_saturation_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nucleus_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy.compute_saturation_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.SpecificEnergy.compute_saturation_parameter" title="Link to this definition">¶</a></dt>

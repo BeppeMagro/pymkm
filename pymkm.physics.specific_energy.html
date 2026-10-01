@@ -280,35 +280,28 @@
         <article role="main" id="furo-main-content">
           <section id="module-pymkm.physics.specific_energy">
 <span id="pymkm-physics-specific-energy-module"></span><h1>pymkm.physics.specific_energy module<a class="headerlink" href="#module-pymkm.physics.specific_energy" title="Link to this heading">¶</a></h1>
-<p>Computation of specific energy quantities for MKM and SMK models.</p>
-<p>This module defines the <a class="reference internal" href="#pymkm.physics.specific_energy.SpecificEnergy" title="pymkm.physics.specific_energy.SpecificEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpecificEnergy</span></code></a> to compute:
-- Single-event specific energy z₁(b)
-- Saturation-corrected z′₁(b) using z₀ (square-root or quadratic)
-- Dose-averaged values (z̄, z̄′)</p>
-<p>The sensitive region is modeled as a water cylinder perpendicular to the ion path.
-Radial dose profiles are integrated using impact parameter b to match MKM/SMK formalisms.</p>
+<p>Specific-energy calculations used by MKM, SMK, and MCF-MKM.</p>
+<p>This module defines <a class="reference internal" href="#pymkm.physics.specific_energy.SpecificEnergy" title="pymkm.physics.specific_energy.SpecificEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpecificEnergy</span></code></a>, which computes single-event
+specific energy as a function of impact parameter and the dose-averaged
+quantities required by the different MKM formulations. It also provides the
+saturation corrections used by classical MKM and SMK.</p>
+<p>The sensitive region is modeled as a water cylinder whose axis is parallel to
+the ion trajectory. Radial dose profiles are integrated in impact-parameter
+space. The same single-event machinery is reused by MCF-MKM for domain and,
+when requested, explicitly integrated nucleus specific energies.</p>
 <p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.physics.particle_track</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParticleTrack</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.dosimetry.specific_energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpecificEnergy</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymkm.physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParticleTrack</span><span class="p">,</span> <span class="n">SpecificEnergy</span>
 
-<span class="c1"># Load or generate a ParticleTrack instance</span>
-<span class="n">track</span> <span class="o">=</span> <span class="n">ParticleTrack</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># contains D(r) and penumbra radius</span>
+<span class="n">track</span> <span class="o">=</span> <span class="n">ParticleTrack</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">"Kiefer-Chatterjee"</span><span class="p">,</span>
+    <span class="n">energy</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
+    <span class="n">atomic_number</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="n">let</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">specific_energy</span> <span class="o">=</span> <span class="n">SpecificEnergy</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">region_radius</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 
-<span class="c1"># Define geometry</span>
-<span class="n">region_radius</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># in micrometers</span>
-<span class="n">sz</span> <span class="o">=</span> <span class="n">SpecificEnergy</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">region_radius</span><span class="p">)</span>
-
-<span class="c1"># Compute single-event specific energy z1(b)</span>
-<span class="n">z1_array</span><span class="p">,</span> <span class="n">b_array</span> <span class="o">=</span> <span class="n">sz</span><span class="o">.</span><span class="n">single_event_specific_energy</span><span class="p">()</span>
-
-<span class="c1"># Compute saturation parameter z0 from beta0</span>
-<span class="n">z0</span> <span class="o">=</span> <span class="n">sz</span><span class="o">.</span><span class="n">compute_saturation_parameter</span><span class="p">(</span><span class="n">domain_radius</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">nucleus_radius</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-
-<span class="c1"># Apply saturation correction</span>
-<span class="n">z1_prime_array</span> <span class="o">=</span> <span class="n">sz</span><span class="o">.</span><span class="n">saturation_corrected_single_event_specific_energy</span><span class="p">(</span><span class="n">z0</span><span class="p">,</span> <span class="n">z1_array</span><span class="p">)</span>
-
-<span class="c1"># Compute dose-averaged specific energy (corrected)</span>
-<span class="n">z_prime_bar</span> <span class="o">=</span> <span class="n">sz</span><span class="o">.</span><span class="n">dose_averaged_specific_energy</span><span class="p">(</span><span class="n">z1_array</span><span class="p">,</span> <span class="n">b_array</span><span class="p">,</span> <span class="n">z1_prime_array</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"square_root"</span><span class="p">)</span>
+<span class="n">z1</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">specific_energy</span><span class="o">.</span><span class="n">single_event_specific_energy</span><span class="p">()</span>
+<span class="n">z_bar</span> <span class="o">=</span> <span class="n">specific_energy</span><span class="o">.</span><span class="n">dose_averaged_specific_energy</span><span class="p">(</span><span class="n">z1</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py class">
@@ -316,8 +309,10 @@ Radial dose profiles are integrated using impact parameter b to match MKM/SMK fo
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymkm.physics.specific_energy.</span></span><span class="sig-name descname"><span class="pre">SpecificEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymkm.physics.particle_track.html#pymkm.physics.particle_track.ParticleTrack" title="pymkm.physics.particle_track.ParticleTrack"><span class="pre">ParticleTrack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.specific_energy.SpecificEnergy" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Compute microdosimetric specific energy quantities from a single ion track.</p>
-<p>Supports MKM/SMK calculations of z₁(b), z′₁(b), z₀, and dose-averaged values.
-The sensitive region is modeled as a cylinder perpendicular to the particle track.</p>
+<p>Supports the single-event and dose-averaged specific-energy calculations
+used by MKM, SMK, and MCF-MKM, together with the saturation quantities
+required by MKM/SMK. The sensitive region is modeled as a cylinder whose
+axis is parallel to the particle track.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymkm.physics.specific_energy.SpecificEnergy.compute_saturation_parameter">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_saturation_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nucleus_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/pymkm/physics/specific_energy.html#SpecificEnergy.compute_saturation_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pymkm.physics.specific_energy.SpecificEnergy.compute_saturation_parameter" title="Link to this definition">¶</a></dt>
