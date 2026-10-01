@@ -1,18 +1,35 @@
-.. pyMKM documentation master file, created by
-   sphinx-quickstart on Tue Jun 24 13:37:35 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+pyMKM documentation
+===================
 
-Welcome to pyMKM's documentation!
-=================================
+**pyMKM** is an open-source Python package for microdosimetric calculations
+and cell-survival modelling in radiobiology and hadrontherapy.
+
+The package provides implementations of several formulations of the
+Microdosimetric Kinetic Model, including:
+
+* the classical Microdosimetric Kinetic Model (MKM);
+* the stochastic MKM (SMK);
+* oxygen-modified MKM formulations (OSMK);
+* the MCF-MKM formulation based on impact-parameter-dependent specific energy.
+
+pyMKM includes tools for track-structure calculations, specific-energy
+distributions, microdosimetric table generation, survival calculations,
+stopping-power data handling, and model validation.
+
+API reference
+-------------
+
+The API reference is generated automatically from the current ``pymkm``
+package structure.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
+   :caption: API Reference
 
    pymkm
 
-Indices and tables
-==================
+Indices
+-------
 
 * :ref:`genindex`
 * :ref:`modindex`
