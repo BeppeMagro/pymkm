@@ -32,6 +32,8 @@ text = "MIT"
 
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov", "black", "mypy"]
+release = ["build", "twine"]
+docs = ["sphinx", "furo"]
 
 [project.urls]
 Homepage = "https://github.com/BeppeMagro/pymkm"
