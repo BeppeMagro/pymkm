@@ -65,7 +65,6 @@ dmypy.json
 
 # Custom project files
 *.dot
-assets/*.drawio
 examples/_*
 .spyproject/
 
