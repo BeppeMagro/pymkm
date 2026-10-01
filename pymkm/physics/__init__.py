@@ -1,21 +1,18 @@
 """
 Physics models and computational core for pyMKM.
 
-This subpackage contains the physical and mathematical implementations required
-to compute microdosimetric quantities for the Microdosimetric Kinetic Model (MKM)
-and its stochastic extensions.
+This subpackage contains the track-structure and specific-energy machinery used
+by the classical MKM, stochastic MKM (SMK), and MCF-MKM calculations.
 
 Modules
 -------
 
-- :mod:`particle_track`:
-  Implements :class:`~pymkm.physics.particle_track.ParticleTrack`, a model for radial
-  dose distributions around ion tracks using the Scholz-Kraft and Kiefer-Chatterjee formalisms.
-
-- :mod:`specific_energy`:
-  Provides the :class:`~pymkm.physics.specific_energy.SpecificEnergy` class to compute
-  microdosimetric specific energy quantities, including single-event saturation-corrected
-  values, and dose-averaged specific energy.
+- :mod:`particle_track`: implements
+  :class:`~pymkm.physics.particle_track.ParticleTrack` for analytical radial
+  dose distributions using the supported track-structure models.
+- :mod:`specific_energy`: provides
+  :class:`~pymkm.physics.specific_energy.SpecificEnergy` for single-event and
+  dose-averaged specific-energy calculations in cylindrical sensitive regions.
 """
 
 from .particle_track import ParticleTrack

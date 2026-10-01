@@ -1,11 +1,11 @@
 """
-Plotting utilities for survival fraction (SF) curves.
+Plotting utilities for survival-fraction (SF) curves.
 
-This module defines :meth:`SFTable.plot`, which visualizes survival fraction curves
-computed using MKM, SMK, or OSMK models for one or more ions.
+This module defines :meth:`SFTable.plot`, which visualizes survival curves
+computed with MKM, SMK, OSMK, or MCF-MKM for one or more ions.
 
-Plots are displayed as semilogarithmic survival vs. dose curves. The method also
-supports filtering by LET and displaying model parameters as annotations.
+Curves are displayed as semilogarithmic survival versus dose plots. The method
+supports LET filtering and optional annotation of the active model parameters.
 """
 
 import matplotlib.pyplot as plt

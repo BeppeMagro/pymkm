@@ -1,37 +1,30 @@
 """
-Computation of specific energy quantities for MKM and SMK models.
+Specific-energy calculations used by MKM, SMK, and MCF-MKM.
 
-This module defines the :class:`SpecificEnergy` to compute:
-- Single-event specific energy z₁(b)
-- Saturation-corrected z′₁(b) using z₀ (square-root or quadratic)
-- Dose-averaged values (z̄, z̄′)
+This module defines :class:`SpecificEnergy`, which computes single-event
+specific energy as a function of impact parameter and the dose-averaged
+quantities required by the different MKM formulations. It also provides the
+saturation corrections used by classical MKM and SMK.
 
-The sensitive region is modeled as a water cylinder perpendicular to the ion path.
-Radial dose profiles are integrated using impact parameter b to match MKM/SMK formalisms.
+The sensitive region is modeled as a water cylinder whose axis is parallel to
+the ion trajectory. Radial dose profiles are integrated in impact-parameter
+space. The same single-event machinery is reused by MCF-MKM for domain and,
+when requested, explicitly integrated nucleus specific energies.
 
 Example usage::
 
-    from pymkm.physics.particle_track import ParticleTrack
-    from pymkm.dosimetry.specific_energy import SpecificEnergy
+    from pymkm.physics import ParticleTrack, SpecificEnergy
 
-    # Load or generate a ParticleTrack instance
-    track = ParticleTrack(...)  # contains D(r) and penumbra radius
+    track = ParticleTrack(
+        model_name="Kiefer-Chatterjee",
+        energy=100.0,
+        atomic_number=6,
+        let=1000.0,
+    )
+    specific_energy = SpecificEnergy(track, region_radius=0.5)
 
-    # Define geometry
-    region_radius = 0.5  # in micrometers
-    sz = SpecificEnergy(track, region_radius)
-
-    # Compute single-event specific energy z1(b)
-    z1_array, b_array = sz.single_event_specific_energy()
-
-    # Compute saturation parameter z0 from beta0
-    z0 = sz.compute_saturation_parameter(domain_radius=0.5, nucleus_radius=3.0, beta0=0.05)
-
-    # Apply saturation correction
-    z1_prime_array = sz.saturation_corrected_single_event_specific_energy(z0, z1_array)
-
-    # Compute dose-averaged specific energy (corrected)
-    z_prime_bar = sz.dose_averaged_specific_energy(z1_array, b_array, z1_prime_array, model="square_root")
+    z1, b = specific_energy.single_event_specific_energy()
+    z_bar = specific_energy.dose_averaged_specific_energy(z1, b)
 """
 
 import time
@@ -48,8 +41,10 @@ class SpecificEnergy:
     """
     Compute microdosimetric specific energy quantities from a single ion track.
     
-    Supports MKM/SMK calculations of z₁(b), z′₁(b), z₀, and dose-averaged values.
-    The sensitive region is modeled as a cylinder perpendicular to the particle track.
+    Supports the single-event and dose-averaged specific-energy calculations
+    used by MKM, SMK, and MCF-MKM, together with the saturation quantities
+    required by MKM/SMK. The sensitive region is modeled as a cylinder whose
+    axis is parallel to the particle track.
     """
 
     def __init__(

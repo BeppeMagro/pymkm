@@ -103,10 +103,10 @@ class MKTableParameters:
 
 class MKTable:
     """
-    Main handler for microdosimetric table generation using MKM or SMK.
-    
-    This class manages the physical model, geometry, table computation,
-    result storage, and export functionalities.
+    Main handler for MKM, SMK, OSMK, and MCF-MKM table generation.
+
+    This class manages model configuration, geometry, stopping-power data,
+    numerical computation, result storage, plotting, serialization, and export.
     """
     def __repr__(self):
         return (f"<MKTable model={self.model_version}, r_d={self.params.domain_radius}, "
@@ -362,9 +362,10 @@ class MKTable:
         Perform internal consistency checks on MKTableParameters.
         
         Validates:
-        - Presence of either z₀ or β₀ depending on MKM/SMK usage
-        - Correct handling of z₀ and β₀ interaction
-        - Presence of OSMK parameters if oxygen effect correction is enabled
+        - Model-specific requirements for MKM, SMK, and MCF-MKM
+        - Correct handling of z₀, α₀, and β₀ for the selected model
+        - Mutual exclusivity of MCF-MKM and stochastic/oxygen-effect modes
+        - Presence of OSMK parameters if oxygen-effect correction is enabled
         
         :raises ValueError: If critical parameters are missing or incompatible.
         :raises Warning: If redundant or conflicting values are detected (e.g., both z₀ and β₀).

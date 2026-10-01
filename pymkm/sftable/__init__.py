@@ -1,66 +1,49 @@
 """
-Survival fraction table generation for MKM, SMK, and OSMK models.
+Survival-fraction table generation for MKM, SMK, OSMK, and MCF-MKM.
 
-This subpackage provides tools for computing and visualizing survival fraction (SF)
-curves based on microdosimetric quantities from an MKTable.
-
-After running `compute()`, the results are stored in `self.table` as a list of result dictionaries:
-
-.. code-block:: python
-
-    SFTable.table = [
-        {
-            "params": {
-                "ion": "12C",
-                "energy": 160.0,
-                "let": 28.3,
-                "model": "stochastic",
-                "osmk_version": "2023"
-            },
-            "calculation_info": "computed",
-            "data": pd.DataFrame({
-                "dose": [...],                 # [Gy]
-                "survival_fraction": [...]     # dimensionless
-            })
-        },
-        ...
-    ]
+This subpackage computes and visualizes survival-fraction (SF) curves from an
+associated :class:`~pymkm.mktable.core.MKTable` and biological LQ parameters.
+The selected survival model is normally inferred from the MKTable configuration
+and can also be supplied explicitly to :meth:`SFTable.compute`.
 
 Models supported
 ----------------
 
-- **MKM (classic)**: Linear-quadratic model with saturation correction.
-- **SMK (stochastic)**: Extension of MKM using dose-averaged microdosimetric inputs.
-- **OSMK (oxygen-aware SMK)**: Includes hypoxia corrections using 2021 or 2023 formulations
-   by Inaniwa et al., (Phys. Med. Biol., 2021) and Inaniwa & Kanematsu, (JRR, 2023).
+- **MKM (classic)**: linear-quadratic survival using the saturation-corrected
+  MKM microdosimetric quantity.
+- **SMK (stochastic)**: stochastic MKM survival using domain and nucleus
+  dose-averaged specific energies.
+- **OSMK 2021/2023**: oxygen-modified SMK survival with the corresponding
+  hypoxia parameterization.
+- **MCF-MKM**: linear-quadratic survival reconstructed from the precomputed
+  MCF quantities ``c_bar`` and ``z_bar_c``.
+
+MCF-MKM and OSMK are mutually exclusive in the current implementation; oxygen
+corrections are applied only to stochastic/SMK calculations.
 
 Modules
 -------
 
-- :mod:`core`:
-  Defines :class:`~pymkm.sftable.core.SFTableParameters` and :class:`~pymkm.sftable.core.SFTable`
-  for configuring and managing SF table generation.
+- :mod:`core`: defines :class:`~pymkm.sftable.core.SFTableParameters` and
+  :class:`~pymkm.sftable.core.SFTable`.
+- :mod:`compute`: survival-curve computation for the supported model modes.
+- :mod:`plot`: visualization of stored survival curves.
 
-- :mod:`compute`:
-  Provides :meth:`~pymkm.sftable.compute.compute`, the main routine for calculating survival curves
-  from LET and energy data.
-
-- :mod:`plot`:
-  Contains plotting utilities for visualizing survival curves across doses, energies, or ions.
-
-Usage
------
-
-The `sftable` module is typically used after computing an MKTable:
+Example
+-------
 
 .. code-block:: python
 
-    from pymkm.sftable.core import SFTableParameters, SFTable
+    from pymkm import SFTable, SFTableParameters
 
-    params = SFTableParameters(mktable=mktable, alpha0=0.1, beta0=0.05)
-    sftable = SFTable(params)
-    sftable.compute(ion="C")
-    sftable.plot()
+    sf_params = SFTableParameters(
+        mktable=mktable,
+        alpha0=0.1,
+        beta0=0.05,
+    )
+    sf_table = SFTable(sf_params)
+    sf_table.compute(ion="C", model="classic")
+    sf_table.plot()
 """
 
 from .core import SFTable, SFTableParameters
