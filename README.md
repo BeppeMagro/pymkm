@@ -11,92 +11,116 @@
 [![Deploy Docs](https://github.com/BeppeMagro/pymkm/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/BeppeMagro/pymkm/actions/workflows/gh-pages.yml)
 [![TestPyPI](https://img.shields.io/badge/TestPyPI-pymkm-blue)](https://test.pypi.org/project/pymkm/)
 
-**pyMKM** is an open-source Python package for the computation of microdosimetric quantities and cell survival predictions based on the **Microdosimetric Kinetic Model (MKM)**, its **stochastic extension (SMK)**, and its **oxygen-aware version (OSMK)**.
+**pyMKM** is an open-source Python package for microdosimetric calculations and cell-survival modelling based on the **Microdosimetric Kinetic Model (MKM)** and related formulations, including the **stochastic MKM (SMK)**, oxygen-modified **OSMK** models, and the **MCF-MKM** formulation based on impact-parameter-dependent specific energy.
 
-It is intended for use in radiobiology research, Monte Carlo-based dosimetry, and biologically guided treatment planning in hadrontherapy.
+It is intended for radiobiology research, Monte Carlo-based dosimetry, and biologically guided treatment planning in hadrontherapy.
 
-📘 **[Official Documentation](https://beppemagro.github.io/pymkm/)**  
+📘 **[Official Documentation](https://beppemagro.github.io/pymkm/)**
 📝 **[Paper (Computation, 2025)](https://doi.org/10.3390/computation13110264)**
 
 ---
 
 ## 📦 Features
 
-- 🔬 Full support for MKM, SMK, and OSMK (2021 & 2023 versions)
+- 🔬 MKM, SMK, OSMK (2021 and 2023), and MCF-MKM calculations
 - 📈 Dose-averaged microdosimetric table generation
-- 🎯 Event-by-event stochastic modeling of survival
-- 🧪 Oxygen effect corrections with LET or event scaling
-- 📐 Track structure models: Kiefer–Chatterjee and Scholz–Kraft
-- 📊 Validated on 150+ datasets from H, He, C, Ne ions
-- ⚙️ Modular architecture, parallelizable computation
-- ✅ 100% test coverage, cross-version CI (Python 3.9–3.12)
+- 🎯 Cell-survival calculations using linear-quadratic model coefficients
+- 🧪 Oxygen-effect corrections with LET- or event-based scaling
+- 📐 Kiefer–Chatterjee and Scholz–Kraft radial dose models
+- 🧬 MCF-MKM impact-parameter averaging with `scaled` nucleus mode by default and optional `integrated` mode
+- 📊 Validation workflows against published benchmark data for H, He, C, and Ne ions
+- ⚙️ Modular architecture with optional parallel computation
+- ✅ Automated tests and reproducible documentation/build utilities
 
 ---
 
 ## 📥 Installation
 
-For the stable release (available on PyPI):
+For the stable release available on PyPI:
 
 ```bash
 pip install pymkm
 ```
 
-For the beta release (available on TestPyPI):
+For the beta release available on TestPyPI:
 
 ```bash
 pip install -i https://test.pypi.org/simple/ pymkm
 ```
+
 From source:
 
 ```bash
 git clone https://github.com/BeppeMagro/pymkm.git
 cd pymkm
-pip install -e .[dev]
+pip install -e ".[dev]"
 ```
 
 ---
 
 ## 🧪 Quick Start
 
+The main high-level interfaces are exported directly by `pymkm`.
+The example below generates a classical MKM microdosimetric table for He, C, and O ions using bundled MSTAR stopping-power data.
+
 ```python
-from pymkm.mktable import MKTable, MKTableParameters
+from pymkm import MKTable, MKTableParameters, StoppingPowerTableSet
 
-## Select input parameters for specific energy tables generation
-atomic_numbers = [2, 6, 8] # He, C, O
-source = "mstar_3_12" # Source code used to generate stopping power tables (available with pymkm: fluka_2020_0, geant4_11_3_0 or mstar_3_12)
-domain_radius = 0.32 # μm
-nucleus_radius = 3.9 # μm
-alpha0 = 0.172 # 1/Gy
-beta0 = 0.0615 # 1/Gy^2
+# Ions and stopping-power source
+atomic_numbers = [2, 6, 8]  # He, C, O
+source = "mstar_3_12"
 
-## Load stopping power tables
-sp_table_set = StoppingPowerTableSet.from_default_source(source).filter_by_ions(atomic_numbers)
+sp_table_set = (
+    StoppingPowerTableSet
+    .from_default_source(source)
+    .filter_by_ions(atomic_numbers)
+)
 
-## Store input parameters
+# Classical MKM configuration
 params = MKTableParameters(
-    domain_radius=domain_radius,
-    nucleus_radius=nucleus_radius,
-    beta0=beta0,
-    )
+    domain_radius=0.32,   # µm
+    nucleus_radius=3.9,   # µm
+    beta0=0.0615,         # Gy^-2
+)
 
-## Generate specific energy table
+# Generate the microdosimetric table
 mk_table = MKTable(parameters=params, sp_table_set=sp_table_set)
 mk_table.compute(ions=atomic_numbers, parallel=True)
 
-## Plot specific energies result using built-in method
-mk_table.plot(ions=atomic_numbers, x="energy", y="z_bar_star_domain", verbose=True)
+# Plot dose-averaged specific energy
+mk_table.plot(
+    ions=atomic_numbers,
+    x="energy",
+    y="z_bar_star_domain",
+    verbose=True,
+)
 
-## Write the MKTable to a .txt file
-path = "./MKM_table.txt"
-params = {
-    "CellType": cell_type,
-    "Alpha_0": alpha0,
-    "Beta": beta0
-    }
-mk_table.write_txt(params=params, filename=path)
+# Export a classical MKM table
+mk_table.write_txt(
+    params={
+        "CellType": "HSG",
+        "Alpha_0": 0.172,
+        "Beta": 0.0615,
+    },
+    filename="MKM_table.txt",
+    model="classic",
+)
 ```
 
-More examples available in the `examples/` folder and documentation.
+MCF-MKM is enabled through `MKTableParameters`:
+
+```python
+mcf_params = MKTableParameters(
+    domain_radius=0.28,
+    nucleus_radius=4.5,
+    alpha0=0.188,
+    beta0=0.057,
+    use_mcf_model=True,
+    mcf_nucleus_mode="scaled",  # default; "integrated" is also available
+)
+```
+
+Additional workflows, including SMK, OSMK, survival calculations, MCF-MKM, plotting, and validation examples, are available in the `examples/` and `validation_results/` directories.
 
 ---
 
@@ -104,28 +128,50 @@ More examples available in the `examples/` folder and documentation.
 
 ```text
 pymkm/
-├── biology/        # OSMK oxygen effects and modulation
-├── data/           # Ion tables and stopping powers
-├── io/             # Data registry and loaders
-├── mktable/        # MKM/SMK microdosimetric table computation
-├── physics/        # Track structure and dose integration
-├── sftable/        # Survival curve computations
-├── utils/          # Geometry, interpolation, parallelism
-tests/              # Unit and integration tests
+├── biology/        # MKM/SMK/MCF and oxygen-effect biological models
+├── data/           # Bundled stopping-power datasets and element metadata
+├── io/             # Data registry, stopping-power tables, and loaders
+├── mktable/        # MKM/SMK/MCF microdosimetric table computation
+├── physics/        # Track-structure and specific-energy calculations
+├── sftable/        # Survival-fraction calculations
+└── utils/          # Geometry, integration, interpolation, and parallel tools
+
+docs/               # Sphinx documentation sources
 examples/           # Demonstration scripts
-validation_results/ # Validation datasets and figures
+tests/              # Unit and integration tests
+tools/              # Development, documentation, build, and Git helpers
+validation_results/ # Published-data validation workflows and outputs
 ```
 
 ---
 
 ## 🧪 Testing
 
+Run the repository test helper:
+
+```bash
+python tools/run_tests.py
+```
+
+or run pytest directly:
+
 ```bash
 pytest
 ```
 
-All modules are covered by tests and validated with published benchmark data.  
-Continuous integration is provided via GitHub Actions.
+The repository also contains validation workflows based on published benchmark data. Continuous integration is provided through GitHub Actions.
+
+---
+
+## 📚 Documentation
+
+Regenerate the API reference and build the Sphinx HTML documentation with:
+
+```bash
+python tools/build_docs.py
+```
+
+The generated documentation is written to `docs/build/html/` and the public documentation is deployed through GitHub Pages.
 
 ---
 
@@ -133,15 +179,15 @@ Continuous integration is provided via GitHub Actions.
 
 If you use `pyMKM` in your research, please cite:
 
-> Magro, G., Pavanello, V., Jia, Y., Grevillot, L., Glimelius, L., & Mairani, A. (2025). 
+> Magro, G., Pavanello, V., Jia, Y., Grevillot, L., Glimelius, L., & Mairani, A. (2025).
 > **pyMKM: An Open-Source Python Package for Microdosimetric Kinetic Model Calculation in Research and Clinical Applications.**
-> Computation, 13(11), 264. https://doi.org/10.3390/computation13110264
+> *Computation*, 13(11), 264. https://doi.org/10.3390/computation13110264
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** (for code) and **CC BY 4.0** (for scientific content).  
+This project is licensed under the **MIT License** for code and **CC BY 4.0** for scientific content.
 See the [LICENSE](LICENSE) file for more details.
 
 ---
