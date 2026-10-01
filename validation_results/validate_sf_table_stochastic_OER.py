@@ -1,17 +1,23 @@
 import matplotlib.pyplot as plt
 from pathlib import Path
+import sys
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
+# Access local pyMKM and validation utilities when executed directly.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.sftable.core import SFTableParameters, SFTable
 from pymkm.io.table_set import StoppingPowerTableSet
 from pymkm.utils.parallel import optimal_worker_count
 import warnings
 from tqdm import tqdm
-from validation_utils.loader import load_validation_file
-from validation_utils.inverse_dose import inverse_dose_from_survival
-from validation_utils.metrics import semi_log_error_metrics
+from validation_results.validation_utils.loader import load_validation_file
+from validation_results.validation_utils.inverse_dose import inverse_dose_from_survival
+from validation_results.validation_utils.metrics import semi_log_error_metrics
 
 import locale
 locale.setlocale(locale.LC_ALL, '')

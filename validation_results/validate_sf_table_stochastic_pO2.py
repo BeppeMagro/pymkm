@@ -5,11 +5,11 @@ import numpy as np
 from collections import defaultdict
 
 # Extend module search path to allow relative imports
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from validation_utils.layout import choose_horizontal_subplot_layout
-from validation_utils.loader import load_validation_file
-from validation_utils.metrics import log_linear_error_metrics
+from validation_results.validation_utils.layout import choose_horizontal_subplot_layout
+from validation_results.validation_utils.loader import load_validation_file
+from validation_results.validation_utils.metrics import log_linear_error_metrics
 
 from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.sftable.core import SFTableParameters, SFTable

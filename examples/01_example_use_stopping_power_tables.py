@@ -1,92 +1,97 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from pymkm.io.table_set import StoppingPowerTableSet
-
-"""
-Example usage of StoppingPowerTableSet to visualize and manipulate stopping power tables.
+"""Example: load, interpolate, plot, and serialize stopping-power tables.
 
 This script demonstrates how to:
-  - Load stopping power table from the default Fluka source ("fluka_2020_0") for one ion (C).
-  - Resample the table on a new energy grid and interpolate specific points 
-    (either stopping power form energy or energy from stopping power).
-  - Plot the stopping power curve with interpolated points.
-  - Serialize the table to a JSON file (bonus: load it back).
+  - Load a default stopping-power source and select one ion.
+  - Resample the table on a custom energy grid.
+  - Interpolate LET from energy and energy from LET.
+  - Plot the table together with the interpolated points.
+  - Serialize the filtered table set to JSON and load it back.
 """
 
-def main():
+import numpy as np
+import matplotlib.pyplot as plt
 
-    ## Load stopping power table
+from pymkm.io.table_set import StoppingPowerTableSet
+
+
+def main():
     ion = "Carbon"
-    source = "fluka_2020_0" # Source code used to generate stopping power tables (available with pymkm: fluka_2020_0, geant4_11_3_0 or mstar_3_12)
-    print(f"Loading stopping power tables from default Fluka source '{source}'...")
+    source = "fluka_2020_0"
+
+    print(f"Loading stopping-power tables from '{source}'...")
     table_set = StoppingPowerTableSet.from_default_source(source)
-    # Filter stopping power tables based on ions of interest (filter_by_ions can take either atomic numbers (e.g. 6), symbols (e.g. "C") or full names (e.g. "Carbon"))
-    print(f"\nLoaded!\nFiltering tabler for ion: {ion}")
     table_set = table_set.filter_by_ions([ion])
-    # Transform table_set to a single table (StoppingPowerTable) for the ion of interest
     table = table_set.get(ion)
 
-    ## Resample stopping power table
-    print("\nResampling tables on a new energy grid...")
-    new_grid = np.logspace(-1, 2, 200)
+    print(f"Available ions after filtering: {table_set.get_available_ions()}")
+
+    # Resample on a denser logarithmic energy grid within the original range.
     min_energy = table.energy.min()
     max_energy = table.energy.max()
+    new_grid = np.logspace(np.log10(min_energy), np.log10(max_energy), 200)
     table.resample(new_grid)
 
-    ## Interpolate stopping power values at specific energies
-    print("\nInterpolating new stopping power points...")
-    min_energy = table.energy.min()
-    max_energy = table.energy.max()
-    new_energy_range = np.logspace(np.log10(min_energy), np.log10(max_energy), 4)
-    stopping_power_values = table.interpolate(energy=new_energy_range)
+    # Interpolate LET values at selected energies.
+    selected_energies = np.logspace(
+        np.log10(table.energy.min()),
+        np.log10(table.energy.max()),
+        4,
+    )
+    interpolated_let = table.interpolate(energy=selected_energies)
 
-    ## Interapolate energy for specific stopping power values
-    # Some stopping power values may be associated with multiple energies: the interapolate method
-    # will thus return a dictionary with stopping power values as keys and arrays of energies as values.
-    print("\nInterpolating new energy points...")
-    min_stopping_power = table.stopping_power.min()
-    max_stopping_power = table.stopping_power.max()
-    new_stopping_power_range = np.linspace(min_stopping_power * 1.20, max_stopping_power * 0.9, 5)
-    energy_values = table.interpolate(let=new_stopping_power_range)
+    # Interpolate energy values corresponding to selected LET values. Because the
+    # stopping-power curve is not generally one-to-one, one LET may map to more
+    # than one energy; interpolate(let=...) therefore returns a dictionary.
+    selected_let = np.linspace(
+        table.stopping_power.min() * 1.20,
+        table.stopping_power.max() * 0.90,
+        5,
+    )
+    interpolated_energy = table.interpolate(let=selected_let)
 
-    ## Plot stopping power curve
-    print("\nPlotting...")
+    # Plot the stopping-power table and interpolation examples.
     _, ax = plt.subplots()
     table.plot(show=False, ax=ax)
 
-    # Overlay interpolated points (energy->stopping power)
     ax.scatter(
-        new_energy_range, stopping_power_values,
-        facecolors='none', edgecolors=table.color, s=100, linewidth=1.8,
-        label="Interpolated SP points"
+        selected_energies,
+        interpolated_let,
+        facecolors="none",
+        edgecolors=table.color,
+        s=100,
+        linewidth=1.8,
+        label="Interpolated LET points",
     )
 
-    # Overlay interpolated points (stopping power->energy)
-    isfirstInterapolation = False # To avoid duplicate legend entries
-    for sp_val, energies in energy_values.items():
+    first = True
+    for let_value, energies in interpolated_energy.items():
         ax.scatter(
-            energies, np.full_like(energies, sp_val),
-            marker='s', facecolor='none', edgecolor=table.color, s=100, linewidths=1.8,
-            label="Interpolated energy points" if isfirstInterapolation else None
+            energies,
+            np.full_like(energies, let_value),
+            marker="s",
+            facecolors="none",
+            edgecolors=table.color,
+            s=100,
+            linewidths=1.8,
+            label="Interpolated energy points" if first else None,
         )
-        isfirstInterapolation = True
+        first = False
 
-    # Deduplicate legend
     handles, labels = ax.get_legend_handles_labels()
     unique = dict(zip(labels, handles))
     ax.legend(unique.values(), unique.keys())
-       
     ax.grid(True)
     plt.tight_layout()
     plt.show()
 
-    ## Serialize the table to a JSON file
+    # Serialize the filtered table set and demonstrate how to load it back.
     json_filename = f"fluka_stopping_power_table_{ion}.json"
     table_set.save(json_filename)
-    print(f"\n\nSaved table set to JSON file: {json_filename}")
-    # And eventually load it back
-    # reloaded_set = StoppingPowerTableSet.load(json_filename)
-    # print("Reloaded table set from JSON. Available ions:", reloaded_set.get_available_ions())
+    print(f"Saved table set to: {json_filename}")
+
+    reloaded_set = StoppingPowerTableSet.load(json_filename)
+    print("Reloaded ions:", reloaded_set.get_available_ions())
+
 
 if __name__ == "__main__":
     main()

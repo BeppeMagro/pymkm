@@ -1,0 +1,5 @@
+cell_line;Z;LET_MeV_cm;model;core_radius_type;mcf_nucleus_mode;primary_mode;domain_radius_um;nucleus_radius_um;alpha0_Gy-1;beta0_Gy-2;alpha_ref_Gy-1;beta_ref_Gy-2;energy_MeV_u;MeanLogError;RMSLogError;MaxLogError;SMAPE_log_percent
+HSG;6;5020.0;Kiefer-Chatterjee;energy-dependent;scaled;True;0.28;4.5;0.188;0.057;0.348;0.057;2.0;0.034269598154459756;0.04050860335344013;0.07130773307533333;1.107932599117939
+HSG;6;5020.0;Kiefer-Chatterjee;energy-dependent;integrated;False;0.28;4.5;0.188;0.057;0.348;0.057;2.0;0.12003364228432362;0.1427387174545513;0.24432379819169325;3.6725608788160793
+HSG;10;6540.0;Kiefer-Chatterjee;energy-dependent;scaled;True;0.28;4.5;0.188;0.057;0.348;0.057;6.25;0.06357621680991393;0.08087477458705382;0.15450281667222932;2.8270377336309322
+HSG;10;6540.0;Kiefer-Chatterjee;energy-dependent;integrated;False;0.28;4.5;0.188;0.057;0.348;0.057;6.25;0.2850690762972827;0.34287776155433514;0.6090392718406048;10.126746786070383

@@ -2,8 +2,10 @@ import pytest
 import pandas as pd
 import numpy as np
 import warnings
+import pickle
 
 from pymkm.mktable.core import MKTable, MKTableParameters
+from pymkm.utils.geometry_tools import DEFAULT_BASE_POINTS
 from pymkm.io.stopping_power import StoppingPowerTable
 
 
@@ -191,14 +193,275 @@ def test_load_raises_if_file_missing(tmp_path):
         table.load(missing_path)
 
 
+def test_save_stores_parameter_metadata(tmp_path):
+    params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    table = MKTable(parameters=params)
+    table.table["C"] = {
+        "data": pd.DataFrame({"energy": [1.0], "z_bar_star_domain": [0.1]}),
+        "params": {},
+        "stopping_power_info": {},
+    }
+
+    path = tmp_path / "metadata.pkl"
+    table.save(path)
+
+    with path.open("rb") as f:
+        payload = pickle.load(f)
+
+    assert payload["__pymkm_mktable__"] == 1
+    assert payload["model_version"] == "classic"
+    assert payload["parameters"]["domain_radius"] == pytest.approx(0.3)
+    assert payload["parameters"]["beta0"] == pytest.approx(0.05)
+    assert "C" in payload["table"]
+
+
+def test_load_rejects_parameter_mismatch_without_replacing_table(tmp_path):
+    stored_params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    stored_table = MKTable(parameters=stored_params)
+    stored_table.table["C"] = {
+        "data": pd.DataFrame({"energy": [1.0], "z_bar_star_domain": [0.1]}),
+        "params": {},
+        "stopping_power_info": {},
+    }
+    path = tmp_path / "mismatch.pkl"
+    stored_table.save(path)
+
+    current = MKTable(
+        parameters=MKTableParameters(domain_radius=0.4, nucleus_radius=5.0, beta0=0.05)
+    )
+    sentinel = {"sentinel": {}}
+    current.table = sentinel
+
+    with pytest.raises(ValueError, match="domain_radius"):
+        current.load(path)
+
+    assert current.table is sentinel
+
+
+def test_load_rejects_mcf_alpha0_mismatch(tmp_path):
+    stored = MKTable(
+        parameters=MKTableParameters(
+            domain_radius=0.26,
+            nucleus_radius=4.0,
+            alpha0=0.15,
+            beta0=0.05,
+            use_mcf_model=True,
+        )
+    )
+    stored.table["C"] = {
+        "data": pd.DataFrame({"energy": [100.0], "c_bar": [0.9], "z_bar_c": [1.2]}),
+        "params": {},
+        "stopping_power_info": {},
+    }
+    path = tmp_path / "mcf.pkl"
+    stored.save(path)
+
+    current = MKTable(
+        parameters=MKTableParameters(
+            domain_radius=0.26,
+            nucleus_radius=4.0,
+            alpha0=0.16,
+            beta0=0.05,
+            use_mcf_model=True,
+        )
+    )
+
+    with pytest.raises(ValueError, match="alpha0"):
+        current.load(path)
+
+
+def test_load_legacy_pickle_warns_and_remains_supported(tmp_path):
+    legacy_table = {
+        "C": {
+            "data": pd.DataFrame({"energy": [1.0], "z_bar_star_domain": [0.1]}),
+            "params": {},
+            "stopping_power_info": {},
+        }
+    }
+    path = tmp_path / "legacy.pkl"
+    with path.open("wb") as f:
+        pickle.dump(legacy_table, f)
+
+    table = MKTable(
+        parameters=MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    )
+
+    with pytest.warns(UserWarning, match="legacy MKTable pickle"):
+        table.load(path)
+
+    assert "C" in table.table
+
+
+@pytest.mark.parametrize(
+    "payload, expected_message",
+    [
+        ({"__pymkm_mktable__": 99}, "Unsupported MKTable pickle format version"),
+        ({"__pymkm_mktable__": 1, "model_version": "classic"}, "missing fields"),
+        ([], "Invalid MKTable pickle payload"),
+    ],
+)
+def test_load_rejects_invalid_pickle_payloads(tmp_path, payload, expected_message):
+    path = tmp_path / "invalid.pkl"
+    with path.open("wb") as f:
+        pickle.dump(payload, f)
+
+    table = MKTable(
+        parameters=MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    )
+
+    with pytest.raises(ValueError, match=expected_message):
+        table.load(path)
+
+
+def test_load_rejects_model_mismatch(tmp_path):
+    path = tmp_path / "wrong_model.pkl"
+    payload = {
+        "__pymkm_mktable__": 1,
+        "model_version": "stochastic",
+        "parameters": {
+            "domain_radius": 0.3,
+            "nucleus_radius": 5.0,
+            "z0": None,
+            "alpha0": None,
+            "beta0": 0.05,
+        },
+        "table": {},
+    }
+    with path.open("wb") as f:
+        pickle.dump(payload, f)
+
+    table = MKTable(
+        parameters=MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    )
+
+    with pytest.raises(ValueError, match="model mismatch"):
+        table.load(path)
+
+
+
+def test_load_accepts_derived_z0_from_computed_table(tmp_path):
+    from pymkm.physics.specific_energy import SpecificEnergy
+
+    stored = MKTable(
+        parameters=MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    )
+    stored.params.z0 = round(
+        SpecificEnergy.compute_saturation_parameter(
+            domain_radius=stored.params.domain_radius,
+            nucleus_radius=stored.params.nucleus_radius,
+            beta0=stored.params.beta0,
+        ),
+        2,
+    )
+    stored.table["C"] = {
+        "data": pd.DataFrame({"energy": [1.0], "z_bar_star_domain": [0.1]}),
+        "params": {},
+        "stopping_power_info": {},
+    }
+    path = tmp_path / "derived_z0.pkl"
+    stored.save(path)
+
+    current = MKTable(
+        parameters=MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    )
+    assert current.params.z0 is None
+
+    current.load(path)
+
+    assert "C" in current.table
+    assert current.params.z0 is None
+
+
+def test_load_rejects_non_dict_parameter_metadata(tmp_path):
+    path = tmp_path / "invalid_params_type.pkl"
+    payload = {
+        "__pymkm_mktable__": 1,
+        "model_version": "classic",
+        "parameters": [],
+        "table": {},
+    }
+    with path.open("wb") as f:
+        pickle.dump(payload, f)
+
+    table = MKTable(
+        parameters=MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    )
+
+    with pytest.raises(ValueError, match="Invalid MKTable parameter metadata"):
+        table.load(path)
+
+
+def test_load_rejects_non_dict_table_data(tmp_path):
+    params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    path = tmp_path / "invalid_table.pkl"
+    payload = {
+        "__pymkm_mktable__": 1,
+        "model_version": "classic",
+        "parameters": params.__dict__.copy(),
+        "table": [],
+    }
+    with path.open("wb") as f:
+        pickle.dump(payload, f)
+
+    table = MKTable(parameters=params)
+
+    with pytest.raises(ValueError, match="Invalid MKTable table data"):
+        table.load(path)
+
+
+def test_load_rejects_invalid_parameter_metadata(tmp_path):
+    path = tmp_path / "invalid_params.pkl"
+    payload = {
+        "__pymkm_mktable__": 1,
+        "model_version": "classic",
+        "parameters": {"unexpected": 1},
+        "table": {},
+    }
+    with path.open("wb") as f:
+        pickle.dump(payload, f)
+
+    table = MKTable(
+        parameters=MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    )
+
+    with pytest.raises(ValueError, match="Invalid MKTable parameter metadata"):
+        table.load(path)
+
+
 # --- _default_filename ---
 @pytest.mark.filterwarnings("ignore:Both z0 and beta0 provided.*")
-def test_default_filename_creates_valid_path():
-    params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05, z0=1.0, use_stochastic_model=True)
+def test_default_filename_creates_valid_windows_safe_path():
+    params = MKTableParameters(
+        domain_radius=0.3,
+        nucleus_radius=5.0,
+        beta0=0.05,
+        z0=1.0,
+        use_stochastic_model=True,
+    )
     table = MKTable(parameters=params)
     path = table._default_filename(".pkl")
+
     assert path.suffix == ".pkl"
     assert path.parent.exists()
+    assert "rdrd" not in path.name
+    assert "Rnrn" not in path.name
+    assert "z0z0" not in path.name
+    assert "b0b0" not in path.name
+    assert "_rd0.30_Rn5.0_z01.0_b00.0500_" in path.name
+    assert not set('<>:"/\\|?*').intersection(path.name)
+    assert "default-fluka_2020_0" in path.name
+
+
+def test_default_filename_sanitizes_custom_source_info():
+    params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    table = MKTable(parameters=params)
+    table.sp_table_set.source_info = r"loaded:C:\data folder\custom/source?.json"
+
+    path = table._default_filename("txt")
+
+    assert path.suffix == ".txt"
+    assert "loaded-C--data_folder-custom-source-.json" in path.name
+    assert not set('<>:"/\\|?*').intersection(path.name)
 
 
 # --- write_txt ---
@@ -575,3 +838,280 @@ def test_mktable_raises_if_oxygen_effect_missing_params():
     )
     with pytest.raises(ValueError, match="apply_oxygen_effect=True but missing OSMK 2023 parameters:"):
         MKTable(parameters=params)
+
+
+# --- MCF-MKM parameter validation ---
+def test_mktable_mcf_parameters_and_model_version():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+    )
+    table = MKTable(parameters=params)
+
+    assert table.model_version == "mcf"
+    assert table.params.mcf_nucleus_mode == "scaled"
+
+
+def test_mktable_mcf_integrated_nucleus_mode():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+        mcf_nucleus_mode="integrated",
+    )
+    table = MKTable(parameters=params)
+
+    assert table.model_version == "mcf"
+    assert table.params.mcf_nucleus_mode == "integrated"
+
+
+def test_mktable_mcf_requires_alpha0():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        beta0=0.04,
+        use_mcf_model=True,
+    )
+    with pytest.raises(ValueError, match="alpha0 is required"):
+        MKTable(parameters=params)
+
+
+def test_mktable_mcf_requires_beta0():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        use_mcf_model=True,
+    )
+    with pytest.raises(ValueError, match="beta0 is required"):
+        MKTable(parameters=params)
+
+
+def test_mktable_mcf_rejects_stochastic_model():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+        use_stochastic_model=True,
+    )
+    with pytest.raises(ValueError, match="incompatible with use_stochastic_model"):
+        MKTable(parameters=params)
+
+
+def test_mktable_mcf_rejects_oxygen_effect():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+        apply_oxygen_effect=True,
+    )
+    with pytest.raises(ValueError, match="not currently supported for MCF-MKM"):
+        MKTable(parameters=params)
+
+
+def test_mktable_mcf_rejects_invalid_nucleus_mode():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+        mcf_nucleus_mode="invalid",
+    )
+    with pytest.raises(ValueError, match="must be either 'scaled' or 'integrated'"):
+        MKTable(parameters=params)
+
+
+def test_mktable_mcf_warns_if_z0_is_provided():
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        z0=1.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+    )
+    with pytest.warns(UserWarning, match="z0 is not used for MCF-MKM"):
+        table = MKTable(parameters=params)
+
+    assert table.params.z0 == 1.0
+
+
+def test_mktable_model_version_backward_compatibility():
+    classic = MKTable(
+        parameters=MKTableParameters(
+            domain_radius=0.3,
+            nucleus_radius=5.0,
+            beta0=0.05,
+        )
+    )
+    stochastic = MKTable(
+        parameters=MKTableParameters(
+            domain_radius=0.3,
+            nucleus_radius=5.0,
+            z0=1.0,
+            use_stochastic_model=True,
+        )
+    )
+
+    assert classic.model_version == "classic"
+    assert stochastic.model_version == "stochastic"
+
+
+def test_mktable_mcf_summary_contains_alpha0_and_nucleus_mode(capsys):
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+        mcf_nucleus_mode="scaled",
+    )
+    table = MKTable(parameters=params)
+
+    table.summary(verbose=True)
+    out = capsys.readouterr().out
+
+    assert "mcf" in out
+    assert "α₀" in out
+    assert "MCF nucleus mode" in out
+    assert "scaled" in out
+
+
+def _make_mcf_table_for_write_txt(*, nucleus_mode="scaled"):
+    params = MKTableParameters(
+        domain_radius=0.26,
+        nucleus_radius=4.0,
+        alpha0=0.15,
+        beta0=0.04,
+        use_mcf_model=True,
+        mcf_nucleus_mode=nucleus_mode,
+    )
+    table = MKTable(parameters=params)
+    table.table["C"] = {
+        "stopping_power_info": {"atomic_number": 6, "ion_symbol": "C"},
+        "params": {},
+        "data": pd.DataFrame({
+            "energy": [100.0],
+            "let": [0.01],
+            "c_bar": [0.9],
+            "z_bar_c": [1.2],
+        }),
+    }
+    return table
+
+
+def test_mktable_mcf_write_txt(tmp_path):
+    table = _make_mcf_table_for_write_txt(nucleus_mode="scaled")
+    path = tmp_path / "mcf.txt"
+
+    table.write_txt(
+        params={
+            "CellType": "V79",
+            "Alpha_ref": 0.20,
+            "Beta_ref": 0.04,
+            "Alpha0": 0.15,
+            "Beta0": 0.04,
+        },
+        filename=path,
+    )
+
+    content = path.read_text()
+    assert "CellType  V79" in content
+    assert "Parameter Alpha_ref 0.2000" in content
+    assert "Parameter Beta_ref 0.0400" in content
+    assert "Parameter Alpha0 0.1500" in content
+    assert "Parameter Beta0 0.0400" in content
+    assert "Parameter DomainRadius 0.2600" in content
+    assert "Parameter NucleusRadius 4.0000" in content
+    assert "MCFNucleusMode" not in content
+    assert "Fragment C" in content
+    assert "1.00000e+02 9.00000e-01 1.20000e+00" in content
+
+
+def test_mktable_mcf_write_txt_minimal_params(tmp_path):
+    table = _make_mcf_table_for_write_txt(nucleus_mode="integrated")
+    path = tmp_path / "mcf_minimal.txt"
+
+    table.write_txt(params={"CellType": "V79"}, filename=path)
+
+    content = path.read_text()
+    assert "Parameter Alpha_ref" not in content
+    assert "Parameter Beta_ref" not in content
+    assert "MCFNucleusMode" not in content
+
+
+def test_mktable_mcf_write_txt_model_mismatch(tmp_path):
+    params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0, beta0=0.05)
+    table = MKTable(parameters=params)
+    table.table["C"] = {
+        "stopping_power_info": {"atomic_number": 6, "ion_symbol": "C"},
+        "params": {},
+        "data": pd.DataFrame({"energy": [1.0], "z_bar_star_domain": [0.2]}),
+    }
+
+    with pytest.raises(ValueError, match="MCF output requested"):
+        table.write_txt(
+            params={"CellType": "Test"},
+            filename=tmp_path / "bad_mcf.txt",
+            model="mcf",
+        )
+
+
+def test_mktable_mcf_write_txt_alpha0_mismatch(tmp_path):
+    table = _make_mcf_table_for_write_txt()
+    with pytest.raises(ValueError, match="Mismatch between Alpha0"):
+        table.write_txt(
+            params={"CellType": "V79", "Alpha0": 0.16},
+            filename=tmp_path / "bad_alpha.txt",
+        )
+
+
+def test_mktable_mcf_write_txt_beta0_mismatch(tmp_path):
+    table = _make_mcf_table_for_write_txt()
+    with pytest.raises(ValueError, match="Mismatch between Beta0"):
+        table.write_txt(
+            params={"CellType": "V79", "Beta0": 0.05},
+            filename=tmp_path / "bad_beta.txt",
+        )
+
+
+@pytest.mark.parametrize("missing_column", ["c_bar", "z_bar_c"])
+def test_mktable_mcf_write_txt_missing_column(tmp_path, missing_column):
+    table = _make_mcf_table_for_write_txt()
+    table.table["C"]["data"] = table.table["C"]["data"].drop(columns=[missing_column])
+
+    with pytest.raises(KeyError, match=f"Missing expected column '{missing_column}'"):
+        table.write_txt(
+            params={"CellType": "V79"},
+            filename=tmp_path / f"missing_{missing_column}.txt",
+        )
+
+def test_write_txt_rejects_unknown_model(tmp_path):
+    table = _make_mcf_table_for_write_txt()
+
+    with pytest.raises(
+        ValueError,
+        match=r"Unsupported model 'unsupported'.*classic.*mcf.*stochastic",
+    ):
+        table.write_txt(
+            params={"CellType": "V79"},
+            filename=tmp_path / "invalid_model.txt",
+            model="unsupported",
+        )
+
+
+
+def test_mktable_parameters_default_base_points_use_shared_constant():
+    params = MKTableParameters(domain_radius=0.3, nucleus_radius=5.0)
+    assert params.base_points_b == DEFAULT_BASE_POINTS
+    assert params.base_points_r == DEFAULT_BASE_POINTS

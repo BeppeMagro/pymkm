@@ -1,36 +1,38 @@
-from pymkm.mktable.core import MKTableParameters, MKTable
+"""Example: generate a classic modified-MKM microdosimetric table.
+
+The script demonstrates how to:
+  - Load and filter a stopping-power source.
+  - Configure a classic MKTable.
+  - Compute saturation-corrected dose-mean specific energy z_bar*.
+  - Plot the table for several ions.
+  - Export the result using the classic MKM text format.
+"""
+
 from pymkm.io.table_set import StoppingPowerTableSet
+from pymkm.mktable.core import MKTable, MKTableParameters
 
-"""
-Example usage of MKTable to compute and visualize specific energy (z_d*) tables
-for the modified-MK model [Inaniwa et al. 2010].
-
-This script demonstrates how to:
-  - Load stopping power tables from the default MSTAR source ("mstar_3_12").
-  - Store input parameters for specific energies computation.
-  - Compute specific energies z_d*.
-  - Plot the specific energy curve for different ions.
-  - Write the table to a .txt file.
-"""
 
 def main():
-
-    ## Select input parameters for specific energy tables generation
     cell_type = "HSG"
-    atomic_numbers = [2, 6, 8] # He, C, O
-    source = "mstar_3_12" # Source code used to generate stopping power tables (available with pymkm: fluka_2020_0, geant4_11_3_0 or mstar_3_12)
-    model_name = "Kiefer-Chatterjee" # Amorphous track structure model (Kiefer-Chatterjee or Scholz-Kraft)
-    core_type = "energy-dependent" # Core radius model ('constant' or 'energy-dependent')
-    domain_radius = 0.32 # μm
-    nucleus_radius = 3.9 # μm
-    alpha0 = 0.172 # 1/Gy
-    beta0 = 0.0615 # 1/Gy^2
+    atomic_numbers = [2, 6, 8]  # He, C, O
+    source = "mstar_3_12"
 
-    ## Load stopping power tables
-    print(f"\nGenerating stopping power tables for ion Z = {atomic_numbers} (using source '{source}')...")
-    sp_table_set = StoppingPowerTableSet.from_default_source(source).filter_by_ions(atomic_numbers)
+    model_name = "Kiefer-Chatterjee"
+    core_type = "energy-dependent"
+    domain_radius = 0.32  # um
+    nucleus_radius = 3.9  # um
+    alpha0 = 0.172  # Gy^-1; used in the exported biological metadata
+    beta0 = 0.0615  # Gy^-2
 
-    ## Store input parameters
+    print(
+        f"Loading stopping-power tables for Z={atomic_numbers} "
+        f"from '{source}'..."
+    )
+    sp_table_set = (
+        StoppingPowerTableSet.from_default_source(source)
+        .filter_by_ions(atomic_numbers)
+    )
+
     params = MKTableParameters(
         domain_radius=domain_radius,
         nucleus_radius=nucleus_radius,
@@ -39,22 +41,30 @@ def main():
         core_radius_type=core_type,
     )
 
-    ## Generate specific energy table
-    print(f"\nGenerating MKM tables for ion Z = {atomic_numbers} (using source '{source}')...")
+    print(f"Computing classic MKM table for Z={atomic_numbers}...")
     mk_table = MKTable(parameters=params, sp_table_set=sp_table_set)
     mk_table.compute(ions=atomic_numbers, parallel=True)
 
-    ## Plot specific energies result using built-in method
-    mk_table.plot(ions=atomic_numbers, x="energy", y="z_bar_star_domain", verbose=True)
+    mk_table.plot(
+        ions=atomic_numbers,
+        x="energy",
+        y="z_bar_star_domain",
+        verbose=True,
+    )
 
-    ## Write the MKTable to a .mkm file
-    path = "./MKM_table.mkm"
-    params = {
+    output_path = "./MKM_table.mkm"
+    export_params = {
         "CellType": cell_type,
         "Alpha_0": alpha0,
-        "Beta": beta0
+        "Beta": beta0,
     }
-    mk_table.write_txt(params=params, filename=path, max_atomic_number=max(atomic_numbers))
+    mk_table.write_txt(
+        model="classic",
+        params=export_params,
+        filename=output_path,
+        max_atomic_number=max(atomic_numbers),
+    )
+    print(f"Classic MKM table written to: {output_path}")
 
 
 if __name__ == "__main__":

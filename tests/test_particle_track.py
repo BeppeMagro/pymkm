@@ -3,13 +3,23 @@ import pytest
 import logging
 
 from pymkm.physics.particle_track import ParticleTrack
-from pymkm.utils.geometry_tools import GeometryTools
+from pymkm.utils.geometry_tools import DEFAULT_BASE_POINTS, GeometryTools
 
 # --- Helper Functions ---
 
 def expected_velocity(energy: float) -> float:
     m0 = 931.5
     return np.sqrt(1 - 1 / ((1 + energy / m0) ** 2))
+
+def test_default_base_points_uses_shared_constant():
+    pt = ParticleTrack(
+        model_name="Kiefer-Chatterjee",
+        energy=150,
+        atomic_number=6,
+        let=50,
+    )
+    assert pt.base_points == DEFAULT_BASE_POINTS
+
 
 # --- Tests for Initialization and Warning Branches ---
 

@@ -19,5 +19,9 @@ Modules
 - :mod:`parallel`: 
   Defines the :func:`~pymkm.utils.parallel.optimal_worker_count` utility 
   to determine optimal multiprocessing configurations based on workload and CPU count.
+
+- :mod:`integration`:
+  Provides the shared :func:`~pymkm.utils.integration.integrate_1d` utility
+  used for impact-parameter integrations.
 """
 

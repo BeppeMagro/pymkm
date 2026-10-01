@@ -3,10 +3,10 @@ from pathlib import Path
 import sys
 
 # Access to local modules
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from validation_utils.loader import load_validation_file
-from validation_utils.metrics import semi_log_error_metrics
+from validation_results.validation_utils.loader import load_validation_file
+from validation_results.validation_utils.metrics import semi_log_error_metrics
 
 from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.io.table_set import StoppingPowerTableSet
@@ -88,8 +88,7 @@ def validate_mk_table_stochastic(source: str = "fluka_2020_0"):
 
         for ax, key in zip(axs, ["domain", "saturation", "nucleus"]):
             _, df_ref = load_validation_file(files[key])
-            ion_key = mk_table.sp_table_set._map_to_fullname(Z)
-            df_model = mk_table.table[ion_key]["data"]
+            df_model = mk_table.get_table(Z)
             x_model = df_model["energy"]
             y_model = df_model[keys[key]]
             

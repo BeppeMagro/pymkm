@@ -142,3 +142,104 @@ def test_plot_with_title_sets_title(fast_computed_mktable):
     
     assert ax.get_title() != "", "Title was expected to be set but was empty"
     plt.close(fig)
+
+
+@pytest.fixture
+def fast_computed_mcf_mktable(monkeypatch):
+    """Return a computed MCF-MKM table with deterministic averaged quantities."""
+    monkeypatch.setattr(
+        "pymkm.physics.specific_energy.SpecificEnergy.single_event_specific_energy",
+        lambda self, **kwargs: (np.ones(2), np.array([0.0, 1.0]))
+    )
+    monkeypatch.setattr(
+        "pymkm.mktable.compute.compute_mcf_correction_factor",
+        lambda **kwargs: np.ones(2)
+    )
+    monkeypatch.setattr(
+        "pymkm.mktable.compute.compute_mcf_averaged_quantities",
+        lambda **kwargs: (0.8, 1.2)
+    )
+
+    params = MKTableParameters(
+        domain_radius=0.3,
+        nucleus_radius=5.0,
+        alpha0=0.15,
+        beta0=0.05,
+        use_mcf_model=True,
+    )
+
+    mk_table = MKTable(parameters=params)
+    sp_set = StoppingPowerTableSet()
+    sp_set.add("Carbon", create_dummy_table())
+    mk_table.sp_table_set = sp_set
+    mk_table.compute(parallel=False, ions=["Carbon"])
+    return mk_table
+
+
+@pytest.mark.parametrize("x,y", [
+    ("energy", "c_bar"),
+    ("energy", "z_bar_c"),
+    ("let", "c_bar"),
+    ("let", "z_bar_c"),
+])
+@pytest.mark.filterwarnings("ignore:FigureCanvasAgg is non-interactive.*")
+def test_plot_mcf_valid_inputs(fast_computed_mcf_mktable, x, y):
+    """MCF-MKM quantities can be plotted against energy or LET."""
+    fig, ax = plt.subplots()
+    fast_computed_mcf_mktable.plot(x=x, y=y, ax=ax, show=False)
+    assert len(ax.lines) == 1
+    plt.close(fig)
+
+
+@pytest.mark.filterwarnings("ignore:FigureCanvasAgg is non-interactive.*")
+def test_plot_mcf_default_y_is_c_bar(fast_computed_mcf_mktable):
+    """MCF-MKM defaults to c_bar when y is omitted."""
+    fig, ax = plt.subplots()
+    fast_computed_mcf_mktable.plot(ax=ax, show=False)
+
+    assert ax.get_ylabel() == r"$\bar{c}$ [-]"
+    np.testing.assert_allclose(ax.lines[0].get_ydata(), [0.8, 0.8])
+    plt.close(fig)
+
+
+def test_plot_mcf_rejects_classic_quantity(fast_computed_mcf_mktable):
+    """MCF-MKM rejects MKM/SMK-only y quantities."""
+    with pytest.raises(ValueError, match="Invalid y-axis.*model 'mcf'"):
+        fast_computed_mcf_mktable.plot(y="z_bar_star_domain", show=False)
+
+
+def test_plot_stochastic_rejects_mcf_quantity(fast_computed_mktable):
+    """MKM/SMK tables reject MCF-MKM-only y quantities."""
+    with pytest.raises(ValueError, match="Invalid y-axis.*model 'stochastic'"):
+        fast_computed_mktable.plot(y="c_bar", show=False)
+
+
+@pytest.mark.filterwarnings("ignore:FigureCanvasAgg is non-interactive.*")
+def test_plot_mcf_labels_and_verbose_box(fast_computed_mcf_mktable):
+    """MCF-MKM uses the agreed notation and displays its LQ parameters."""
+    fig, ax = plt.subplots()
+    fast_computed_mcf_mktable.plot(
+        x="let",
+        y="z_bar_c",
+        verbose=True,
+        ax=ax,
+        show=False,
+    )
+
+    assert ax.get_xlabel() == "LET [MeV/cm]"
+    assert ax.get_ylabel() == r"$\bar{z}^{(c)}$ [Gy]"
+    assert len(ax.texts) == 1
+    info_text = ax.texts[0].get_text()
+    assert "Model: mcf" in info_text
+    assert r"$\alpha_0$" in info_text
+    assert r"$\beta_0$" in info_text
+    assert "$z_0$" not in info_text
+    plt.close(fig)
+
+
+def test_validate_plot_columns_rejects_unknown_model():
+    """The internal validator reports unsupported model versions explicitly."""
+    from pymkm.mktable.plot import _validate_plot_columns
+
+    with pytest.raises(ValueError, match="Unsupported MKTable model version"):
+        _validate_plot_columns("energy", "c_bar", "unknown")

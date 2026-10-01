@@ -1,13 +1,13 @@
 """
-Core classes for MKM and SMK microdosimetric table generation.
+Core classes for MKM, SMK, and MCF-MKM microdosimetric table generation.
 
 This module defines:
 - :class:`MKTableParameters`: configuration container for geometry, models, and computation settings
 - :class:`MKTable`: main interface for generating, storing, and exporting microdosimetric tables
 
-Supports both classic MKM and stochastic SMK models, with optional OSMK 2023 corrections for hypoxia.
-Each MKTable instance manages the full computation pipeline per ion type, including saving,
-loading, displaying, and exporting results.
+Supports configuration of classic MKM, stochastic SMK, and MCF-MKM models, with optional
+OSMK 2023 corrections for hypoxia in stochastic mode. Each MKTable instance manages the
+model configuration and the per-ion table data.
 """
 
 from dataclasses import asdict
@@ -18,9 +18,10 @@ from pathlib import Path
 import warnings
 import pickle
 import datetime
+import re
 import pandas as pd
 from pymkm.io.table_set import StoppingPowerTableSet
-from pymkm.utils.geometry_tools import GeometryTools
+from pymkm.utils.geometry_tools import DEFAULT_BASE_POINTS, GeometryTools
 
 
 @dataclass
@@ -29,17 +30,20 @@ class MKTableParameters:
     Configuration container for MKTable model and geometry parameters.
     
     This dataclass defines the physical, numerical, and model-specific parameters
-    needed to generate microdosimetric tables using MKM or SMK.
+    needed to generate microdosimetric tables using MKM, SMK, or MCF-MKM.
     
     :ivar domain_radius: Radius of the sensitive domain (μm).
     :ivar nucleus_radius: Radius of the cell nucleus (μm).
     :ivar z0: Saturation parameter z₀ (Gy). Required for SMK.
-    :ivar beta0: LQ model quadratic coefficient β₀ (Gy⁻²). Required for MKM.
+    :ivar alpha0: LQ model linear coefficient α₀ (Gy⁻¹). Required for MCF-MKM.
+    :ivar beta0: LQ model quadratic coefficient β₀ (Gy⁻²). Required for MKM and MCF-MKM.
     :ivar model_name: Track structure model: 'Kiefer-Chatterjee' or 'Scholz-Kraft'.
     :ivar core_radius_type: Core radius model: 'constant' or 'energy-dependent'.
     :ivar base_points_b: Number of impact parameter sampling points.
     :ivar base_points_r: Number of radial sampling points.
     :ivar use_stochastic_model: If True, enables SMK computation.
+    :ivar use_mcf_model: If True, enables MCF-MKM computation.
+    :ivar mcf_nucleus_mode: MCF-MKM nucleus-specific-energy mode: 'scaled' (default) or 'integrated'.
     :ivar pO2: Oxygen partial pressure (mmHg).
     :ivar f_rd_max: Max scaling factor for domain radius under hypoxia.
     :ivar f_z0_max: Max scaling factor for z₀ under hypoxia.
@@ -75,14 +79,17 @@ class MKTableParameters:
     domain_radius: float
     nucleus_radius: float
     z0: Optional[float] = None
+    alpha0: Optional[float] = None
     beta0: Optional[float] = None
 
     model_name: str = "Kiefer-Chatterjee"
     core_radius_type: str = "energy-dependent"
-    base_points_b: int = GeometryTools.generate_default_radii.__defaults__[1]
-    base_points_r: int = GeometryTools.generate_default_radii.__defaults__[1]
+    base_points_b: int = DEFAULT_BASE_POINTS
+    base_points_r: int = DEFAULT_BASE_POINTS
 
     use_stochastic_model: bool = False
+    use_mcf_model: bool = False
+    mcf_nucleus_mode: Literal["scaled", "integrated"] = "scaled"
     
     # --- OSMK 2023 Correction Parameters (optional) ---
     pO2: Optional[float] = None        # Oxygen partial pressure [mmHg]
@@ -110,9 +117,11 @@ class MKTable:
         """
         Get the active model version as a string label.
         
-        :returns: 'stochastic' if SMK is enabled, otherwise 'classic' (MKM).
+        :returns: 'mcf' for MCF-MKM, 'stochastic' for SMK, otherwise 'classic' (MKM).
         :rtype: str
         """
+        if self.params.use_mcf_model:
+            return "mcf"
         return "stochastic" if self.params.use_stochastic_model else "classic"
     
     def _default_filename(self, extension: str = ".pkl") -> Path:
@@ -129,13 +138,18 @@ class MKTable:
         root.mkdir(parents=True, exist_ok=True)
         suffix = extension if extension.startswith(".") else f".{extension}"
 
-        s = self.sp_table_set.source_info.replace(" ", "_").replace("/", "-")
-        r_d = f"rd{self.params.domain_radius:.2f}"
-        r_n = f"rn{self.params.nucleus_radius:.1f}"
-        z0 = f"z0{self.params.z0:.1f}" if self.params.z0 is not None else "z0None"
-        b0 = f"b0{self.params.beta0:.4f}" if self.params.beta0 is not None else "b0None"
+        source_info = str(self.sp_table_set.source_info or "unknown").strip().replace(" ", "_")
+        s = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "-", source_info)
+        r_d = f"{self.params.domain_radius:.2f}"
+        r_n = f"{self.params.nucleus_radius:.1f}"
+        z0 = f"{self.params.z0:.1f}" if self.params.z0 is not None else "None"
+        b0 = f"{self.params.beta0:.4f}" if self.params.beta0 is not None else "None"
 
-        prefix = "smk" if self.params.use_stochastic_model else "mkm"
+        prefix = {
+            "classic": "mkm",
+            "stochastic": "smk",
+            "mcf": "mcf",
+        }[self.model_version]
         model_abbr = "kc" if self.params.model_name.lower().startswith("kiefer") else "sk"
         core_abbr = "const" if self.params.core_radius_type == "constant" else "ed"
         timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -144,34 +158,141 @@ class MKTable:
     
     def save(self, filename: Optional[Union[str, Path]] = None):
         """
-        Save the computed MKTable results to a pickle file.
-    
+        Save computed MKTable results and their generating parameters to a pickle file.
+
+        The serialized payload contains both the table data and a snapshot of
+        :class:`MKTableParameters`. This allows :meth:`load` to verify that the
+        current MKTable configuration is consistent with the configuration used
+        to generate the stored microdosimetric quantities.
+
         :param filename: Optional output file path. If None, uses default name.
         :type filename: str or Path, optional
-    
+
         :raises ValueError: If no results have been computed.
         """
         if not self.table:
             raise ValueError("Cannot save: MKTable has not been computed yet. Run 'compute()' first.")
+
         path = Path(filename) if filename else self._default_filename(".pkl")
+        payload = {
+            "__pymkm_mktable__": 1,
+            "model_version": self.model_version,
+            "parameters": asdict(self.params),
+            "table": self.table,
+        }
+
         with open(path, "wb") as f:
-            pickle.dump(self.table, f)
+            pickle.dump(payload, f)
         print(f"✅ Table saved to: {path}")
-        
+
+    def _validate_loaded_parameters(self, stored_parameters: dict) -> None:
+        """Validate that serialized parameters match the current MKTable configuration."""
+        if not isinstance(stored_parameters, dict):
+            raise ValueError("Invalid MKTable parameter metadata in pickle file.")
+
+        try:
+            stored = asdict(MKTableParameters.from_dict(stored_parameters))
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Invalid MKTable parameter metadata in pickle file.") from exc
+
+        current = asdict(self.params)
+
+        # MKTable.compute() resolves z0 from beta0 and stores the resulting value in
+        # self.params. A freshly constructed, otherwise identical MKTable can therefore
+        # still have z0=None at load time. Reproduce the same deterministic derivation
+        # for comparison without mutating the current configuration.
+        if (
+            self.model_version != "mcf"
+            and current["z0"] is None
+            and stored["z0"] is not None
+            and current["beta0"] is not None
+        ):
+            from pymkm.physics.specific_energy import SpecificEnergy
+
+            current["z0"] = round(
+                SpecificEnergy.compute_saturation_parameter(
+                    domain_radius=current["domain_radius"],
+                    nucleus_radius=current["nucleus_radius"],
+                    beta0=current["beta0"],
+                ),
+                2,
+            )
+
+        mismatches = {
+            key: (stored[key], current[key])
+            for key in current
+            if stored[key] != current[key]
+        }
+
+        if mismatches:
+            details = ", ".join(
+                f"{key} (file={old!r}, current={new!r})"
+                for key, (old, new) in mismatches.items()
+            )
+            raise ValueError(
+                "MKTable parameter mismatch between pickle file and current configuration: "
+                f"{details}."
+            )
+
     def load(self, filename: Union[str, Path]):
         """
-        Load previously saved MKTable results from a pickle file.
-    
+        Load previously saved MKTable results from a trusted pickle file.
+
+        Files written by the current format include the generating
+        :class:`MKTableParameters`; these are validated against ``self.params``
+        before the table is accepted. Legacy pyMKM pickle files containing only
+        the table dictionary remain loadable, but their configuration cannot be
+        verified and a warning is emitted.
+
         :param filename: Path to the .pkl file containing saved table data.
         :type filename: str or Path
-    
+
         :raises FileNotFoundError: If the specified file does not exist.
+        :raises ValueError: If current and stored MKTable parameters are inconsistent,
+            or if the serialized payload is malformed or unsupported.
         """
         path = Path(filename)
         if not path.exists():
             raise FileNotFoundError(f"File not found: {path}")
+
         with open(path, "rb") as f:
-            self.table = pickle.load(f)
+            payload = pickle.load(f)
+
+        if isinstance(payload, dict) and "__pymkm_mktable__" in payload:
+            if payload["__pymkm_mktable__"] != 1:
+                raise ValueError(
+                    "Unsupported MKTable pickle format version: "
+                    f"{payload['__pymkm_mktable__']!r}."
+                )
+
+            required = {"model_version", "parameters", "table"}
+            missing = required - payload.keys()
+            if missing:
+                raise ValueError(
+                    "Invalid MKTable pickle payload; missing fields: "
+                    f"{sorted(missing)}."
+                )
+
+            if payload["model_version"] != self.model_version:
+                raise ValueError(
+                    "MKTable model mismatch between pickle file and current configuration: "
+                    f"file={payload['model_version']!r}, current={self.model_version!r}."
+                )
+            if not isinstance(payload["table"], dict):
+                raise ValueError("Invalid MKTable table data in pickle file.")
+
+            self._validate_loaded_parameters(payload["parameters"])
+            self.table = payload["table"]
+        elif isinstance(payload, dict):
+            warnings.warn(
+                "Loading a legacy MKTable pickle without parameter metadata; "
+                "configuration consistency cannot be verified.",
+                UserWarning,
+            )
+            self.table = payload
+        else:
+            raise ValueError("Invalid MKTable pickle payload.")
+
         print(f"📂 Table loaded from: {path}")
 
     def summary(self, verbose: bool = False):
@@ -201,6 +322,10 @@ class MKTable:
             ("Sampling points for b", param_dict["base_points_b"]),
             ("Sampling points for r", param_dict["base_points_r"]),
         ]
+
+        if self.params.use_mcf_model:
+            main_parameters.insert(2, ("α₀ [Gy⁻¹]", param_dict["alpha0"]))
+            technical_parameters.append(("MCF nucleus mode", param_dict["mcf_nucleus_mode"]))
     
         print("\nMKTable Configuration")
         print(f"\nModel version: {self.model_version}")
@@ -245,6 +370,28 @@ class MKTable:
         :raises Warning: If redundant or conflicting values are detected (e.g., both z₀ and β₀).
         """
         p = self.params
+
+        # --- MCF-MKM validation ---
+        if p.use_mcf_model:
+            if p.use_stochastic_model:
+                raise ValueError(
+                    "use_mcf_model=True is incompatible with use_stochastic_model=True."
+                )
+            if p.apply_oxygen_effect:
+                raise ValueError(
+                    "Oxygen-effect corrections are not currently supported for MCF-MKM."
+                )
+            if p.alpha0 is None:
+                raise ValueError("alpha0 is required for MCF-MKM.")
+            if p.beta0 is None:
+                raise ValueError("beta0 is required for MCF-MKM.")
+            if p.mcf_nucleus_mode not in ("scaled", "integrated"):
+                raise ValueError(
+                    "mcf_nucleus_mode must be either 'scaled' or 'integrated'."
+                )
+            if p.z0 is not None:
+                warnings.warn("z0 is not used for MCF-MKM and will be ignored.")
+            return
 
         # --- Base validation: MKM / SMK logic ---
         if p.z0 is None and p.beta0 is None:
@@ -365,7 +512,7 @@ class MKTable:
         *,
         params: dict,
         filename: Union[str, Path] = None,
-        model: Literal["classic", "stochastic"] = None,
+        model: Literal["classic", "stochastic", "mcf"] = None,
         max_atomic_number: Optional[int] = None
     ):
         """
@@ -389,13 +536,24 @@ class MKTable:
             Optional:
                 - "Beta0": float
                 - "scale_factor": float (defaults to 1.0)
+
+        For model="mcf" (MCF-MKM):
+            Required:
+                - "CellType": str
+            Optional:
+                - "Alpha_ref": float
+                - "Beta_ref": float
+                - "Alpha0": float (must match MKTable.params.alpha0)
+                - "Beta0": float (must match MKTable.params.beta0)
+
+            The exported table contains energy, c_bar, and z_bar_c for each ion.
         
         :param params: Model-dependent metadata to include in the header.
         :type params: dict
         :param filename: Output file path. If None, a default name is generated.
         :type filename: str or Path, optional
         :param model: Force output format. If None, inferred from configuration.
-        :type model: Literal["classic", "stochastic"], optional
+        :type model: Literal["classic", "stochastic", "mcf"], optional
         :param max_atomic_number: Maximum Z for ions to include. 
             If None (default), all available ions are included.
         :type max_atomic_number: int, optional
@@ -414,6 +572,15 @@ class MKTable:
             raise ValueError("Cannot write: MKTable has not been computed yet. Run 'compute()' first.")
     
         model = model or self.model_version
+        valid_models = {"classic", "stochastic", "mcf"}
+        if model not in valid_models:
+            raise ValueError(
+                f"Unsupported model '{model}'. Expected one of: "
+                f"{', '.join(sorted(valid_models))}."
+            )
+
+        if model == "mcf" and not self.params.use_mcf_model:
+            raise ValueError("MCF output requested but MKTable was not computed in MCF mode.")
     
         if model == "stochastic" and not self.params.use_stochastic_model:
             raise ValueError("Stochastic output requested but MKTable was computed in classic mode.")
@@ -421,9 +588,12 @@ class MKTable:
         if model == "classic":
             allowed_keys = {"CellType", "Alpha_0", "Beta"}
             required_keys = {"CellType", "Alpha_0"}
-        else:
+        elif model == "stochastic":
             allowed_keys = {"CellType", "Alpha_ref", "Beta_ref", "scale_factor", "Alpha0", "Beta0"}
             required_keys = {"CellType", "Alpha_ref", "Beta_ref", "Alpha0"}
+        else:  # mcf
+            allowed_keys = {"CellType", "Alpha_ref", "Beta_ref", "Alpha0", "Beta0"}
+            required_keys = {"CellType"}
     
         incoming_keys = set(params.keys())
     
@@ -469,7 +639,7 @@ class MKTable:
                 f.write(f"Parameter DomainRadius {self.params.domain_radius:.4f}\n")
                 f.write(f"Parameter NucleusRadius {self.params.nucleus_radius:.4f}\n\n")
     
-            else:  # stochastic
+            elif model == "stochastic":
                 f.write(f"Parameter Alpha_ref {params['Alpha_ref']:.4f}\n")
                 f.write(f"Parameter Beta_ref {params['Beta_ref']:.4f}\n")
                 scale = params.get("scale_factor", 1.0)
@@ -489,6 +659,31 @@ class MKTable:
                         )
                 beta = beta_obj if beta_obj is not None else beta_param
                 f.write(f"Parameter Beta0 {beta:.4f}\n\n")
+
+            else:  # mcf
+                alpha_obj = self.params.alpha0
+                beta_obj = self.params.beta0
+                alpha_param = params.get("Alpha0")
+                beta_param = params.get("Beta0")
+
+                if alpha_param is not None and abs(alpha_obj - alpha_param) > 1e-6:
+                    raise ValueError(
+                        f"Mismatch between Alpha0 in params ({alpha_param}) and self.params ({alpha_obj})"
+                    )
+                if beta_param is not None and abs(beta_obj - beta_param) > 1e-6:
+                    raise ValueError(
+                        f"Mismatch between Beta0 in params ({beta_param}) and self.params ({beta_obj})"
+                    )
+
+                if "Alpha_ref" in params:
+                    f.write(f"Parameter Alpha_ref {params['Alpha_ref']:.4f}\n")
+                if "Beta_ref" in params:
+                    f.write(f"Parameter Beta_ref {params['Beta_ref']:.4f}\n")
+                f.write(f"Parameter Alpha0 {alpha_obj:.4f}\n")
+                f.write(f"Parameter Beta0 {beta_obj:.4f}\n")
+                f.write(f"Parameter DomainRadius {self.params.domain_radius:.4f}\n")
+                f.write(f"Parameter NucleusRadius {self.params.nucleus_radius:.4f}\n")
+                f.write("\n")
     
             for ion_key, result in self.table.items():
                 Z = self.table[ion_key]["stopping_power_info"].get("atomic_number")
@@ -504,7 +699,7 @@ class MKTable:
                         raise KeyError(f"Missing expected column 'z_bar_star_domain' for ion {ion_key}.")
                     for _, row in df.iterrows():
                         f.write(f"{row['energy']:.5e} {row['z_bar_star_domain']:.5e}\n")
-                else:
+                elif model == "stochastic":
                     expected_cols = ["z_bar_domain", "z_bar_star_domain", "z_bar_nucleus"]
                     for col in expected_cols:
                         if col not in df.columns:
@@ -512,6 +707,15 @@ class MKTable:
                     for _, row in df.iterrows():
                         f.write(
                             f"{row['energy']:.5e} {row['z_bar_domain']:.5e} {row['z_bar_star_domain']:.5e} {row['z_bar_nucleus']:.5e}\n"
+                        )
+                else:  # mcf
+                    expected_cols = ["c_bar", "z_bar_c"]
+                    for col in expected_cols:
+                        if col not in df.columns:
+                            raise KeyError(f"Missing expected column '{col}' for ion {ion_key}.")
+                    for _, row in df.iterrows():
+                        f.write(
+                            f"{row['energy']:.5e} {row['c_bar']:.5e} {row['z_bar_c']:.5e}\n"
                         )
                 f.write("\n")
     

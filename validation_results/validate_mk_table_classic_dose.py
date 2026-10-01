@@ -4,11 +4,11 @@ import numpy as np
 import sys
 
 # Extend path to allow local imports
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from validation_utils.loader import load_validation_file
-from validation_utils.inverse_dose import compute_lq_dose_from_survival
-from validation_utils.metrics import semi_log_error_metrics
+from validation_results.validation_utils.loader import load_validation_file
+from validation_results.validation_utils.inverse_dose import compute_lq_dose_from_survival
+from validation_results.validation_utils.metrics import semi_log_error_metrics
 from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.io.table_set import StoppingPowerTableSet
 

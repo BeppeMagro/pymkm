@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from pathlib import Path
 from tqdm import tqdm
 
@@ -13,7 +14,10 @@ script_order = [
     "validate_sf_table_classic.py",
     "validate_sf_table_stochastic.py",
     "validate_sf_table_stochastic_pO2.py",
-    "validate_sf_table_stochastic_OER.py"
+    "validate_sf_table_stochastic_OER.py",
+    "validate_mk_table_mcf_RBE.py",
+    "validate_mk_table_mcf_weight.py",
+    "validate_sf_table_mcf.py",
 ]
 
 validation_dir = Path(__file__).resolve().parent
@@ -35,7 +39,11 @@ with tqdm(
             pbar.update(1)
             continue
 
-        result = subprocess.run(["python", str(script_path)], capture_output=True, text=True)
+        result = subprocess.run(
+            [sys.executable, str(script_path)],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode != 0:
             log_messages.append(

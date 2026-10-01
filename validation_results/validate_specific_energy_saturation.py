@@ -8,11 +8,11 @@ locale.setlocale(locale.LC_ALL, '')  # Set locale from environment
 csv_sep = ';' if locale.getlocale()[0] == 'Italian_Italy' else ','
 
 # Access to local modules
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from validation_utils.loader import load_validation_file
-from validation_utils.layout import choose_horizontal_subplot_layout
-from validation_utils.metrics import log_error_metrics
+from validation_results.validation_utils.loader import load_validation_file
+from validation_results.validation_utils.layout import choose_horizontal_subplot_layout
+from validation_results.validation_utils.metrics import log_error_metrics
 from pymkm.physics.particle_track import ParticleTrack
 from pymkm.physics.specific_energy import SpecificEnergy
 

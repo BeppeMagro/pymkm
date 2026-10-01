@@ -4,11 +4,11 @@ Core classes for survival fraction (SF) table generation.
 This module defines:
 
 - :class:`SFTableParameters`: A dataclass storing all parameters required to compute
-  survival fraction curves using MKM, SMK, or OSMK models.
+  survival fraction curves using MKM, SMK, OSMK, or MCF-MKM models.
 - :class:`SFTable`: A computation manager that integrates MKTable results with
   biological model parameters to produce survival fraction outputs.
 
-The module supports OSMK 2021 and OSMK 2023 models.
+The module supports OSMK 2021 and OSMK 2023 models, as well as MCF-MKM survival calculations based on precomputed MCF quantities from MKTable.
 """
 
 from dataclasses import dataclass, field
@@ -22,15 +22,15 @@ from pymkm.mktable.core import MKTable
 @dataclass
 class SFTableParameters:
     """
-    Configuration container for computing survival fraction (SF) curves using MKM, SMK, or OSMK models.
+    Configuration container for computing survival fraction (SF) curves using MKM, SMK, OSMK, or MCF-MKM models.
 
     :param mktable: Precomputed MKTable containing specific energy values.
     :type mktable: pymkm.mktable.core.MKTable
 
-    :param alpha0: Total linear coefficient α₀ in the LQ model [Gy⁻¹]. Required unless both `alphaL` and `alphaS` are provided.
+    :param alpha0: Total linear coefficient α₀ in the LQ model [Gy⁻¹]. Required for normoxic MKM/SMK survival calculations. For OSMK, at least two of `alpha0`, `alphaL`, and `alphaS` are required. For MCF-MKM, if omitted, it is retrieved from `mktable.params` and must match the value used to generate the MKTable.
     :type alpha0: Optional[float]
 
-    :param beta0: Quadratic coefficient β₀ in the LQ model [Gy⁻²]. If not provided, it is retrieved from `mktable.parameters`.
+    :param beta0: Quadratic coefficient β₀ in the LQ model [Gy⁻²]. If not provided, it is retrieved from `mktable.params`.
     :type beta0: Optional[float]
 
     :param dose_grid: Dose grid [Gy] over which to compute survival fractions. Defaults to np.arange(0, 15.5, 0.5).
@@ -91,6 +91,8 @@ class SFTableParameters:
         
         - Ensures `mktable` is an instance of MKTable.
         - Checks and fills in missing `beta0` from the MKTable.
+        - For MCF-MKM, checks and fills in missing `alpha0` from the MKTable.
+        - Requires `alpha0` for normoxic MKM/SMK survival calculations.
         - Enforces consistency between `alpha0`, `alphaL`, and `alphaS` when pO2 is set.
         - Prevents mixing of OSMK 2021 and OSMK 2023 parameter sets.
         
@@ -116,6 +118,29 @@ class SFTableParameters:
                 f"Mismatch between provided beta0 ({self.beta0}) and MKTable.params.beta0 ({beta_from_table})."
             )
     
+        # === Validate alpha0 for MCF-MKM ===
+        if self.mktable.model_version == "mcf":
+            if self.pO2 is not None:
+                raise ValueError("OSMK oxygen-effect parameters are not supported for MCF-MKM.")
+
+            alpha_from_table = self.mktable.params.alpha0
+            if self.alpha0 is None:
+                if alpha_from_table is not None:
+                    self.alpha0 = alpha_from_table
+                    warnings.warn("alpha0 not provided, using value from MKTable.params.")
+                else:
+                    raise ValueError("alpha0 must be provided either explicitly or via MKTable.params for MCF-MKM.")
+            elif alpha_from_table is not None and abs(alpha_from_table - self.alpha0) > 1e-6:
+                raise ValueError(
+                    f"Mismatch between provided alpha0 ({self.alpha0}) and MKTable.params.alpha0 ({alpha_from_table})."
+                )
+
+        # === Require alpha0 for normoxic MKM/SMK ===
+        if self.mktable.model_version != "mcf" and self.pO2 is None and self.alpha0 is None:
+            raise ValueError(
+                "alpha0 must be provided for normoxic MKM/SMK survival calculations."
+            )
+
         # === Handle alpha0, alphaL, alphaS consistency only if OSMK is requested ===
         if self.pO2 is not None:
             alphaL, alphaS, alpha0 = self.alphaL, self.alphaS, self.alpha0

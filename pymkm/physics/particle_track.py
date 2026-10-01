@@ -31,7 +31,7 @@ import numpy as np
 import logging
 from typing import Optional, Union, Tuple
 
-from pymkm.utils.geometry_tools import GeometryTools
+from pymkm.utils.geometry_tools import DEFAULT_BASE_POINTS, GeometryTools
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -51,7 +51,7 @@ class ParticleTrack:
                  energy: Optional[float] = None,
                  atomic_number: Optional[int] = None,
                  let: Optional[float] = None,
-                 base_points: int = GeometryTools.generate_default_radii.__defaults__[1]) -> None:
+                 base_points: int = DEFAULT_BASE_POINTS) -> None:
         """
         Initialize a ParticleTrack instance.
     

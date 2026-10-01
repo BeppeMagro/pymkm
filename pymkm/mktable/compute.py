@@ -2,10 +2,11 @@
 Computation engine for MKTable.
 
 This module defines the logic to compute microdosimetric quantities
-(z̄*, z̄_d, z̄_n) for a set of ions based on the MKM or SMK model using energy–LET tables.
+for a set of ions based on MKM, SMK, or MCF-MKM using energy–LET tables.
 
-It integrates track structure modeling, specific energy calculation,
-saturation correction, and optional oxygen-effect scaling (OSMK 2023).
+It integrates track structure modeling and specific-energy calculation with
+model-specific averaging, saturation correction, and optional oxygen-effect
+scaling (OSMK 2023).
 """
 
 import numpy as np
@@ -20,7 +21,15 @@ from dataclasses import asdict, replace
 from pymkm.physics.particle_track import ParticleTrack
 from pymkm.physics.specific_energy import SpecificEnergy
 from pymkm.utils.parallel import optimal_worker_count
-from pymkm.biology.oxygen_effect import compute_relative_radioresistance, compute_scaling_factors
+from pymkm.biology.oxygen_effect import (
+    compute_osmk2023_radioresistance,
+    compute_osmk2023_effective_parameters,
+)
+from pymkm.biology.mcf_model import (
+    compute_scaled_nuclear_specific_energy,
+    compute_mcf_correction_factor,
+    compute_mcf_averaged_quantities,
+)
 
 from .core import MKTable
 
@@ -35,6 +44,45 @@ def _run_energy_let_task(func, args):
     :return: Output of func(*args)
     """
     return func(*args)
+
+def _build_worker_params(
+    mktable: MKTable,
+    integration_method: str = "trapz",
+    domain_radius: Optional[float] = None,
+    z0: Optional[float] = None
+) -> dict:
+    """
+    Build the flattened parameter dictionary used by microdosimetric workers.
+
+    :param mktable: Source MKTable instance.
+    :type mktable: MKTable
+    :param integration_method: Numerical integration method.
+    :type integration_method: str
+    :param domain_radius: Optional effective domain radius overriding the table value.
+    :type domain_radius: float or None
+    :param z0: Optional effective saturation parameter overriding the table value.
+    :type z0: float or None
+
+    :return: Flattened worker parameter dictionary.
+    :rtype: dict
+    """
+    p = mktable.params
+    return {
+        "model_name": p.model_name,
+        "core_radius_type": p.core_radius_type,
+        "base_points_b": p.base_points_b,
+        "base_points_r": p.base_points_r,
+        "domain_radius": p.domain_radius if domain_radius is None else domain_radius,
+        "nucleus_radius": p.nucleus_radius,
+        "z0": p.z0 if z0 is None else z0,
+        "alpha0": p.alpha0,
+        "beta0": p.beta0,
+        "use_stochastic_model": p.use_stochastic_model,
+        "use_mcf_model": p.use_mcf_model,
+        "mcf_nucleus_mode": p.mcf_nucleus_mode,
+        "integration_method": integration_method,
+    }
+
 
 def _compute_for_energy_let_pair(
     params: dict,
@@ -72,6 +120,43 @@ def _compute_for_energy_let_pair(
         base_points_b=params["base_points_b"],
         base_points_r=params["base_points_r"]
     )
+
+    if params.get("use_mcf_model", False):
+        if params.get("mcf_nucleus_mode", "scaled") == "scaled":
+            z_nucleus = compute_scaled_nuclear_specific_energy(
+                z_domain=z_domain,
+                domain_radius=params["domain_radius"],
+                nucleus_radius=params["nucleus_radius"]
+            )
+        elif params.get("mcf_nucleus_mode", "scaled") == "integrated":
+            se_nucleus = SpecificEnergy(track, region_radius=params["nucleus_radius"])
+            z_nucleus, _ = se_nucleus.single_event_specific_energy(
+                impact_parameters=b_domain,
+                base_points_r=params["base_points_r"]
+            )
+        else:
+            raise ValueError(
+                "mcf_nucleus_mode must be either 'scaled' or 'integrated'."
+            )
+
+        c = compute_mcf_correction_factor(
+            z_domain=z_domain,
+            z_nucleus=z_nucleus,
+            alpha0=params["alpha0"],
+            beta0=params["beta0"]
+        )
+
+        c_bar, z_bar_c = compute_mcf_averaged_quantities(
+            z_domain=z_domain,
+            b_array=b_domain,
+            c=c,
+            integration_method=params["integration_method"]
+        )
+
+        return {
+            "c_bar": c_bar,
+            "z_bar_c": z_bar_c
+        }
 
     z_prime_domain = se_domain.saturation_corrected_single_event_specific_energy(
         z0=params["z0"], z_array=z_domain
@@ -115,28 +200,6 @@ def _compute_for_energy_let_pair(
 
     return result
 
-def _get_osmk2023_corrected_parameters(mktable: MKTable) -> tuple[float, float]:
-    """
-    Compute oxygen-effect–corrected domain radius and z₀ using the OSMK 2023 model.
-
-    :param mktable: MKTable instance containing OSMK parameters.
-    :type mktable: MKTable
-
-    :returns: Tuple with (corrected_domain_radius, corrected_z0).
-    :rtype: tuple[float, float]
-
-    :raises ValueError: If required OSMK parameters are missing.
-    """
-    
-    p = mktable.params
-
-    R = compute_relative_radioresistance(K=p.K, pO2=p.pO2, K_mult=1 / p.Rmax)
-    f_rd, f_z0 = compute_scaling_factors(R, p.f_rd_max, p.f_z0_max, p.Rmax)
-
-    rd_eff = round(p.domain_radius / f_rd, 3)
-    z0_eff = round(p.z0 * f_z0, 2)
-    return rd_eff, z0_eff
-
 def _compute_for_ion(self: MKTable, ion: str, parallel: bool = True, number_of_workers: int = None, integration_method: str = "trapz"):
     """
     Compute all specific energies for a given ion in the table set.
@@ -164,7 +227,17 @@ def _compute_for_ion(self: MKTable, ion: str, parallel: bool = True, number_of_w
     
     # Prepare oxygen-corrected geometry if requested
     if self.params.apply_oxygen_effect:
-        rd_eff, z0_eff = _get_osmk2023_corrected_parameters(self)
+        p = self.params
+        _, f_rd, f_z0 = compute_osmk2023_radioresistance(
+            K=p.K,
+            pO2=p.pO2,
+            Rmax=p.Rmax,
+            f_rd_max=p.f_rd_max,
+            f_z0_max=p.f_z0_max,
+        )
+        rd_eff, z0_eff = compute_osmk2023_effective_parameters(
+            p.domain_radius, p.z0, f_rd, f_z0
+        )
         
         print("✔ Using OSMK2023-corrected values:")
         print(f" - domain_radius: {self.params.domain_radius} → {rd_eff}")
@@ -176,17 +249,12 @@ def _compute_for_ion(self: MKTable, ion: str, parallel: bool = True, number_of_w
     if parallel:
         worker_count = optimal_worker_count(job_list, user_requested=number_of_workers)
         with ProcessPoolExecutor(max_workers=worker_count) as executor:
-            params_dict = {
-                "model_name": self.params.model_name,
-                "core_radius_type": self.params.core_radius_type,
-                "base_points_b": self.params.base_points_b,
-                "base_points_r": self.params.base_points_r,
-                "domain_radius": rd_eff,
-                "nucleus_radius": self.params.nucleus_radius,
-                "z0": z0_eff,
-                "use_stochastic_model": self.params.use_stochastic_model,
-                "integration_method": integration_method
-            }
+            params_dict = _build_worker_params(
+                self,
+                integration_method=integration_method,
+                domain_radius=rd_eff,
+                z0=z0_eff,
+            )
             func = partial(self._compute_for_energy_let_pair, params_dict)
             results = list(tqdm(
                 executor.map(partial(_run_energy_let_task, func), job_list),
@@ -196,17 +264,12 @@ def _compute_for_ion(self: MKTable, ion: str, parallel: bool = True, number_of_w
             ))
     else:
         for args in tqdm(job_list, desc=f"{sp.ion_name} ({sp.atomic_number},{sp.mass_number})", unit="energy"):
-            params_dict = {
-                "model_name": self.params.model_name,
-                "core_radius_type": self.params.core_radius_type,
-                "base_points_b": self.params.base_points_b,
-                "base_points_r": self.params.base_points_r,
-                "domain_radius": rd_eff,
-                "nucleus_radius": self.params.nucleus_radius,
-                "z0": z0_eff,
-                "use_stochastic_model": self.params.use_stochastic_model,
-                "integration_method": integration_method
-            }
+            params_dict = _build_worker_params(
+                self,
+                integration_method=integration_method,
+                domain_radius=rd_eff,
+                z0=z0_eff,
+            )
             results.append(self._compute_for_energy_let_pair(params_dict, *args))
 
     for job, result in zip(job_list, results):
@@ -226,12 +289,12 @@ def compute(
     integration_method: str = "trapz"
 ) -> None:
     """
-    Compute per-ion microdosimetric tables using MKM or SMK model.
+    Compute per-ion microdosimetric tables using MKM, SMK, or MCF-MKM.
 
     For each ion:
       - Retrieves energy–LET grid
       - Computes specific energy and dose-averaged quantities
-      - Applies saturation correction and optional OSMK
+      - Applies model-specific averaging, saturation correction, and optional OSMK
       - Aggregates into a structured table
 
     :param self: MKTable instance.
@@ -262,12 +325,13 @@ def compute(
 
     original_params = replace(self.params)
 
-    z0 = self.params.z0 or SpecificEnergy.compute_saturation_parameter(
-        domain_radius=self.params.domain_radius,
-        nucleus_radius=self.params.nucleus_radius,
-        beta0=self.params.beta0
-    )
-    self.params.z0 = round(z0, 2)
+    if not self.params.use_mcf_model:
+        z0 = self.params.z0 or SpecificEnergy.compute_saturation_parameter(
+            domain_radius=self.params.domain_radius,
+            nucleus_radius=self.params.nucleus_radius,
+            beta0=self.params.beta0
+        )
+        self.params.z0 = round(z0, 2)
 
     self._refresh_parameters(original_params)
 
@@ -285,13 +349,21 @@ def compute(
         sp = self.sp_table_set.get(ion_key)
         rows = []
         for entry in data:
-            row = {
-                "energy": entry["energy"],
-                "let": entry["let"],
-                "z_bar_star_domain": entry.get("z_bar_star_domain"),
-                "z_bar_domain": entry.get("z_bar_domain"),
-                "z_bar_nucleus": entry.get("z_bar_nucleus")
-            }
+            if self.params.use_mcf_model:
+                row = {
+                    "energy": entry["energy"],
+                    "let": entry["let"],
+                    "c_bar": entry.get("c_bar"),
+                    "z_bar_c": entry.get("z_bar_c")
+                }
+            else:
+                row = {
+                    "energy": entry["energy"],
+                    "let": entry["let"],
+                    "z_bar_star_domain": entry.get("z_bar_star_domain"),
+                    "z_bar_domain": entry.get("z_bar_domain"),
+                    "z_bar_nucleus": entry.get("z_bar_nucleus")
+                }
             rows.append(row)
 
         df = pd.DataFrame(rows).sort_values("energy").reset_index(drop=True)

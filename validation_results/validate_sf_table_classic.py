@@ -4,15 +4,16 @@ import sys
 from collections import defaultdict
 
 # Extend module search path to allow relative imports
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from validation_utils.layout import choose_horizontal_subplot_layout
-from validation_utils.loader import load_validation_file
-from validation_utils.metrics import log_linear_error_metrics
+from validation_results.validation_utils.layout import choose_horizontal_subplot_layout
+from validation_results.validation_utils.loader import load_validation_file
+from validation_results.validation_utils.metrics import log_linear_error_metrics
 
 from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.sftable.core import SFTableParameters, SFTable
 from pymkm.io.table_set import StoppingPowerTableSet
+from pymkm.physics.specific_energy import SpecificEnergy
 
 import locale
 locale.setlocale(locale.LC_ALL, '')
@@ -64,13 +65,20 @@ def validate_sf_table_classic(source: str = "fluka_2020_0"):
             mk_params = MKTableParameters(
                 domain_radius=domain_radius,
                 nucleus_radius=nucleus_radius,
-                z0=z0,
                 beta0=beta0,
                 model_name=model_name,
                 core_radius_type=core_type,
                 use_stochastic_model=False
             )
             mk_table = MKTable(parameters=mk_params, sp_table_set=sp_table_set)
+            z0_model = round(
+                SpecificEnergy.compute_saturation_parameter(
+                    domain_radius=domain_radius,
+                    nucleus_radius=nucleus_radius,
+                    beta0=beta0,
+                ),
+                2,
+            )
 
             for fig_idx, (n_rows, n_cols) in enumerate(layout_list):
                 fig, axs = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 5), squeeze=False)
@@ -163,7 +171,7 @@ def validate_sf_table_classic(source: str = "fluka_2020_0"):
                             f"$\\beta_0$: {beta0:.3f} Gy$^{{-2}}$\n"
                             f"$r_d$: {domain_radius:.2f} μm\n"
                             f"$R_n$: {nucleus_radius:.2f} μm\n"
-                            f"$z_0$: {mk_table.params.z0:.2f} Gy"
+                            f"$z_0$: {z0_model:.2f} Gy"
                         )
                         ax.text(
                             0.05, 0.05, info_text, transform=ax.transAxes,

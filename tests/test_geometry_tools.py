@@ -1,14 +1,32 @@
 import numpy as np
 import pytest
 
-from pymkm.utils.geometry_tools import GeometryTools
+from pymkm.utils.geometry_tools import DEFAULT_BASE_POINTS, GeometryTools
+
+
+# --- Tests for calculate_squared_radius_ratio ---
+
+def test_calculate_squared_radius_ratio():
+    result = GeometryTools.calculate_squared_radius_ratio(0.5, 5.0)
+    assert np.isclose(result, 0.01)
+
+def test_calculate_squared_radius_ratio_requires_positive_radii():
+    with pytest.raises(ValueError, match="Both radii must be positive"):
+        GeometryTools.calculate_squared_radius_ratio(0.0, 5.0)
+
+    with pytest.raises(ValueError, match="Both radii must be positive"):
+        GeometryTools.calculate_squared_radius_ratio(0.5, 0.0)
+
+def test_default_base_points_constant():
+    assert DEFAULT_BASE_POINTS == 150
+
 
 # --- Tests for determine_sampling_points ---
 
 def test_determine_sampling_points_multiplier_20():
     # Trigger condition: energy <= 10 OR radius_max <= 0.05.
     # Here, energy=15 (>10) but radius_max=0.04 (<=0.05) should trigger multiplier=20.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(15, 0.04)
     expected = base * 20
     assert result == expected
@@ -16,7 +34,7 @@ def test_determine_sampling_points_multiplier_20():
 def test_determine_sampling_points_multiplier_15():
     # Trigger condition: energy <= 20 OR radius_max <= 0.1.
     # Use energy=25 (>20) and radius_max=0.09 (<=0.1) to trigger multiplier=15.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(25, 0.09)
     expected = base * 15
     assert result == expected
@@ -24,7 +42,7 @@ def test_determine_sampling_points_multiplier_15():
 def test_determine_sampling_points_multiplier_12():
     # Trigger condition: energy <= 40 OR radius_max <= 0.5.
     # Use energy=35 (<=40) and radius_max=1.0 (>0.5) to trigger multiplier=12.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(35, 1.0)
     expected = base * 12
     assert result == expected
@@ -32,7 +50,7 @@ def test_determine_sampling_points_multiplier_12():
 def test_determine_sampling_points_multiplier_8():
     # Trigger condition: energy <= 60 OR radius_max <= 1.
     # Use energy=50 (>40 and <=60) and radius_max=10 to trigger multiplier=8.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(50, 10)
     expected = base * 8
     assert result == expected
@@ -40,7 +58,7 @@ def test_determine_sampling_points_multiplier_8():
 def test_determine_sampling_points_multiplier_6():
     # Trigger condition: energy <= 80 OR radius_max <= 2.
     # Use energy=90 (>80) and radius_max=1.5 (<=2) to trigger multiplier=6.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(90, 1.5)
     expected = base * 6
     assert result == expected
@@ -48,7 +66,7 @@ def test_determine_sampling_points_multiplier_6():
 def test_determine_sampling_points_multiplier_5():
     # Trigger condition: energy <= 100 OR radius_max <= 5.
     # Use energy=110 (>100) and radius_max=4 (<=5) to trigger multiplier=5.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(110, 4)
     expected = base * 5
     assert result == expected
@@ -56,7 +74,7 @@ def test_determine_sampling_points_multiplier_5():
 def test_determine_sampling_points_multiplier_4():
     # Trigger condition: energy <= 150 OR radius_max <= 10.
     # Use energy=145 (<=150) and radius_max=15 (>10) to trigger multiplier=4.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(145, 15)
     expected = base * 4
     assert result == expected
@@ -64,7 +82,7 @@ def test_determine_sampling_points_multiplier_4():
 def test_determine_sampling_points_multiplier_3():
     # Trigger condition: energy <= 200 OR radius_max <= 20.
     # Use energy=210 (>200) but radius_max=18 (<=20) to trigger multiplier=3.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(210, 18)
     expected = base * 3
     assert result == expected
@@ -72,7 +90,7 @@ def test_determine_sampling_points_multiplier_3():
 def test_determine_sampling_points_multiplier_2():
     # Else branch: energy > 200 AND radius_max > 20.
     # Use energy=210 and radius_max=25 to trigger multiplier=2.
-    base = 150
+    base = DEFAULT_BASE_POINTS
     result = GeometryTools.determine_sampling_points(210, 25)
     expected = base * 2
     assert result == expected

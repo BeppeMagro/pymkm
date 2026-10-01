@@ -1,0 +1,32 @@
+Reference: Parisi et al. (2022)
+DOI: 10.1088/1361-6560/ac7375
+Model_Name: Kiefer-Chatterjee
+Core_Radius_Type: energy-dependent
+Cell_Type: V79
+Atomic_Number: 2
+Domain_Radius_um: 0.26
+Nucleus_Radius_um: 4.0
+Alpha0_Gy-1: 0.125
+Beta0_Gy-2: 0.02
+AlphaRef_Gy-1: 0.19
+BetaRef_Gy-2: 0.02
+Survival_Fraction = 0.01
+Data_Units: LET [MeV/cm], RBE_1 [-]
+Data:
+ 9.384E+00  9.401E-01
+ 1.303E+01  9.494E-01
+ 1.758E+01  9.587E-01
+ 2.489E+01  9.681E-01
+ 3.807E+01  1.004E+00
+ 5.548E+01  1.022E+00
+ 7.779E+01  1.049E+00
+ 1.070E+02  1.103E+00
+ 1.429E+02  1.183E+00
+ 1.928E+02  1.272E+00
+ 2.651E+02  1.422E+00
+ 3.439E+02  1.644E+00
+ 4.334E+02  1.856E+00
+ 5.307E+02  2.122E+00
+ 6.250E+02  2.396E+00
+ 7.652E+02  2.696E+00
+ 1.002E+03  3.050E+00

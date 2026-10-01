@@ -51,6 +51,28 @@ def test_sftableparameters_from_dict_invalid_key():
     with pytest.raises(ValueError, match="Unrecognized keys"):
         SFTableParameters.from_dict({"mktable": mock_table, "alpha0": 0.1, "beta0": 0.05, "extra": 1})
 
+
+@pytest.mark.parametrize("use_stochastic_model", [False, True])
+def test_sftableparameters_alpha0_required_for_normoxic_mkm_models(use_stochastic_model):
+    if use_stochastic_model:
+        params_local = MKTableParameters(
+            domain_radius=0.3,
+            nucleus_radius=5.0,
+            z0=50.0,
+            use_stochastic_model=True,
+        )
+        table = MKTable(parameters=params_local)
+        table.params.beta0 = 0.05
+    else:
+        table = mock_table
+
+    with pytest.raises(
+        ValueError,
+        match="alpha0 must be provided for normoxic MKM/SMK survival calculations",
+    ):
+        SFTableParameters(mktable=table, beta0=0.05)
+
+
 # --- SFTable tests ---
 def test_sftable_repr():
     sft = SFTable(SFTableParameters(mktable=mock_table, alpha0=0.1, beta0=0.05))
@@ -197,10 +219,82 @@ def test_sftable_repr_with_alphaL_and_alphaS():
     assert "α_0 = 0.1" in repr_str
     assert "β_0 = 0.05" in repr_str
 
+# --- MCF-MKM SFTableParameters tests ---
+def _make_mcf_table(alpha0=0.12, beta0=0.045):
+    mcf_params = MKTableParameters(
+        domain_radius=0.3,
+        nucleus_radius=5.0,
+        alpha0=alpha0,
+        beta0=beta0,
+        use_mcf_model=True,
+    )
+    return MKTable(parameters=mcf_params)
 
 
+def test_sftableparameters_mcf_alpha0_beta0_fallback_warns():
+    mcf_table = _make_mcf_table(alpha0=0.12, beta0=0.045)
+    with pytest.warns(UserWarning) as record:
+        p = SFTableParameters(mktable=mcf_table)
+
+    messages = [str(w.message) for w in record]
+    assert any("beta0 not provided" in message for message in messages)
+    assert any("alpha0 not provided" in message for message in messages)
+    assert np.isclose(p.alpha0, 0.12)
+    assert np.isclose(p.beta0, 0.045)
 
 
+def test_sftableparameters_mcf_matching_alpha0_explicit():
+    mcf_table = _make_mcf_table(alpha0=0.12, beta0=0.045)
+    p = SFTableParameters(
+        mktable=mcf_table,
+        alpha0=0.12,
+        beta0=0.045,
+    )
+    assert np.isclose(p.alpha0, 0.12)
+    assert np.isclose(p.beta0, 0.045)
 
 
+def test_sftableparameters_mcf_alpha0_mismatch_raises():
+    mcf_table = _make_mcf_table(alpha0=0.12, beta0=0.045)
+    with pytest.raises(ValueError, match="Mismatch between provided alpha0"):
+        SFTableParameters(
+            mktable=mcf_table,
+            alpha0=0.11,
+            beta0=0.045,
+        )
+
+
+def test_sftableparameters_mcf_beta0_mismatch_raises():
+    mcf_table = _make_mcf_table(alpha0=0.12, beta0=0.045)
+    with pytest.raises(ValueError, match="Mismatch between provided beta0"):
+        SFTableParameters(
+            mktable=mcf_table,
+            alpha0=0.12,
+            beta0=0.04,
+        )
+
+
+def test_sftableparameters_mcf_rejects_osmk_parameters():
+    mcf_table = _make_mcf_table(alpha0=0.12, beta0=0.045)
+    with pytest.raises(ValueError, match="not supported for MCF-MKM"):
+        SFTableParameters(
+            mktable=mcf_table,
+            alpha0=0.12,
+            beta0=0.045,
+            pO2=5.0,
+            alphaL=0.04,
+            alphaS=0.08,
+        )
+
+def test_sftableparameters_mcf_alpha0_required_if_not_in_table():
+    mcf_table = _make_mcf_table(alpha0=0.12, beta0=0.045)
+    mcf_table.params.alpha0 = None
+    with pytest.raises(
+        ValueError,
+        match="alpha0 must be provided either explicitly or via MKTable.params for MCF-MKM",
+    ):
+        SFTableParameters(
+            mktable=mcf_table,
+            beta0=0.045,
+        )
 

@@ -39,12 +39,10 @@ import numpy as np
 from typing import Optional, Tuple, Union
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from scipy.integrate import simpson, quad
-from scipy.interpolate import interp1d
-
 from pymkm.physics.particle_track import ParticleTrack
-from pymkm.utils.geometry_tools import GeometryTools
+from pymkm.utils.geometry_tools import DEFAULT_BASE_POINTS, GeometryTools
 from pymkm.utils.parallel import optimal_worker_count
+from pymkm.utils.integration import integrate_1d
 
 class SpecificEnergy:
     """
@@ -117,7 +115,7 @@ class SpecificEnergy:
             isinstance(impact_parameters, np.ndarray) and impact_parameters.size == 0
         ):
             b_max = self.region_radius + self.penumbra_radius
-            default_b_pts = GeometryTools.generate_default_radii.__defaults__[1]
+            default_b_pts = DEFAULT_BASE_POINTS
             impact_parameters = GeometryTools.generate_default_radii(
                 energy=self.track.energy,
                 radius_max=b_max,
@@ -153,7 +151,7 @@ class SpecificEnergy:
         """
         r_min = max(1e-6, b - self.region_radius)                               
         r_max = min(b + self.region_radius, self.penumbra_radius)        
-        default_r_pts = GeometryTools.generate_default_radii.__defaults__[1]
+        default_r_pts = DEFAULT_BASE_POINTS
         r_array = GeometryTools.generate_default_radii(
             energy=self.track.energy,
             radius_max=r_max,
@@ -188,10 +186,16 @@ class SpecificEnergy:
     
         :raises ValueError: If any input is not strictly positive.
         """
-        if nucleus_radius <= 0 or domain_radius <= 0 or beta0 <= 0:
-            raise ValueError("All input parameters (domain_radius, nucleus_radius, beta0) must be > 0.")
-        ratio = nucleus_radius / domain_radius
-        return (ratio ** 2) / np.sqrt(beta0 * (1 + ratio ** 2))
+        if beta0 <= 0:
+            raise ValueError("beta0 must be positive.")
+
+        radius_ratio_squared = GeometryTools.calculate_squared_radius_ratio(
+            nucleus_radius,
+            domain_radius
+        )
+        return radius_ratio_squared / np.sqrt(
+            beta0 * (1 + radius_ratio_squared)
+        )
 
     def saturation_corrected_single_event_specific_energy(
         self,
@@ -266,27 +270,31 @@ class SpecificEnergy:
         :raises ValueError: If model or integration method is invalid.
         """
     
-        def integrate(y: np.ndarray) -> float:
-            if integration_method == "trapz":
-                return np.trapz(y, b_array)
-            elif integration_method == "simps":
-                return simpson(y=y, x=b_array)
-            elif integration_method == "quad":
-                f_interp = interp1d(b_array, y, kind="cubic", fill_value="extrapolate")
-                result, _ = quad(f_interp, b_array[0], b_array[-1], limit=100)
-                return result
-            else:
-                raise ValueError(f"Unsupported integration method: '{integration_method}'")
-    
         if z_corrected is None:
-            numerator = integrate(z_array ** 2 * b_array)
+            numerator = integrate_1d(
+                z_array ** 2 * b_array,
+                b_array,
+                method=integration_method
+            )
         else:
             if model == "square_root":
-                numerator = integrate(z_corrected ** 2 * b_array)
+                numerator = integrate_1d(
+                    z_corrected ** 2 * b_array,
+                    b_array,
+                    method=integration_method
+                )
             elif model == "quadratic":
-                numerator = integrate(z_array * z_corrected * b_array)
+                numerator = integrate_1d(
+                    z_array * z_corrected * b_array,
+                    b_array,
+                    method=integration_method
+                )
             else:
                 raise ValueError("Model must be 'square_root' or 'quadratic' when providing z_corrected.")
     
-        denom = integrate(z_array * b_array)
+        denom = integrate_1d(
+            z_array * b_array,
+            b_array,
+            method=integration_method
+        )
         return 0.0 if denom == 0 else numerator / denom

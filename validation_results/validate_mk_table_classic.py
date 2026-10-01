@@ -3,10 +3,10 @@ from pathlib import Path
 import sys
 
 # Access to local modules
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from validation_utils.loader import load_validation_file
-from validation_utils.metrics import semi_log_error_metrics
+from validation_results.validation_utils.loader import load_validation_file
+from validation_results.validation_utils.metrics import semi_log_error_metrics
 from pymkm.mktable.core import MKTableParameters, MKTable
 from pymkm.io.table_set import StoppingPowerTableSet
 
@@ -92,8 +92,7 @@ def validate_mk_table_classic(source: str = "fluka_2020_0"):
             x_ref = np.asarray(df_ref['x'], dtype=float)
             y_ref = np.asarray(df_ref['y'], dtype=float)
             
-            ion = mk_table.sp_table_set._map_to_fullname(atomic_number)
-            df_model = mk_table.table[ion]["data"]
+            df_model = mk_table.get_table(atomic_number)
             x_model = df_model["energy"].values
             y_model = df_model["z_bar_star_domain"].values
         

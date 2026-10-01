@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from pymkm.mktable.core import MKTable, MKTableParameters
-from pymkm.mktable.compute import _compute_for_energy_let_pair, _run_energy_let_task, _get_osmk2023_corrected_parameters
+from pymkm.mktable.compute import _compute_for_energy_let_pair, _run_energy_let_task, _build_worker_params
 from pymkm.io.stopping_power import StoppingPowerTable
 
 
@@ -203,33 +203,6 @@ def test_compute_runtime_error():
         compute(table)
 
 @pytest.mark.filterwarnings("ignore:Both z0 and beta0 provided.*")
-def test__get_osmk2023_corrected_parameters_returns_expected_values():
-    # Minimal MKTableParams with oxygen effect
-    params = MKTableParameters(
-        domain_radius=0.3,
-        nucleus_radius=5.0,
-        z0=0.85,
-        beta0=0.05,
-        apply_oxygen_effect=True,
-        use_stochastic_model=True,
-        pO2=5.0,
-        K=3.0,
-        f_rd_max=1.5,
-        f_z0_max=2.0,
-        Rmax=2.0
-    )
-    table = MKTable(parameters=params)
-    table.sp_table_set.add("C", create_dummy_table("C"))
-
-    rd_eff, z0_eff = _get_osmk2023_corrected_parameters(table)
-
-    # Basic assertions to ensure it runs and returns floats
-    assert isinstance(rd_eff, float)
-    assert isinstance(z0_eff, float)
-    assert rd_eff != params.domain_radius
-    assert z0_eff != params.z0
-
-@pytest.mark.filterwarnings("ignore:Both z0 and beta0 provided.*")
 def test_compute_for_ion_with_oxygen_effect(capsys):
     params = MKTableParameters(
         domain_radius=0.3,
@@ -306,4 +279,206 @@ def test__compute_for_ion_respects_number_of_workers(monkeypatch):
     table._compute_for_ion("C", parallel=True, number_of_workers=1)
 
     assert called_workers['count'] == 1
+
+
+
+# --- MCF-MKM computation ---
+def _mcf_worker_params(nucleus_mode="scaled"):
+    return dict(
+        model_name="Kiefer-Chatterjee",
+        core_radius_type="constant",
+        domain_radius=0.5,
+        nucleus_radius=5.0,
+        z0=None,
+        alpha0=0.2,
+        beta0=0.05,
+        base_points_b=5,
+        base_points_r=5,
+        use_stochastic_model=False,
+        use_mcf_model=True,
+        mcf_nucleus_mode=nucleus_mode,
+        integration_method="trapz",
+    )
+
+
+def test__compute_for_energy_let_pair_mcf_scaled(monkeypatch):
+    b = np.linspace(0.0, 3.0, 4)
+    z_domain = np.array([4.0, 3.0, 2.0, 1.0])
+
+    monkeypatch.setattr(
+        "pymkm.physics.specific_energy.SpecificEnergy.single_event_specific_energy",
+        lambda self, **kwargs: (z_domain.copy(), b.copy()),
+    )
+
+    result = _compute_for_energy_let_pair(
+        _mcf_worker_params("scaled"),
+        energy=100.0,
+        let=0.01,
+        atomic_number=6,
+    )
+
+    assert set(result) == {"c_bar", "z_bar_c"}
+    assert np.isfinite(result["c_bar"])
+    assert np.isfinite(result["z_bar_c"])
+    assert 0.0 < result["c_bar"] <= 1.0
+    assert result["z_bar_c"] > 0.0
+
+
+def test__compute_for_energy_let_pair_mcf_integrated_uses_domain_b_grid(monkeypatch):
+    b = np.linspace(0.0, 3.0, 4)
+    z_domain = np.array([4.0, 3.0, 2.0, 1.0])
+    z_nucleus = np.array([0.4, 0.3, 0.2, 0.1])
+    calls = []
+
+    def fake_single_event(self, **kwargs):
+        calls.append((self.region_radius, kwargs.get("impact_parameters")))
+        if np.isclose(self.region_radius, 0.5):
+            return z_domain.copy(), b.copy()
+        return z_nucleus.copy(), np.asarray(kwargs["impact_parameters"]).copy()
+
+    monkeypatch.setattr(
+        "pymkm.physics.specific_energy.SpecificEnergy.single_event_specific_energy",
+        fake_single_event,
+    )
+
+    result = _compute_for_energy_let_pair(
+        _mcf_worker_params("integrated"),
+        energy=100.0,
+        let=0.01,
+        atomic_number=6,
+    )
+
+    assert set(result) == {"c_bar", "z_bar_c"}
+    assert len(calls) == 2
+    assert calls[0][1] is None
+    assert np.allclose(calls[1][1], b)
+
+
+def test_mcf_scaled_and_integrated_routes_are_distinct(monkeypatch):
+    b = np.linspace(0.0, 3.0, 4)
+    z_domain = np.array([4.0, 3.0, 2.0, 1.0])
+    z_nucleus_integrated = np.array([0.8, 0.6, 0.4, 0.2])
+
+    def fake_single_event(self, **kwargs):
+        if np.isclose(self.region_radius, 0.5):
+            return z_domain.copy(), b.copy()
+        return z_nucleus_integrated.copy(), np.asarray(kwargs["impact_parameters"]).copy()
+
+    monkeypatch.setattr(
+        "pymkm.physics.specific_energy.SpecificEnergy.single_event_specific_energy",
+        fake_single_event,
+    )
+
+    scaled = _compute_for_energy_let_pair(
+        _mcf_worker_params("scaled"), 100.0, 0.01, 6
+    )
+    integrated = _compute_for_energy_let_pair(
+        _mcf_worker_params("integrated"), 100.0, 0.01, 6
+    )
+
+    assert not np.isclose(scaled["c_bar"], integrated["c_bar"])
+    assert not np.isclose(scaled["z_bar_c"], integrated["z_bar_c"])
+
+
+def test_compute_full_mcf_table_contains_only_mcf_quantities(monkeypatch):
+    b = np.linspace(0.0, 3.0, 4)
+    z_domain = np.array([4.0, 3.0, 2.0, 1.0])
+
+    monkeypatch.setattr(
+        "pymkm.physics.specific_energy.SpecificEnergy.single_event_specific_energy",
+        lambda self, **kwargs: (z_domain.copy(), b.copy()),
+    )
+
+    params = MKTableParameters(
+        domain_radius=0.5,
+        nucleus_radius=5.0,
+        alpha0=0.2,
+        beta0=0.05,
+        use_mcf_model=True,
+        mcf_nucleus_mode="scaled",
+        base_points_b=5,
+        base_points_r=5,
+    )
+    table = MKTable(parameters=params)
+    table.sp_table_set.add("Carbon", create_dummy_table("Carbon"))
+
+    assert table.params.z0 is None
+    table.compute(ions=["Carbon"], parallel=False)
+    assert table.params.z0 is None
+
+    df = table.table["Carbon"]["data"]
+    assert list(df.columns) == ["energy", "let", "c_bar", "z_bar_c"]
+    assert np.all(np.isfinite(df["c_bar"]))
+    assert np.all(np.isfinite(df["z_bar_c"]))
+
+
+def test__compute_for_energy_let_pair_mcf_invalid_nucleus_mode(monkeypatch):
+    b = np.linspace(0.0, 3.0, 4)
+    z_domain = np.array([4.0, 3.0, 2.0, 1.0])
+
+    monkeypatch.setattr(
+        "pymkm.physics.specific_energy.SpecificEnergy.single_event_specific_energy",
+        lambda self, **kwargs: (z_domain.copy(), b.copy()),
+    )
+
+    params = _mcf_worker_params("invalid")
+
+    with pytest.raises(
+        ValueError,
+        match="mcf_nucleus_mode must be either 'scaled' or 'integrated'",
+    ):
+        _compute_for_energy_let_pair(
+            params,
+            energy=100.0,
+            let=0.01,
+            atomic_number=6,
+        )
+
+def test__build_worker_params_uses_mktable_values():
+    params = MKTableParameters(
+        domain_radius=0.3,
+        nucleus_radius=5.0,
+        alpha0=0.12,
+        beta0=0.05,
+        base_points_b=12,
+        base_points_r=34,
+    )
+    table = MKTable(parameters=params)
+
+    worker_params = _build_worker_params(table, integration_method="simps")
+
+    assert worker_params == {
+        "model_name": params.model_name,
+        "core_radius_type": params.core_radius_type,
+        "base_points_b": 12,
+        "base_points_r": 34,
+        "domain_radius": 0.3,
+        "nucleus_radius": 5.0,
+        "z0": None,
+        "alpha0": 0.12,
+        "beta0": 0.05,
+        "use_stochastic_model": False,
+        "use_mcf_model": False,
+        "mcf_nucleus_mode": "scaled",
+        "integration_method": "simps",
+    }
+
+
+def test__build_worker_params_applies_effective_overrides():
+    params = MKTableParameters(
+        domain_radius=0.3,
+        nucleus_radius=5.0,
+        beta0=0.05,
+    )
+    table = MKTable(parameters=params)
+
+    worker_params = _build_worker_params(
+        table,
+        domain_radius=0.24,
+        z0=1.10,
+    )
+
+    assert worker_params["domain_radius"] == 0.24
+    assert worker_params["z0"] == 1.10
+    assert worker_params["integration_method"] == "trapz"
 

@@ -10,6 +10,10 @@ All methods assume cylindrical symmetry and operate in micrometer units.
 import numpy as np
 from typing import Optional
 
+
+DEFAULT_BASE_POINTS = 150
+
+
 class GeometryTools:
     """
     Collection of geometric helper methods for particle interaction modeling.
@@ -19,7 +23,34 @@ class GeometryTools:
     """
 
     @staticmethod
-    def determine_sampling_points(energy: float, radius_max: float, base_points: int = 150) -> int:
+    def calculate_squared_radius_ratio(
+        numerator_radius: float,
+        denominator_radius: float
+    ) -> float:
+        """
+        Calculate the squared ratio between two strictly positive radii.
+
+        This helper centralizes geometric radius scaling used across pyMKM,
+        including nucleus-to-domain scaling in the MKM saturation parameter
+        and domain-to-nucleus scaling in the MCF-MKM formulation.
+
+        :param numerator_radius: Radius used in the numerator.
+        :type numerator_radius: float
+        :param denominator_radius: Radius used in the denominator.
+        :type denominator_radius: float
+
+        :returns: Squared radius ratio ``(numerator_radius / denominator_radius)^2``.
+        :rtype: float
+
+        :raises ValueError: If either radius is not strictly positive.
+        """
+        if numerator_radius <= 0 or denominator_radius <= 0:
+            raise ValueError("Both radii must be positive.")
+
+        return (numerator_radius / denominator_radius) ** 2
+
+    @staticmethod
+    def determine_sampling_points(energy: float, radius_max: float, base_points: int = DEFAULT_BASE_POINTS) -> int:
         """
         Determine the number of sampling points based on energy and target radius.
     
@@ -59,7 +90,7 @@ class GeometryTools:
         return N0 * multiplier
 
     @staticmethod
-    def generate_default_radii(energy: float, radius_max: float, radius_min: Optional[float] = 1e-3, base_points: int = 150) -> np.ndarray:
+    def generate_default_radii(energy: float, radius_max: float, radius_min: Optional[float] = 1e-3, base_points: int = DEFAULT_BASE_POINTS) -> np.ndarray:
         """
         Generate a logarithmically spaced array of radii for dose integration.
     
